@@ -1,0 +1,3 @@
+SELECT url_id, url, strftime('%Y-%W', fetch_date) as wk_fetched, strftime('%Y-%W', date('now')) as current_wk, ticker_id, exch_id, status_code, source_text
+	FROM Fetched_urls JOIN URLs ON Fetched_urls.url_id = URLs.id
+	WHERE status_code = 200 AND source_text = '' AND wk_fetched <= current_wk

@@ -1,0 +1,39 @@
+
+Code,Investment Type
+BK,529 Benchmark
+PG,529 Peergroup
+CP,529 Plan
+CT,529 Portfolio
+AG,Aggregate
+CA,Category Average
+FC,Closed-End Fund
+CU,Currency Exchange
+SP,Private Fund
+UA,Account
+EI,Economic Indicators
+FE,Exchange-Traded Fund
+FG,Euro Fund
+F0,Fixed Income
+FH,Hedge Fund
+H1,HFR Hedge Fund
+VS,eVestment Separate Accounts
+VH,eVestment Hedge Funds
+XI,Index
+PS,European Pension/Life Fund Wrappers
+FV,Insurance Product Fund
+PO,MF Objective
+FM,Money Market Fund
+FO,Open-End Fund
+SA,Separate Account
+ST,Stock
+V1,UK LP SubAccounts
+P1,UK Life and Pension Polices
+FI,Unit Investment Trust
+VP,VA Policy
+VA,VA Subaccount
+LP,VL Policy
+VL,VL Subaccount
+DF,Restricted Investors
+IF,Internal Only
+S1,UBS Separate Accounts
+PI,Special Pooled Funds for Unregistered VA

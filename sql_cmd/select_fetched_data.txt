@@ -1,0 +1,2 @@
+SELECT url_id, ticker_id, exch_id, fetch_date, source_text FROM Fetched_urls
+        WHERE status_code = 200 AND source_text <> ""

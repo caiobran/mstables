@@ -1,0 +1,3 @@
+*.sqlite
+__pycache__
+input/00_archive

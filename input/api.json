@@ -1,0 +1,9 @@
+{
+  "1":"https://www.morningstar.com/api/v2/search/securities/5/usquote-v2/{}",
+  "2":"http://quotes.morningstar.com/stockq/c-company-profile?t={}:{}",
+  "3":"http://quotes.morningstar.com/stockq/c-header?t={}:{}",
+  "4":"http://financials.morningstar.com/valuate/valuation-history.action?type=price-earnings&t={}:{}",
+  "5":"http://financials.morningstar.com/finan/financials/getKeyStatPart.html?t={}:{}&culture=en-US&order=asc",
+  "6":"http://financials.morningstar.com/finan/financials/getFinancePart.html?t={}:{}&culture=en-US&order=asc",
+  "7":"http://performance.morningstar.com/perform/Performance/stock/exportStockPrice.action?t={}:{}&pd=10y&freq=d&sd=&ed=&pg=0&culture=en-US&cur=USD"
+}
