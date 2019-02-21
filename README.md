@@ -9,7 +9,7 @@ Development is still in early stages. Current application only includes a comman
 The current features include parsing of the following stock data from the API's listed in file api.json. This data is parsed with Python3 and stored in a relational SQLite database for later processing and analysis.
 
 ### Data parsed:
-- ~28k stock symbols across ~30 exchanges
+- ~24k stock symbols across ~35 exchanges
 - API's: 
 	- Stock quote summary page (day hi, day lo, 52wk hi, 52wk lo, forward P/E, etc.)
 	- Company profile with industry and sector data
