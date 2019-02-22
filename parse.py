@@ -439,7 +439,7 @@ def parse_api_5(cur, ticker_id, exch_id, data):
                     if 'id' in tag.attrs:
                         if ct == 0:
                             text_id = text_id = up.sql_insert_one_get_id(
-                                cur, 'RowHeaders', 'ticker', tag.text)
+                                cur, 'RowHeaders', 'header', tag.text)
                         else:
                             text_id = up.sql_insert_one_get_id(
                                 cur, 'TimeRefs', 'dates', tag.text)
@@ -525,7 +525,7 @@ def parse_api_6(cur, ticker_id, exch_id, data):
                     text = re.sub('\%|\*', '', text).strip()
                     text = re.sub('\s', '_', text)
                     text_id = up.sql_insert_one_get_id(
-                        cur, 'RowHeaders', 'ticker', text)
+                        cur, 'RowHeaders', 'header', text)
                 key = re.sub('-', '_', tag['id'])
                 info[key] = int(text_id)
                 #info0[tag['id']] = 'INTEGER,'
@@ -596,28 +596,31 @@ def parse_api_8to13(cur, api, ticker_id, exch_id, data):
         soup = bs(html, 'html.parser')
         tags = soup.find_all('div')
     except Exception as e:
-        print('\n# ERROR API {}:'.format(api), e, end=' ')
-        print('at {}:{}\n'.format(exch_id, ticker_id))
+        '''print('\n# ERROR API {}:'.format(api), e, end=' ')
+        print('at {}:{}\n'.format(exch_id, ticker_id))'''
         return 0
 
-    # Parse data into info dictionary
     info = {}
+    info0 = {   }
     type = ''
-    if api in [5, 6]:
+
+    print('API = {}'.format(api))
+    if api in [8, 9]:
         type += '_is'
-    elif api in [7, 8]:
+    elif api in [10, 11]:
         type += '_cf'
-    elif api in [9, 10]:
+    elif api in [12, 13]:
         type += '_bs'
-    if api in [5, 7, 9]:
+    if api in [8, 9, 10]:
         type += '_yr'
-    elif api in [6, 8, 10]:
+    elif api in [11, 12, 13]:
         type += '_qt'
-
     fname = 'test/MSreport{}.json'.format(type)
-    with open(fname) as file:
-        info0 = json.load(file)
 
+    '''with open(fname) as file:
+        info0 = json.load(file)'''
+
+    # Parse data into info dictionary
     for tag in tags:
         attrs = tag.attrs
         if 'id' in attrs:
@@ -629,28 +632,18 @@ def parse_api_8to13(cur, api, ticker_id, exch_id, data):
             if tag_id[:2] == 'Y_':
                 parent = tag.parent['id']
                 value0 = 'REAL,'
+                info0[key] = value0
 
                 if 'rawvalue' in attrs:
-                    if api in [5, 6]:
-                        '''
-                        rep += 'is_'
-                    elif api in [7, 8]:
-                        rep += 'cf_'
-                    elif api in [9, 10]:
-                        rep += 'bs_'
-                        '''
                     try:
                         value = float(tag['rawvalue'])
+                        key = '{}{}_{}'.format(rep, parent, tag_id)
+                        info[key] = value
                     except:
-                        value = 0.0
-
-                key = '{}{}_{}'.format(rep, parent, tag_id)
-                info[key] = value
-                info0[key] = value0
+                        pass
 
             # Parse labels
             elif tag_id[:3] == 'lab' and 'padding' not in tag_id:
-
                 key = '{}{}'.format(rep, tag_id)
                 info[key] = value
                 info0[key] = 'TEXT,'

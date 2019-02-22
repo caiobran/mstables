@@ -1310,6 +1310,6 @@
   },
   "RowHeaders":{
     "id":"INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,",
-    "ticker":"TEXT UNIQUE"
+    "header":"TEXT UNIQUE"
   }
 }
