@@ -10,4 +10,4 @@ __pycache__
 
 # Project References
 input/00_archive
-temp/
+temp/*
