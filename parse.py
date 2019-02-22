@@ -615,7 +615,7 @@ def parse_api_8to13(cur, api, ticker_id, exch_id, data):
         type += '_yr'
     elif api in [11, 12, 13]:
         type += '_qt'
-    fname = 'test/MSreport{}.json'.format(type)
+    fname = 'temp/MSreport{}.json'.format(type)
 
     '''with open(fname) as file:
         info0 = json.load(file)'''
