@@ -27,8 +27,12 @@ def create_tables(db_file):
         execute_db(cur, sql)
 
     # Insert list of tickers into Tickers table
+    std_list = [
+        'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+        'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
+    ]
     sql = 'INSERT OR IGNORE INTO tickers (ticker) VALUES (?)'
-    cur.executemany(sql, ms_sitemap())
+    cur.executemany(sql, ms_sitemap() + std_list)
 
     # Insert list of countries into Countries table
     sql = '''INSERT OR IGNORE INTO Countries

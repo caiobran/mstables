@@ -604,18 +604,18 @@ def parse_api_8to13(cur, api, ticker_id, exch_id, data):
     info0 = {   }
     type = ''
 
-    print('API = {}'.format(api))
     if api in [8, 9]:
         type += '_is'
     elif api in [10, 11]:
         type += '_cf'
     elif api in [12, 13]:
         type += '_bs'
-    if api in [8, 9, 10]:
+    if api in [8, 10, 12]:
         type += '_yr'
-    elif api in [11, 12, 13]:
+    elif api in [9, 11, 13]:
         type += '_qt'
     fname = 'temp/MSreport{}.json'.format(type)
+    #print('{}{}\n{}'.format(api, type, fname))
 
     '''with open(fname) as file:
         info0 = json.load(file)'''
