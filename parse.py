@@ -72,9 +72,9 @@ def fetched(stp = 0):
             elif api == 7:
                 code = parse_api_7(cur, ticker_id, exch_id, source_text)
                 erase = True
-            #elif api in [8, 9, 10, 11, 12, 13]:
-            #    code = parse_api_8to13(
-            #       cur, api, ticker_id, exch_id, source_text)
+            elif api in [8, 9, 10, 11, 12, 13]:
+                code = parse_api_8to13(
+                   cur, api, ticker_id, exch_id, source_text)
             #    erase = True
 
             # Erase source_text from Fetched_urls and update source_code
