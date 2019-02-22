@@ -1235,6 +1235,7 @@
     "companytype_id":"INTEGER,",
     "fyend_id":"INTEGER,",
     "style_id":"INTEGER,",
+    "update_date_id":"INTEGER,",
     "PRIMARY KEY":"(ticker_id, exchange_id)"
   },
   "Fetched_urls":{
@@ -1250,8 +1251,7 @@
     "id":"INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,",
     "country":"TEXT UNIQUE,",
     "a2_iso":"TEXT UNIQUE,",
-    "a3_un":"TEXT UNIQUE,",
-    "currency_id":"INTEGER"
+    "a3_un":"TEXT UNIQUE,"
   },
   "Exchanges":{
     "id":"INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,",

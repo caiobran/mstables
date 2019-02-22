@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup as bs
 from tables import tables
+from datetime import date
 import update as up
 import sqlite3
 import time
@@ -154,6 +155,9 @@ def parse_api_1(cur, ticker_id, exch_id, data):
         # Countries
         country_id = up.sql_insert_one_get_id(cur,
             'Countries', 'a3_un', country)
+        # Updated date
+        update = date.today().strftime('%Y-%m-%d')
+        date_id = up.sql_insert_one_get_id(cur, 'TimeRefs', 'dates', update)
         # Exchanges
         exch_id = up.sql_insert_one_get_id(cur,
             'Exchanges', 'exchange_sym', exch_sym)
@@ -169,8 +173,15 @@ def parse_api_1(cur, ticker_id, exch_id, data):
         columns = '(ticker_id, exchange_id)'
         sql = up.sql_insert('Master', columns, (ticker_id, exch_id))
         up.execute_db(cur, sql)
-        dict1 = {'company_id':comp_id, 'type_id':type_id}
-        dict2 = {'ticker_id':ticker_id, 'exchange_id':exch_id}
+        dict1 = {
+            'company_id':comp_id,
+            'type_id':type_id,
+            'update_date_id':date_id
+            }
+        dict2 = {
+            'ticker_id':ticker_id,
+            'exchange_id':exch_id
+            }
         sql = update_record('Master', dict1, dict2)
         up.execute_db(cur, sql)
 
@@ -563,7 +574,7 @@ def parse_api_7(cur, ticker_id, exch_id, data):
     zipped_vals = zlib.compress(data.encode())
     table = 'MSpricehistory'
     columns = '(ticker_id, exchange_id, price_10yr)'
-    sql = 'INSERT INTO {} {} VALUES (?, ?, ?)'.format(table, columns)
+    sql = 'INSERT OR IGNORE INTO {} {} VALUES (?, ?, ?)'.format(table, columns)
     cur.execute(sql, (ticker_id, exch_id, zipped_vals))
 
     sql = '''UPDATE {} SET price_10yr = ?

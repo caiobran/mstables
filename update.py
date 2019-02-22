@@ -21,8 +21,8 @@ def create_tables(db_file):
     cur = conn.cursor()
 
     # Create database tables per table.json
-    for table in tables.table_names:
-        columns = tables.get_columns(table)
+    for table in tables.names:
+        columns = ' '.join(['{} {}'.format(k, v) for k, v in tables.js[table].items()])
         sql = 'CREATE TABLE IF NOT EXISTS {} ({})'.format(table, columns)
         execute_db(cur, sql)
 
@@ -69,7 +69,7 @@ def delete_tables(db_file):
     # Create database connection
     conn = sqlite3.connect(db_file)
     cur = conn.cursor()
-    for table in tables.table_names:
+    for table in tables.names:
         sql = 'DROP TABLE IF EXISTS ' + table
         execute_db(cur, sql)
     save_db(conn)
@@ -83,7 +83,7 @@ def erase_tables(db_file):
     # Create database connection
     conn = sqlite3.connect(db_file)
     cur = conn.cursor()
-    for table in tables.table_names:
+    for table in tables.names:
         sql = 'DELETE FROM ' + table
         execute_db(cur, sql)
     save_db(conn)

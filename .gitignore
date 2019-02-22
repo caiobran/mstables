@@ -1,3 +1,13 @@
+# SQLite Database Files
 *.sqlite
+
+# Atom Generated
 __pycache__
+
+# Jupyter Generated
+test.ipynb
+.ipynb_checkpoints
+
+# Project References
 input/00_archive
+
