@@ -1,0 +1,39 @@
+DROP VIEW IF EXISTS view_Master;
+CREATE VIEW view_Master AS
+SELECT 
+	Countries.a3_un AS Country, 
+	Exchanges.exchange_sym AS Exchange, 
+	Tickers.ticker AS Ticker, 
+	Companies.company AS Company,
+	Industries.industry AS Industry, 
+	Sectors.sector AS Sector, 
+	Types.type_code AS Type, 
+	Types.type AS Type_Description,
+	CompanyTypes.companytype AS Company_Type,
+	StockStyles.style AS Style,
+	TimeRefs.dates AS FY_End,
+	Currencies.code AS Currency,
+	Master.update_date_id AS Updated,
+	MSheader.lastprice AS Price,
+	MSheader._52wk_hi,
+	MSheader._52wk_lo,
+	MSheader.yield AS Div_Yield,
+	MSheader.fpe AS Forward_PE,
+	MSheader.ps AS PS,
+	MSheader.pb AS PB,
+	MSheader.pc AS PC
+	
+FROM Master
+	JOIN Tickers ON Master.ticker_id = Tickers.id
+	JOIN Exchanges ON Master.exchange_id = Exchanges.id
+	JOIN Countries ON Exchanges.country_id = Countries.id
+	JOIN Companies ON Master.company_id = Companies.id
+	JOIN Industries ON Master.industry_id = Industries.id
+	JOIN Sectors ON Industries.sector_id = Sectors.id
+	JOIN Types ON Master.type_id = Types.id
+	JOIN CompanyTypes ON Master.companytype_id = CompanyTypes.id
+	JOIN StockStyles ON Master.style_id = StockStyles.id
+	JOIN TimeRefs ON Master.fyend_id = TimeRefs.id
+	JOIN MSheader ON Master.ticker_id = MSheader.ticker_id AND Master.exchange_id = MSheader.exchange_id
+	JOIN Currencies ON MSheader.currency_id = Currencies.id
+	;

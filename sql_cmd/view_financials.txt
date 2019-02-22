@@ -1,0 +1,15 @@
+DROP VIEW IF EXISTS view_Financials;
+--CREATE VIEW view_Financials AS
+SELECT
+	MSfinancials.exchange_id,
+	MSfinancials.ticker_id,
+	MSfinancials.Y0,
+	TimeRefs.dates as Yr_00,
+	MSfinancials.Y1,
+	TimeRefs.dates as Yr_01
+	
+FROM MSfinancials
+	JOIN TimeRefs ON MSfinancials.Y0 = TimeRefs.id 
+	JOIN TimeRefs ON MSfinancials.Y1 = TimeRefs.id
+	
+	;
