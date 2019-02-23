@@ -1,15 +1,16 @@
 import xml.etree.ElementTree as ET
 from multiprocessing import Pool
 from datetime import datetime
+from tables import tables
 import requests
 import sqlite3
+import parse
 import time
 import json
+import zlib
 import csv
 import re
 import os
-from tables import tables
-import parse
 
 
 def create_tables(db_file):
@@ -18,6 +19,7 @@ def create_tables(db_file):
     # Create database connection
     conn = sqlite3.connect(db_file)
     conn.execute('pragma synchronous = 0')
+    conn.execute('pragma auto_vacuum = 1')
     cur = conn.cursor()
 
     # Create database tables per table.json
@@ -73,10 +75,13 @@ def delete_tables(db_file):
     # Create database connection
     conn = sqlite3.connect(db_file)
     cur = conn.cursor()
+
+    # Drop tables and commit database
     for table in tables.names:
         sql = 'DROP TABLE IF EXISTS ' + table
         execute_db(cur, sql)
     save_db(conn)
+
     cur.close()
     conn.close()
 
@@ -172,12 +177,7 @@ def fetch(db_file):
         conn.close()
 
         # Call parsing module from parse.py
-        '''try:
-            parse.fetched(stp)
-            print('parsed')
-        except Exception as e:
-            print('not parsed')
-            print(e)'''
+        print('CALL PARSE MODULE')
         parse.fetched(stp)
 
     return start
@@ -196,7 +196,9 @@ def fetch_api_data(url_info):
     try:
         status_code, data = get_url_data(url)
     except Exception as e:
-        status_code, data = 0, ''
+        #status_code, data = 0, ''
+        print(url)
+        raise
 
     x = int(ticker_list[url_id]['{}:{}'.format(exch_sym, symbol)])
     ticker_ct = ticker_count[url_id]
@@ -208,12 +210,10 @@ def fetch_api_data(url_info):
 def get_url_data(url):
     page = requests.get(url)
     code = page.status_code
-    text = page.text
-
+    text = re.sub('\'', '', page.text)
     if text == '' or text is None:
         code = 0
-    else:
-        text = re.sub('\'', '', text)
+    text = zlib.compress(text.encode())
     return code, text
 
 
@@ -256,6 +256,7 @@ def get_url_list(cur, api, stp):
     print_list(msg, apis)
     msg = 'Qty. of symbols pending update per API no.:\n'
     print_list(msg, ticker_count)
+
     return sorted(urls)
 
 

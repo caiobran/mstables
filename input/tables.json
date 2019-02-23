@@ -1,4 +1,28 @@
 {
+  "MSreport_bs_qt":{
+    "ticker_id": "INTEGER,",
+    "exchange_id": "INTEGER"
+  },
+  "MSreport_bs_yr":{
+    "ticker_id": "INTEGER,",
+    "exchange_id": "INTEGER"
+  },
+  "MSreport_cf_qt":{
+    "ticker_id": "INTEGER,",
+    "exchange_id": "INTEGER"
+  },
+  "MSreport_cf_yr":{
+    "ticker_id": "INTEGER,",
+    "exchange_id": "INTEGER"
+  },
+  "MSreport_is_qt":{
+    "ticker_id": "INTEGER,",
+    "exchange_id": "INTEGER"
+  },
+  "MSreport_is_yr":{
+    "ticker_id": "INTEGER,",
+    "exchange_id": "INTEGER"
+  },
   "MSfinancials":{
     "ticker_id": "INTEGER,",
     "exchange_id": "INTEGER,",
@@ -1243,8 +1267,9 @@
     "ticker_id":"INTEGER,",
     "exch_id":"INTEGER DEFAULT 0,",
     "fetch_date":"DATE DEFAULT CURRENT_DATE NOT NULL,",
-    "status_code":"INTEGER NOT NULL,",
-    "source_text":"TEXT,",
+    "status_code":"SMALLINT NOT NULL,",
+    "source_text":"BLOB,",
+    "parsed":"BIT DEFAULT 0 NOT NULL,",
     "PRIMARY KEY":"(fetch_date, url_id, ticker_id, exch_id)"
   },
   "Countries":{
