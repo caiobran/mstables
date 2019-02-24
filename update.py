@@ -177,7 +177,6 @@ def fetch(db_file):
         conn.close()
 
         # Call parsing module from parse.py
-        print('CALL PARSE MODULE')
         parse.fetched(stp)
 
     return start

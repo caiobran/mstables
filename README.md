@@ -1,17 +1,20 @@
 # equiTable
 
 
-### Objective: 
+### Objective:
 Create a simple screener for global equities with a concise display of financial data and performance indicators for all publicly listed equities from around the world.
 
 
 ### Current Package Dependencies:
 - Python 3
+- Beautiful Soup
+- pandas
+- numpy
 - requests
 - sqlite3
 
 
-### Progress: 
+### Progress:
 Development is still in early stages. Current application only includes a command line scraper for MorningStar.com which uses SQLite to store data.
 
 The current features include parsing of the following stock data from the API's listed in file api.json. This data is parsed with Python3 and stored in a relational SQLite database for later processing and analysis.
@@ -19,7 +22,7 @@ The current features include parsing of the following stock data from the API's 
 
 #### Data parsed:
 - ~24k stock symbols across ~35 exchanges
-- API's: 
+- API's:
 	- Stock quote summary page (day hi, day lo, 52wk hi, 52wk lo, forward P/E, etc.)
 	- Company profile with industry and sector data
 	- 10yr stock valuation indicators (P/E, P/S, P/B, P/C)

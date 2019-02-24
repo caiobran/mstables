@@ -1,11 +1,15 @@
 from bs4 import BeautifulSoup as bs
 from tables import tables
 from datetime import date
+from io import StringIO
 import update as up
+import pandas as pd
+import numpy as np
 import sqlite3
 import time
 import json
 import zlib
+import csv
 import re
 
 
@@ -44,6 +48,7 @@ def fetched(stp = 0):
             exch_id = fetched[i][2]
             fetch_date = fetched[i][3]
             source_text = fetched[i][4]
+            source_text = zlib.decompress(source_text).decode()
             code = 200
             parsed = 1
 
@@ -53,30 +58,22 @@ def fetched(stp = 0):
 
             erase = True
             if api == 1:
-                source_text = zlib.decompress(source_text).decode()
                 code = parse_api_1(cur, ticker_id, exch_id, source_text)
             elif api == 2:
-                source_text = zlib.decompress(source_text).decode()
                 code = parse_api_2(cur, ticker_id, exch_id, source_text)
             elif api == 3:
-                source_text = zlib.decompress(source_text).decode()
                 code = parse_api_3(cur, ticker_id, exch_id, source_text)
             elif api == 4:
-                source_text = zlib.decompress(source_text).decode()
                 code = parse_api_4(cur, ticker_id, exch_id, source_text)
             elif api == 5:
-                source_text = zlib.decompress(source_text).decode()
                 code = parse_api_5(cur, ticker_id, exch_id, source_text)
             elif api == 6:
-                source_text = zlib.decompress(source_text).decode()
                 code = parse_api_6(cur, ticker_id, exch_id, source_text)
             elif api == 7:
                 code = parse_api_7(cur, ticker_id, exch_id, source_text)
             elif api in [8, 9, 10, 11, 12, 13]:
-                source_text = zlib.decompress(source_text).decode()
                 code = parse_api_8to13(
                    cur, api, ticker_id, exch_id, source_text)
-                parsed = 0
 
             # Erase source_text from Fetched_urls and update source_code
             if erase == True:
@@ -572,15 +569,27 @@ def parse_api_6(cur, ticker_id, exch_id, data):
 # http://performance.mor.../perform/Performance/stock/exportStockPrice.action?
 def parse_api_7(cur, ticker_id, exch_id, data):
 
-    zipped_vals = data
+    # Calculate current moving averages
+    tbl = pd.read_csv(StringIO(data), sep=',', header=1)
+    tbl = tbl.where(tbl['Volume'] != '???')
+    ave_50d = float(np.average(tbl.loc[:50, 'Close'].values))
+    ave_100d = float(np.average(tbl.loc[:100, 'Close'].values))
+    ave_200d = float(np.average(tbl.loc[:200, 'Close'].values))
     table = 'MSpricehistory'
-    columns = '(ticker_id, exchange_id, price_10yr)'
-    sql = 'INSERT OR IGNORE INTO {} {} VALUES (?, ?, ?)'.format(table, columns)
-    cur.execute(sql, (ticker_id, exch_id, zipped_vals))
+    columns = '''(ticker_id, exchange_id, price_10yr,
+        ave_50d, ave_100d, ave_200d)'''
+    prices = zlib.compress(data.encode())
 
-    sql = '''UPDATE {} SET price_10yr = ?
-        WHERE ticker_id = ? AND exchange_id = ?'''.format(table)
-    cur.execute(sql, (zipped_vals, ticker_id, exch_id))
+    # Insert record
+    sql = 'INSERT OR IGNORE INTO {} {} VALUES (?, ?, ?, ?, ?, ?)'
+    cur.execute(sql.format(table, columns),
+        (ticker_id, exch_id, prices, ave_50d, ave_100d, ave_200d))
+
+    # Update record
+    sql = '''UPDATE {} SET price_10yr = ?, ave_50d = ?, ave_100d = ?,
+        ave_200d = ? WHERE ticker_id = ? AND exchange_id = ?'''
+    cur.execute(sql.format(table),
+        (prices, ave_50d, ave_100d, ave_200d, ticker_id, exch_id))
 
     '''with open('test/api7.csv', 'w') as file:
         file.write(data)'''
@@ -615,10 +624,10 @@ def parse_api_8to13(cur, api, ticker_id, exch_id, data):
         type += '_yr'
     elif api in [9, 11, 13]:
         type += '_qt'
-    fname = 'temp/{}.json'.format(type)
+    #fname = 'temp/{}.json'.format(type)
 
-    with open(fname) as file:
-        info0 = json.load(file)
+    '''with open(fname) as file:
+        info0 = json.load(file)'''
 
     # Parse data into info dictionary
     for tag in tags:
@@ -630,29 +639,30 @@ def parse_api_8to13(cur, api, ticker_id, exch_id, data):
             # Parse Yrly or Qtrly values
             if tag_id[:2] == 'Y_':
                 parent = tag.parent['id']
-
                 if 'rawvalue' in attrs:
+                    if tag['rawvalue'] in ['—', 'nbsp']:
+                        continue
                     try:
-                        value = float(tag['rawvalue'])
                         key = '{}_{}'.format(parent, tag_id)
-                        #info[key] = re.sub(',', '', value)
-                        info0[key] = 'REAL,'
+                        info[key] = float(re.sub(',', '', tag['rawvalue']))
+                        #info0[key] = 'REAL,'
                     except:
-                        pass
+                        print(key, '=', tag['rawvalue'])
+                        raise
 
             # Parse labels
             elif tag_id[:3] == 'lab' and 'padding' not in tag_id:
-                #value_id = up.sql_insert_one_get_id(
-                #    cur, 'RowHeaders', 'header', value)
-                #info[tag_id] = value_id
-                info0[tag_id] = 'INTEGER,'
+                value_id = up.sql_insert_one_get_id(
+                    cur, 'RowHeaders', 'header', value)
+                info[tag_id] = value_id
+                #info0[tag_id] = 'INTEGER,'
 
     # Check if parsing was successful
     if info == {} and info0 == {}:
         return 0
 
     # Insert data into tables
-    '''info['ticker_id'] = ticker_id
+    info['ticker_id'] = ticker_id
     info['exchange_id'] = exch_id
     sql = up.sql_insert(type, tuple(info.keys()), tuple(info.values()))
     cur.execute(sql)
@@ -660,10 +670,10 @@ def parse_api_8to13(cur, api, ticker_id, exch_id, data):
     del info['exchange_id']
     dict2 = {'ticker_id':ticker_id, 'exchange_id':exch_id}
     sql = update_record(type, info, dict2)
-    cur.execute(sql)'''
+    cur.execute(sql)
 
-    with open(fname, 'w') as file:
-        file.write(json.dumps(info0, indent=2))
+    '''with open(fname, 'w') as file:
+        file.write(json.dumps(info0, indent=2))'''
 
     return 200
 
