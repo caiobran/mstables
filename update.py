@@ -1,7 +1,6 @@
 import xml.etree.ElementTree as ET
 from multiprocessing import Pool
 from datetime import datetime
-from tables import tables
 import requests
 import sqlite3
 import parse
@@ -23,8 +22,8 @@ def create_tables(db_file):
     cur = conn.cursor()
 
     # Create database tables per table.json
-    for table in tables.names:
-        columns = ' '.join(['{} {}'.format(k, v) for k, v in tables.js[table].items()])
+    for table in tbl_names:
+        columns = ' '.join(['{} {}'.format(k, v) for k, v in tbl_js[table].items()])
         sql = 'CREATE TABLE IF NOT EXISTS {} ({})'.format(table, columns)
         execute_db(cur, sql)
 
@@ -77,7 +76,7 @@ def delete_tables(db_file):
     cur = conn.cursor()
 
     # Drop tables and commit database
-    for table in tables.names:
+    for table in tbl_names:
         sql = 'DROP TABLE IF EXISTS ' + table
         execute_db(cur, sql)
     save_db(conn)
@@ -92,7 +91,7 @@ def erase_tables(db_file):
     # Create database connection
     conn = sqlite3.connect(db_file)
     cur = conn.cursor()
-    for table in tables.names:
+    for table in tbl_names:
         sql = 'DELETE FROM ' + table
         execute_db(cur, sql)
     save_db(conn)
@@ -113,7 +112,7 @@ def execute_db(cur, sql):
 def fetch(db_file):
     divisor = 500
 
-    # User input and create connection with database (db)
+    # Get user input for stp (no. of tickers to update)
     while True:
         # User input for number of tickers to update
         try:
@@ -127,7 +126,6 @@ def fetch(db_file):
 
     # Fetch data for each API for tickers qty. = 'stp'
     dividend = max(stp, divisor)
-    stp = min(stp, divisor)
     runs = dividend // divisor
     for i in range(runs):
 
@@ -143,22 +141,15 @@ def fetch(db_file):
                 raise
 
             msg = '\n\nInitiating run {} out of {} ...\n'
-            msg = msg + '(1 run = up to {} tickers per API download)'
+            #msg = msg + '(1 run = up to {} tickers per API download)'
             print(msg.format(i+1, runs, divisor))
             break
 
         # Get url list for all API's
-        try:
-            api = [(int(k), v) for k, v in apis.items()]
-            urls = get_url_list(cur, api, stp)
-        except sqlite3.OperationalError as err0:
-            print('# Database ERROR:', err0)
-            return start
-        except:
-            raise
+        urls = get_url_list(cur, min(stp, divisor))
 
         # Use multiprocessing to fetch url data from API's
-        p = Pool(10)
+        p = Pool(5)
         results = p.map(fetch_api_data, urls)
         p.terminate()
         p.join()
@@ -177,83 +168,69 @@ def fetch(db_file):
         conn.close()
 
         # Call parsing module from parse.py
-        parse.fetched(stp)
+        parse.fetched(db_file, stp)
 
     return start
 
 
 def fetch_api_data(url_info):
-    exch_sym = ''
-    exch_id = 0
-    ticker, url_id, url = url_info
 
-    if url_id == 1:
-        id, symbol = ticker
-    else:
-        id, symbol, exch_id, exch_sym = ticker
+    # Unpack variables
+    id, symbol, exch_id, exch_sym, url_id, url = url_info
 
-    try:
-        status_code, data = get_url_data(url)
-    except Exception as e:
-        #status_code, data = 0, ''
-        print(url)
-        raise
-
+    # Print current url info being fetched
     x = int(ticker_list[url_id]['{}:{}'.format(exch_sym, symbol)])
-    ticker_ct = ticker_count[url_id]
-    print_progress(url_id, x, ticker_ct, exch_sym, symbol)
+    print_progress(url_id, x, ticker_count[url_id], exch_sym, symbol)
 
-    return (url_id, id, exch_id, status_code, data)
-
-
-def get_url_data(url):
-    page = requests.get(url)
-    code = page.status_code
-    text = re.sub('\'', '', page.text)
-    if text == '' or text is None:
+    # Fetch URL data
+    try:
+        page = requests.get(url)
+    except Exception as e:
+        print('URL = {}'.format(url))
+        raise
+    status_code = page.status_code
+    data = re.sub('\'', '', page.text)
+    if data == '' or data is None:
         code = 0
-    text = zlib.compress(text.encode())
-    return code, text
+    zipped = zlib.compress(data.encode())
+    return (url_id, id, exch_id, status_code, zipped)
 
 
-def get_url_list(cur, api, stp):
+def get_url_list(cur, stp):
 
     urls = []
+    api = [(int(k), v) for k, v in apis.items()]
     for url_id, url0 in api:
-        #url_id = api[i][0]
-        #url = api[i][1]
 
         # Select list of tickers not yet updated for current API
-        if url_id == 1:
+        if url_id in [1, 2, 3]:
             sql = sql_cmd1
         else:
             sql = sql_cmd2.format(url_id)
-
         tickers = execute_db(cur, sql).fetchall()
         ticker_ct = len(tickers)
         ticker_count[url_id] = ticker_ct
         ticker_list[url_id] = {}
 
         # Create list of URL's for each ticker
-        x = 0
-        msg = 'Creating URL list for API {} ... Ticker count = {}'
-        print_(msg.format(url_id, ticker_ct))
-        for ticker in tickers[:stp]:
-            symbol = ticker[1]
-            exch_sym = ''
-            if url_id == 1:
+        def url_list(ct, tick):
+            sym_id, symbol, exch_id, exch_sym = tick[0], tick[1], 0, ''
+            if url_id in [1, 2, 3]:
                 url = url0.format(symbol)
             else:
-                exch_sym = ticker[3]
+                exch_id, exch_sym = tick[2], tick[3]
                 url = url0.format(exch_sym, symbol)
-            urls.append((ticker, url_id, url))
-            x += 1
-            ticker_list[url_id]['{}:{}'.format(exch_sym, symbol)] = x
+            ticker_list[url_id]['{}:{}'.format(exch_sym, symbol)] = ct
+            return (sym_id, symbol, exch_id, exch_sym, url_id, url)
+
+        print_('Creating URL list for API {} ...'.format(url_id))
+        urls = urls + \
+            [url_list(c, ticker) for c, ticker in enumerate(tickers[:stp])]
 
     # Print API list and no. of tickers to be updated for each
-    msg = '\nList of API\'s:\n'
-    print_list(msg, apis)
-    msg = 'Qty. of symbols pending update per API no.:\n'
+    '''msg = '\nList of API\'s:\n'
+    print_list(msg, apis)'''
+    msg = 'Qty. of symbols pending update per API no.:\n\n'
     print_list(msg, ticker_count)
 
     return sorted(urls)
@@ -331,11 +308,10 @@ def sql_insert_one_get_id(cur, tbl, col, val):
 
 
 # Reference variables
-today   = datetime.today().strftime('%Y-%m-%d')
-tables  = tables('input/tables.json')
-sql_cmds = 'sql_cmd/{}'
-ticker_count = {}
 ticker_list = {}
+ticker_count = {}
+sql_cmds = 'sql_cmd/{}'
+today   = datetime.today().strftime('%Y-%m-%d')
 with open(sql_cmds.format('select_notupdated1.txt')) as file:
     sql_cmd1 = file.read().strip()
 with open(sql_cmds.format('select_notupdated2.txt')) as file:
@@ -344,3 +320,6 @@ with open(sql_cmds.format('clean.txt')) as file:
     sql_clean = file.read().strip()
 with open('input/api.json') as file:
     apis = json.load(file)
+with open('input/tables.json') as file:
+    tbl_js = json.load(file)
+tbl_names = list(tbl_js.keys())

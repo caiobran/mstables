@@ -1,5 +1,4 @@
 from bs4 import BeautifulSoup as bs
-from tables import tables
 from datetime import date
 from io import StringIO
 import update as up
@@ -14,7 +13,7 @@ import re
 
 
 # Main function
-def fetched(stp = 0):
+def fetched(db_file, stp = 500):
 
     # Create db connection
     up.print_('Please wait while the database is being queried ...')
@@ -57,22 +56,22 @@ def fetched(stp = 0):
             up.print_(msg.format(i + 1, stp, 100 * (i + 1) / stp))
 
             erase = True
-            if api == 1:
-                code = parse_api_1(cur, ticker_id, exch_id, source_text)
-            elif api == 2:
-                code = parse_api_2(cur, ticker_id, exch_id, source_text)
-            elif api == 3:
-                code = parse_api_3(cur, ticker_id, exch_id, source_text)
+            if api in [1, 2, 3]:
+                code = parse_1(cur, ticker_id, exch_id, source_text)
             elif api == 4:
-                code = parse_api_4(cur, ticker_id, exch_id, source_text)
+                code = parse_2(cur, ticker_id, exch_id, source_text)
             elif api == 5:
-                code = parse_api_5(cur, ticker_id, exch_id, source_text)
+                code = parse_3(cur, ticker_id, exch_id, source_text)
             elif api == 6:
-                code = parse_api_6(cur, ticker_id, exch_id, source_text)
+                code = parse_4(cur, ticker_id, exch_id, source_text)
             elif api == 7:
-                code = parse_api_7(cur, ticker_id, exch_id, source_text)
-            elif api in [8, 9, 10, 11, 12, 13]:
-                code = parse_api_8to13(
+                code = parse_5(cur, ticker_id, exch_id, source_text)
+            elif api == 8:
+                code = parse_6(cur, ticker_id, exch_id, source_text)
+            elif api == 9:
+                code = parse_7(cur, ticker_id, exch_id, source_text)
+            else:
+                code = parse_8(
                    cur, api, ticker_id, exch_id, source_text)
 
             # Erase source_text from Fetched_urls and update source_code
@@ -114,7 +113,7 @@ def gethtmltable(sp):
 
 
 # https://www.morningstar.com/api/v2/search/securities/5/usquote-v2/
-def parse_api_1(cur, ticker_id, exch_id, data):
+def parse_1(cur, ticker_id, exch_id, data):
 
     results = []
     try:
@@ -122,8 +121,8 @@ def parse_api_1(cur, ticker_id, exch_id, data):
         if js['m'][0]['n'] != 0:
             results = js['m'][0]['r']
     except Exception as e:
-        print('\n# ERROR API 1:', e, end=' ')
-        print('at {}:{}\n'.format(exch_id, ticker_id))
+        #print('\n# ERROR API 1:', e, end=' ')
+        #print('at {}:{}\n'.format(exch_id, ticker_id))
         return 0
 
     if results == []:
@@ -188,7 +187,7 @@ def parse_api_1(cur, ticker_id, exch_id, data):
 
 
 # http://quotes.morningstar.com/stockq/c-company-profile?
-def parse_api_2(cur, ticker_id, exch_id, data):
+def parse_2(cur, ticker_id, exch_id, data):
 
     try:
         soup = bs(data, 'html.parser')
@@ -199,8 +198,8 @@ def parse_api_2(cur, ticker_id, exch_id, data):
         fyend = tags[10].text.strip()
         style = tags[12].text.strip()
     except Exception as e:
-        print('\n# ERROR API 2:', e, end=' ')
-        print('at {}:{}\n'.format(exch_id, ticker_id))
+        #print('\n# ERROR API 2:', e, end=' ')
+        #print('at {}:{}\n'.format(exch_id, ticker_id))
         return 0
 
     # Insert sector into Sectors
@@ -233,14 +232,14 @@ def parse_api_2(cur, ticker_id, exch_id, data):
 
 
 # http://quotes.morningstar.com/stockq/c-header?
-def parse_api_3(cur, ticker_id, exch_id, data):
+def parse_3(cur, ticker_id, exch_id, data):
 
     try:
         soup = bs(data, 'html.parser')
         tags = soup.find_all('span') + soup.find_all('div')
     except Exception as e:
-        print('\n# ERROR API 3:', e, end=' ')
-        print('at {}:{}\n'.format(exch_id, ticker_id))
+        #print('\n# ERROR API 3:', e, end=' ')
+        #print('at {}:{}\n'.format(exch_id, ticker_id))
         return 0
 
     # Parse data into info dictionary
@@ -333,7 +332,7 @@ def parse_api_3(cur, ticker_id, exch_id, data):
 
 
 # http://financials.morningstar.com/valuate/valuation-history.action?
-def parse_api_4(cur, ticker_id, exch_id, data):
+def parse_4(cur, ticker_id, exch_id, data):
 
     info = {}
     def clean_val(h, v):
@@ -345,8 +344,8 @@ def parse_api_4(cur, ticker_id, exch_id, data):
         table = gethtmltable(soup)
         script = soup.find('script').text
     except Exception as e:
-        print('\n# ERROR API 4:', e, end=' ')
-        print('at {}:{}\n'.format(exch_id, ticker_id))
+        #print('\n# ERROR API 4:', e, end=' ')
+        #print('at {}:{}\n'.format(exch_id, ticker_id))
         return 0
 
     script = re.sub('[ \n\t]|\\n|\\t', '', script)
@@ -405,14 +404,14 @@ def parse_api_4(cur, ticker_id, exch_id, data):
 
 
 # http://financials.morningstar.com/finan/financials/getKeyStatPart.html?
-def parse_api_5(cur, ticker_id, exch_id, data):
+def parse_5(cur, ticker_id, exch_id, data):
 
     try:
         html = json.loads(data)['componentData']
         soup = bs(html, 'html.parser')
     except Exception as e:
-        print('\n# ERROR API 5:', e, end=' ')
-        print('at {}:{}\n'.format(exch_id, ticker_id))
+        #print('\n# ERROR API 5:', e, end=' ')
+        #print('at {}:{}\n'.format(exch_id, ticker_id))
         return 0
 
     # Parse data batabase tables (5 tables)
@@ -490,15 +489,15 @@ def parse_api_5(cur, ticker_id, exch_id, data):
 
 
 # http://financials.morningstar.com/finan/financials/getFinancePart.html?
-def parse_api_6(cur, ticker_id, exch_id, data):
+def parse_6(cur, ticker_id, exch_id, data):
 
     try:
         html = json.loads(data)['componentData']
         soup = bs(html, 'html.parser')
         trs = soup.find_all('tr')
     except Exception as e:
-        print('\n# ERROR API 6:', e, end=' ')
-        print('at {}:{}\n'.format(exch_id, ticker_id))
+        #print('\n# ERROR API 6:', e, end=' ')
+        #print('at {}:{}\n'.format(exch_id, ticker_id))
         return 0
 
     # Parse table
@@ -567,9 +566,12 @@ def parse_api_6(cur, ticker_id, exch_id, data):
 
 
 # http://performance.mor.../perform/Performance/stock/exportStockPrice.action?
-def parse_api_7(cur, ticker_id, exch_id, data):
+def parse_7(cur, ticker_id, exch_id, data):
 
     # Calculate current moving averages
+    if data == '' or data == None:
+        return 0
+
     tbl = pd.read_csv(StringIO(data), sep=',', header=1)
     tbl = tbl.where(tbl['Volume'] != '???')
     ave_50d = float(np.average(tbl.loc[:50, 'Close'].values))
@@ -598,7 +600,7 @@ def parse_api_7(cur, ticker_id, exch_id, data):
 
 
 # http://financials.morningstar.com/ajax/ReportProcess4HtmlAjax.html?
-def parse_api_8to13(cur, api, ticker_id, exch_id, data):
+def parse_8(cur, api, ticker_id, exch_id, data):
 
     try:
         js = json.loads(data)
@@ -606,8 +608,8 @@ def parse_api_8to13(cur, api, ticker_id, exch_id, data):
         soup = bs(html, 'html.parser')
         tags = soup.find_all('div')
     except Exception as e:
-        print('\n# ERROR API {}:'.format(api), e, end=' ')
-        print('at {}:{}\n'.format(exch_id, ticker_id))
+        #print('\n# ERROR API {}:'.format(api), e, end=' ')
+        #print('at {}:{}\n'.format(exch_id, ticker_id))
         return 0
 
     info = {}
@@ -642,13 +644,10 @@ def parse_api_8to13(cur, api, ticker_id, exch_id, data):
                 if 'rawvalue' in attrs:
                     if tag['rawvalue'] in ['—', 'nbsp']:
                         continue
-                    try:
-                        key = '{}_{}'.format(parent, tag_id)
-                        info[key] = float(re.sub(',', '', tag['rawvalue']))
-                        #info0[key] = 'REAL,'
-                    except:
-                        print(key, '=', tag['rawvalue'])
-                        raise
+                    key = '{}_{}'.format(parent, tag_id)
+                    info[key] = float(re.sub(',', '', tag['rawvalue']))
+                    #info0[key] = 'REAL,'
+
 
             # Parse labels
             elif tag_id[:3] == 'lab' and 'padding' not in tag_id:
@@ -678,6 +677,7 @@ def parse_api_8to13(cur, api, ticker_id, exch_id, data):
     return 200
 
 
+# Generate UPDATE SQL command
 def update_record(table, dict1, dict2):
     updates = str(dict1).replace('{\'', '').replace(', \'', ', ')
     updates = updates.replace('}', '').replace('\':', ' =')
@@ -686,7 +686,3 @@ def update_record(table, dict1, dict2):
     conds = conds.replace(', \'', ' AND ')
     sql = 'UPDATE ' + table + ' SET ' + updates + ' WHERE ' + conds
     return sql
-
-
-db_file = 'db/equitable.sqlite'
-tables  = tables('input/tables.json')

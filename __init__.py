@@ -1,10 +1,10 @@
 from shutil import copyfile
 from datetime import datetime
 from importlib import reload
+import update as up
 import time
 import os
 import re
-import update as up
 
 
 # Create back-up file under /db/backup
@@ -13,6 +13,7 @@ def backup_db(curr_file):
     new_file = db_backup.format(today)
     up.print_('Please wait ... Database file is being backed-up ...')
     copyfile(curr_file, new_file)
+
 
 # Change variable for .sqlite file name based on user input
 def change_name(old_name):
@@ -32,8 +33,8 @@ banner = ' Welcome to equiTable '
 gap = 6
 dash = '-'
 
+# Clear terminal, print menu and get user input
 os.system('clear')
-
 while True:
 
     # Print options menu
