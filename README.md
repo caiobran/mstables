@@ -2,7 +2,7 @@
 
 
 ### Objective:
-Create a simple screener for global equities with a concise display of financial data and performance indicators for all publicly listed equities from around the world.
+Create a MorningStar.com scraper which stores the data into a relational SQLite database so one can perform fundamental analysis across all publicly listed equities from around the world.
 
 
 ### Current Package Dependencies:
@@ -15,26 +15,26 @@ Create a simple screener for global equities with a concise display of financial
 
 
 ### Progress:
-Development is still in early stages. Current application only includes a command line scraper for MorningStar.com which uses SQLite to store data.
+Command line interface for the MorningStar.com scraper has been published including the automated parsing and storing of the data into an .slqite file.
 
-The current features include parsing of the following stock data from the API's listed in file api.json. This data is parsed with Python3 and stored in a relational SQLite database for later processing and analysis.
+
+### Instructions:
+Execute the following command from a terminal within the package folder to initialize the program. The .sqlite files will be created and stored under db/.
+
+'python __init__.py'
 
 
 #### Data parsed:
-- ~24k stock symbols across ~35 exchanges
-- API's:
-	- Stock quote summary page (day hi, day lo, 52wk hi, 52wk lo, forward P/E, etc.)
-	- Company profile with industry and sector data
-	- 10yr stock valuation indicators (P/E, P/S, P/B, P/C)
-	- Key performance ratios for past 10 yrs
-	- Annual financial results for past 10 yrs
-	- Income statement for past 5 yrs and 5 qtrs (pending ...)
-	- Balance Sheet for past 5 yrs and 5 qtrs (pending ...)
-	- Cashflow Statement for past 5 yrs and 5 qtrs (pending ...)
+- Stock quote summary page (day hi, day lo, 52wk hi, 52wk lo, forward P/E, etc.)
+- Company profile with industry and sector data
+- 10yr stock valuation indicators (P/E, P/S, P/B, P/C)
+- Key performance ratios for past 10 yrs
+- Annual financial results for past 10 yrs
+- Income statement for past 5 yrs and 5 qtrs
+- Balance Sheet for past 5 yrs and 5 qtrs
+- Cashflow Statement for past 5 yrs and 5 qtrs
 
 
 #### Next steps:
-- Finish parsing code for Key Ratios and Historical Prices
-- Create database views
-- Implement Pandas fucntions for data processing and analysis
+- Implement pandas function for data processing and analysis (currently under test/)
 - Create web-based application for visualization of data (longer term)

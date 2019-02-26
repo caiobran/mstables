@@ -569,11 +569,16 @@ def parse_6(cur, ticker_id, exch_id, data):
 def parse_7(cur, ticker_id, exch_id, data):
 
     # Calculate current moving averages
-    if data == '' or data == None:
+    if 'Morningstar.com Error Page' in data or data == None or data == '':
         return 0
 
-    tbl = pd.read_csv(StringIO(data), sep=',', header=1)
-    tbl = tbl.where(tbl['Volume'] != '???')
+    try:
+        tbl = pd.read_csv(StringIO(data), sep=',', header=1)
+        tbl = tbl.where(tbl['Volume'] != '???')
+    except Exception as e:
+        print(data, '\n\t', e)
+        raise
+
     ave_50d = float(np.average(tbl.loc[:50, 'Close'].values))
     ave_100d = float(np.average(tbl.loc[:100, 'Close'].values))
     ave_200d = float(np.average(tbl.loc[:200, 'Close'].values))
@@ -613,20 +618,20 @@ def parse_8(cur, api, ticker_id, exch_id, data):
         return 0
 
     info = {}
-    info0 = {}
+    #info0 = {}
     type = 'MSreport'
 
-    if api in [8, 9]:
+    if api in [10, 11]:
         type += '_is'
-    elif api in [10, 11]:
-        type += '_cf'
     elif api in [12, 13]:
+        type += '_cf'
+    elif api in [14, 15]:
         type += '_bs'
-    if api in [8, 10, 12]:
+    if api in [10, 12, 14]:
         type += '_yr'
-    elif api in [9, 11, 13]:
+    elif api in [11, 13, 15]:
         type += '_qt'
-    #fname = 'temp/{}.json'.format(type)
+    #fname = 'test/{}.json'.format(type)
 
     '''with open(fname) as file:
         info0 = json.load(file)'''
@@ -641,12 +646,18 @@ def parse_8(cur, api, ticker_id, exch_id, data):
             # Parse Yrly or Qtrly values
             if tag_id[:2] == 'Y_':
                 parent = tag.parent['id']
+                key = '{}_{}'.format(parent, tag_id)
+
                 if 'rawvalue' in attrs:
                     if tag['rawvalue'] in ['—', 'nbsp']:
                         continue
-                    key = '{}_{}'.format(parent, tag_id)
                     info[key] = float(re.sub(',', '', tag['rawvalue']))
                     #info0[key] = 'REAL,'
+                else:
+                    value_id = up.sql_insert_one_get_id(
+                        cur, 'TimeRefs', 'dates', value)
+                    info[key] = value_id
+                    #info0[key] = 'INTEGER,'
 
 
             # Parse labels

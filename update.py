@@ -30,7 +30,8 @@ def create_tables(db_file):
     # Insert list of tickers into Tickers table
     std_list = [
         'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-        'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
+        'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
     ]
     sql = 'INSERT OR IGNORE INTO tickers (ticker) VALUES (?)'
     cur.executemany(sql, ms_sitemap() + std_list)
@@ -104,13 +105,16 @@ def execute_db(cur, sql):
     while True:
         try:
             return cur.execute(sql)
-        except Exception as errs:
+        except sqlite3.OperationalError:
+            print('\n\nSQL cmd = \'{}\'\n'.format(sql))
+            break
+        except:
             print('\n\nSQL cmd = \'{}\'\n'.format(sql))
             raise
 
 
 def fetch(db_file):
-    divisor = 500
+    divisor = 750
 
     # Get user input for stp (no. of tickers to update)
     while True:
@@ -149,7 +153,7 @@ def fetch(db_file):
         urls = get_url_list(cur, min(stp, divisor))
 
         # Use multiprocessing to fetch url data from API's
-        p = Pool(5)
+        p = Pool(10)
         results = p.map(fetch_api_data, urls)
         p.terminate()
         p.join()
