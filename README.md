@@ -19,9 +19,7 @@ Command line interface for the MorningStar.com scraper has been published includ
 
 
 ### Instructions:
-Execute the following command from a terminal within the package folder to initialize the program. The .sqlite files will be created and stored under db/.
-
-'python _ _ init _ _ .py'
+Execute _ _ init _ _ .py to start parser. All .sqlite files created will be stored under db/.
 
 
 #### Data parsed:

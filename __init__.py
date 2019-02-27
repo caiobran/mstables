@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from shutil import copyfile
 from datetime import datetime
 from importlib import reload

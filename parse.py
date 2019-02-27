@@ -654,6 +654,8 @@ def parse_8(cur, api, ticker_id, exch_id, data):
                     info[key] = float(re.sub(',', '', tag['rawvalue']))
                     #info0[key] = 'REAL,'
                 else:
+                    if 'title' in attrs:
+                        value = tag['title']
                     value_id = up.sql_insert_one_get_id(
                         cur, 'TimeRefs', 'dates', value)
                     info[key] = value_id

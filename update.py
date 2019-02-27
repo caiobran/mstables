@@ -114,7 +114,7 @@ def execute_db(cur, sql):
 
 
 def fetch(db_file):
-    divisor = 750
+    divisor = 500
 
     # Get user input for stp (no. of tickers to update)
     while True:
@@ -190,7 +190,7 @@ def fetch_api_data(url_info):
     try:
         page = requests.get(url)
     except Exception as e:
-        print('URL = {}'.format(url))
+        print('\n\tURL = {}'.format(url))
         raise
     status_code = page.status_code
     data = re.sub('\'', '', page.text)
