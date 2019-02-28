@@ -10,7 +10,9 @@ import json
 import zlib
 import csv
 import re
+import sys
 
+print(sys.argv)
 
 # Main function
 def fetched(db_file, stp = 500):
@@ -46,46 +48,57 @@ def fetched(db_file, stp = 500):
             ticker_id = fetched[i][1]
             exch_id = fetched[i][2]
             fetch_date = fetched[i][3]
-            source_text = fetched[i][4]
-            source_text = zlib.decompress(source_text).decode()
-            code = 200
             parsed = 1
+            parse = True
+            erase = True
+            code = 200
+
+            try:
+                source_text = zlib.decompress(fetched[i][4]).decode()
+            except zlib.error as e:
+                msg = '\t*** Unzip ERROR at Ticker {}, Exch {} & API {}'
+                print(msg.format(ticker_id, exch_id, api))
+                print(e)
+                parse = False
+            except:
+                raise
+
 
             # Print progress message
             msg = 'Parsing {}/{} (%{:.1f}) ...'
             up.print_(msg.format(i + 1, stp, 100 * (i + 1) / stp))
 
-            erase = True
-            if api in [1, 2, 3]:
-                code = parse_1(cur, ticker_id, exch_id, source_text)
-            elif api == 4:
-                code = parse_2(cur, ticker_id, exch_id, source_text)
-            elif api == 5:
-                code = parse_3(cur, ticker_id, exch_id, source_text)
-            elif api == 6:
-                code = parse_4(cur, ticker_id, exch_id, source_text)
-            elif api == 7:
-                code = parse_5(cur, ticker_id, exch_id, source_text)
-            elif api == 8:
-                code = parse_6(cur, ticker_id, exch_id, source_text)
-            elif api == 9:
-                code = parse_7(cur, ticker_id, exch_id, source_text)
-            else:
-                code = parse_8(
-                   cur, api, ticker_id, exch_id, source_text)
+            if parse == True:
+                if api in [1, 2, 3]:
+                    code = parse_1(cur, ticker_id, exch_id, source_text)
+                elif api == 4:
+                    code = parse_2(cur, ticker_id, exch_id, source_text)
+                elif api == 5:
+                    code = parse_3(cur, ticker_id, exch_id, source_text)
+                elif api == 6:
+                    code = parse_4(cur, ticker_id, exch_id, source_text)
+                elif api == 7:
+                    code = parse_5(cur, ticker_id, exch_id, source_text)
+                elif api == 8:
+                    code = parse_6(cur, ticker_id, exch_id, source_text)
+                elif api == 9:
+                    code = parse_7(cur, ticker_id, exch_id, source_text)
+                else:
+                    code = parse_8(
+                       cur, api, ticker_id, exch_id, source_text)
 
             # Erase source_text from Fetched_urls and update source_code
             if erase == True:
                 dict1 = {
                     'status_code':code,
-                    'parsed':parsed
-                    #'source_text':''
+                    'parsed':parsed,
+                    'source_text':'null'
                 }
                 dict2 = {
-                'url_id':api,
-                'ticker_id':ticker_id,
-                'exch_id':exch_id,
-                'fetch_date':fetch_date
+                    'url_id':api,
+                    'ticker_id':ticker_id,
+                    'exch_id':exch_id,
+                    'fetch_date':fetch_date
                 }
                 sql = update_record('Fetched_urls', dict1, dict2)
                 up.execute_db(cur, sql)
@@ -698,4 +711,5 @@ def update_record(table, dict1, dict2):
     conds = conds.replace('}', ')').replace('\':', ' =')
     conds = conds.replace(', \'', ' AND ')
     sql = 'UPDATE ' + table + ' SET ' + updates + ' WHERE ' + conds
+    sql = re.sub('\'null\'', 'null', sql)
     return sql

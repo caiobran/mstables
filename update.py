@@ -17,7 +17,7 @@ def create_tables(db_file):
 
     # Create database connection
     conn = sqlite3.connect(db_file)
-    conn.execute('pragma synchronous = 0')
+    #conn.execute('pragma synchronous = 0')
     conn.execute('pragma auto_vacuum = 1')
     cur = conn.cursor()
 
@@ -105,8 +105,9 @@ def execute_db(cur, sql):
     while True:
         try:
             return cur.execute(sql)
-        except sqlite3.OperationalError:
+        except sqlite3.OperationalError as e:
             print('\n\nSQL cmd = \'{}\'\n'.format(sql))
+            print('\t', e)
             break
         except:
             print('\n\nSQL cmd = \'{}\'\n'.format(sql))
