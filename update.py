@@ -314,6 +314,8 @@ def sql_insert_one_get_id(cur, tbl, col, val):
 
 
 # Reference variables
+global counter
+counter = 0
 ticker_list = {}
 ticker_count = {}
 sql_cmds = 'sql_cmd/{}'

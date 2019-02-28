@@ -19,7 +19,7 @@ Command line interface for the MorningStar.com scraper has been published includ
 
 
 ### Instructions:
-Execute _ _ init _ _ .py with a Python interpreter to start the application. All .sqlite files created will be stored under db/.
+From within the equiTable folder, execute file main.py with a Python interpreter to start the application. All .sqlite files created will be stored under db/.
 
 
 #### Data parsed:

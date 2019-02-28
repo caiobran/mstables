@@ -12,7 +12,6 @@ import csv
 import re
 import sys
 
-print('### SYS.ARGV =', sys.argv, ' ###')
 
 # Main function
 def parse(db_file, stp = 500):
