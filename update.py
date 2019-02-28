@@ -1,13 +1,14 @@
 import xml.etree.ElementTree as ET
 from multiprocessing import Pool
 from datetime import datetime
+from csv import reader
 import requests
 import sqlite3
 import parse
 import time
 import json
 import zlib
-import csv
+import sys
 import re
 import os
 
@@ -134,6 +135,11 @@ def fetch(db_file):
     runs = dividend // divisor
     for i in range(runs):
 
+        # Print current 'run' (iteration) info
+        msg = '\n\nInitiating run {} out of {}'
+        msg += ' ({} tickers per API per run) ...\n'
+        print(msg.format(i+1, runs, divisor))
+
         # Create db connection
         while True:
             try:
@@ -144,10 +150,6 @@ def fetch(db_file):
                 continue
             except Exception as err:
                 raise
-
-            msg = '\n\nInitiating run {} out of {} ...\n'
-            #msg = msg + '(1 run = up to {} tickers per API download)'
-            print(msg.format(i+1, runs, divisor))
             break
 
         # Get url list for all API's
@@ -173,7 +175,7 @@ def fetch(db_file):
         conn.close()
 
         # Call parsing module from parse.py
-        parse.fetched(db_file, stp)
+        parse.parse(db_file, stp)
 
     return start
 
@@ -188,16 +190,15 @@ def fetch_api_data(url_info):
     print_progress(url_id, x, ticker_count[url_id], exch_sym, symbol)
 
     # Fetch URL data
-    try:
-        page = requests.get(url)
-    except Exception as e:
-        print('\n\tURL = {}'.format(url))
-        raise
+    page = requests.get(url)
     status_code = page.status_code
     data = re.sub('\'', '', page.text)
+
     if data == '' or data is None:
         code = 0
+
     zipped = zlib.compress(data.encode())
+
     return (url_id, id, exch_id, status_code, zipped)
 
 

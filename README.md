@@ -8,10 +8,10 @@ Create a MorningStar.com scraper which stores the data into a relational SQLite 
 ### Current Package Dependencies:
 - Python 3
 - Beautiful Soup
-- pandas
-- numpy
 - requests
 - sqlite3
+- pandas
+- numpy
 
 
 ### Progress:

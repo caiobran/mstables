@@ -12,10 +12,10 @@ import csv
 import re
 import sys
 
-print(sys.argv)
+print('### SYS.ARGV =', sys.argv, ' ###')
 
 # Main function
-def fetched(db_file, stp = 500):
+def parse(db_file, stp = 500):
 
     # Create db connection
     up.print_('Please wait while the database is being queried ...')
