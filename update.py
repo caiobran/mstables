@@ -2,15 +2,18 @@ import xml.etree.ElementTree as ET
 from multiprocessing import Pool
 from datetime import datetime
 from csv import reader
-import requests
-import sqlite3
-import parse
-import time
-import json
-import zlib
-import sys
-import re
-import os
+import requests, sqlite3, time, json, zlib, re, os, parse
+
+
+class DelayedException(Exception):
+
+    def __init__(self, ee):
+        self.ee = ee
+        __,  __, self.tb = sys.exc_info()
+        super(DelayedException, self).__init__(str(ee))
+
+    def re_raise(self):
+        raise (self.ee, None, self.tb)
 
 
 def create_tables(db_file):
@@ -157,15 +160,21 @@ def fetch(db_file):
 
         # Use multiprocessing to fetch url data from API's
         p = Pool(10)
-        results = p.map(fetch_api_data, urls)
+        results = []
+        try:
+            results = p.map(fetch_api_data, urls)
+        except Exception as e:
+            print('\n\n### ERROR @ 171:\n\n{}\n\n'.format(e))
+
         p.terminate()
         p.join()
 
         # Enter URL data into Fetched_urls
-        print_('Storing fetched data into database ... ')
-        cols = '(url_id, ticker_id, exch_id, status_code, source_text)'
-        sql = sql_insert('Fetched_urls', cols, '(?, ?, ?, ?, ?)')
-        cur.executemany(sql, results)
+        if results != []:
+            print_('Storing fetched data into database ... ')
+            cols = '(url_id, ticker_id, exch_id, status_code, source_text)'
+            sql = sql_insert('Fetched_urls', cols, '(?, ?, ?, ?, ?)')
+            cur.executemany(sql, results)
 
         # Execute clean-up SQL command and close database
         print_('Executing Clean-up SQL cmds ... ')
@@ -193,10 +202,8 @@ def fetch_api_data(url_info):
     page = requests.get(url)
     status_code = page.status_code
     data = re.sub('\'', '', page.text)
-
     if data == '' or data is None:
         code = 0
-
     zipped = zlib.compress(data.encode())
 
     return (url_id, id, exch_id, status_code, zipped)

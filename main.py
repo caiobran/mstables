@@ -1,18 +1,23 @@
 #!/usr/bin/env python
 
+__author__ = "Caio Brandao"
+__copyright__ = "Copyright 2019+, Caio Brandao"
+__license__ = "GPLv3"
+__version__ = "1.0"
+__maintainer__ = "Andrea Lazzarotto"
+__email__ = "andrea.lazzarotto@gmail.com"
+
 from shutil import copyfile
 from datetime import datetime
 from importlib import reload
 import update as up
-import time
-import os
-import re
+import time, os, re
 
 
 # Create back-up file under /db/backup
 def backup_db(curr_file):
     today = datetime.today().strftime('%Y%m%d%H')
-    new_file = db_backup.format(today)
+    new_file = db_backup#.format(today)
     up.print_('Please wait ... Database file is being backed-up ...')
     copyfile(curr_file, new_file)
 
@@ -30,7 +35,7 @@ def change_name(old_name):
 file = 'equitable'
 db = 'db/{}.sqlite'
 db_file = db.format(file)
-db_backup = 'db/backup/backup_{}.sqlite'
+db_backup = 'db/backup/backup.sqlite'#_{}.sqlite'
 banner = ' Welcome to equiTable '
 gap = 6
 dash = '-'
