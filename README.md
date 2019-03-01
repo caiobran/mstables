@@ -1,7 +1,7 @@
 equiTable
 =========
 
-### Objective
+### Objective:
 Create a MorningStar.com scraper which stores the data into a relational SQLite database so one can perform fundamental analysis across all publicly listed equities from around the world.
 
 ### Progress:
@@ -37,7 +37,7 @@ From within the equiTable folder, execute file main.py with a Python interpreter
 
 
 MIT License
-===========
+-----------
 
 Copyright (c) 2019 Caio Brandao
 
