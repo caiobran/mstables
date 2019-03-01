@@ -1,11 +1,20 @@
-# equiTable
+equiTable
+=========
 
-
-### Objective:
+## Objective:
 Create a MorningStar.com scraper which stores the data into a relational SQLite database so one can perform fundamental analysis across all publicly listed equities from around the world.
 
 
-### Current Package Dependencies:
+### Progress:
+Command line interface for the MorningStar.com scraper has been published including the automated parsing and storing of the data into an .slqite file.
+
+
+Instructions
+------------
+
+From within the equiTable folder, execute file main.py with a Python interpreter to start the application. All .sqlite files created will be stored under db/.
+
+#### Current Package Dependencies:
 - Python 3
 - Beautiful Soup
 - requests
@@ -13,16 +22,7 @@ Create a MorningStar.com scraper which stores the data into a relational SQLite 
 - pandas
 - numpy
 
-
-### Progress:
-Command line interface for the MorningStar.com scraper has been published including the automated parsing and storing of the data into an .slqite file.
-
-
-### Instructions:
-From within the equiTable folder, execute file main.py with a Python interpreter to start the application. All .sqlite files created will be stored under db/.
-
-
-#### Data parsed:
+#### MorningStar data parsed into database:
 - Stock quote summary page (day hi, day lo, 52wk hi, 52wk lo, forward P/E, etc.)
 - Company profile with industry and sector data
 - 10yr stock valuation indicators (P/E, P/S, P/B, P/C)
@@ -31,7 +31,6 @@ From within the equiTable folder, execute file main.py with a Python interpreter
 - Income statement for past 5 yrs and 5 qtrs
 - Balance Sheet for past 5 yrs and 5 qtrs
 - Cashflow Statement for past 5 yrs and 5 qtrs
-
 
 #### Next steps:
 - Implement pandas function for data processing and analysis (currently under test/)
