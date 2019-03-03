@@ -1,7 +1,7 @@
 {
-  "1":"https://www.morningstar.com/api/v2/search/Securities/500/usquote-us/?q={}",
-  "2":"https://www.morningstar.com/api/v2/search/Securities/500/usquote-noneus/?q={}",
-  "3":"https://www.morningstar.com/api/v2/search/securities/500/usquote-v2/?q={}",
+  "1":"https://www.morningstar.com/api/v2/search/Securities/500/usquote-us/?q={}{}",
+  "2":"https://www.morningstar.com/api/v2/search/Securities/500/usquote-noneus/?q={}{}",
+  "3":"https://www.morningstar.com/api/v2/search/securities/500/usquote-v2/?q={}{}",
   "4":"http://quotes.morningstar.com/stockq/c-company-profile?t={}:{}",
   "5":"http://quotes.morningstar.com/stockq/c-header?t={}:{}",
   "6":"http://financials.morningstar.com/valuate/valuation-history.action?type=price-earnings&t={}:{}&culture=en-US&order=asc",

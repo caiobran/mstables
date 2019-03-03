@@ -1,7 +1,7 @@
-SELECT id, ticker
+SELECT id, ticker, 0, ''
 	FROM Tickers
 	WHERE ticker NOT IN (
 		SELECT Tickers.ticker as symbol
 			FROM Fetched_urls JOIN Tickers ON Fetched_urls.ticker_id = Tickers.id
-			WHERE strftime('%Y%m', Fetched_urls.fetch_date) = strftime('%Y%m', 'now') AND Fetched_urls.url_id = 1)
+			WHERE strftime('%Y%m', Fetched_urls.fetch_date) = strftime('%Y%m', 'now') AND Fetched_urls.url_id = {})
 	ORDER BY ticker ASC

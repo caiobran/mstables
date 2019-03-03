@@ -21,7 +21,7 @@ From within the equiTable folder, execute file main.py with a Python interpreter
 - pandas
 - numpy
 
-### MorningStar data parsed into database:
+### Database tables with MorningStar data:
 - Stock quote summary page (day hi, day lo, 52wk hi, 52wk lo, forward P/E, etc.)
 - Company profile with industry and sector data
 - 10yr stock valuation indicators (P/E, P/S, P/B, P/C)

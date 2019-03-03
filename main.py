@@ -1,25 +1,28 @@
 #!/usr/bin/env python
 
-__author__ = "Caio Brandao"
-__copyright__ = "Copyright 2019+, Caio Brandao"
-__license__ = "GPLv3"
-__version__ = "1.0"
-__maintainer__ = "Andrea Lazzarotto"
-__email__ = "andrea.lazzarotto@gmail.com"
-
 from shutil import copyfile
 from datetime import datetime
 from importlib import reload
 import update as up
 import time, os, re
 
+__author__ = "Caio Brandao"
+__copyright__ = "Copyright 2019+, Caio Brandao"
+__license__ = "MIT"
+__version__ = "0.0"
+__maintainer__ = "Caio Brandao"
+__email__ = "caiobran88@gmail.com"
+
 
 # Create back-up file under /db/backup
-def backup_db(curr_file):
-    today = datetime.today().strftime('%Y%m%d%H')
-    new_file = db_backup#.format(today)
+def backup_db(file):
+    #today = datetime.today().strftime('%Y%m%d%H')
+    new_file = db_file['db_backup'].format(
+        input('Enter back-up file name:\n:'))
     up.print_('Please wait ... Database file is being backed-up ...')
-    copyfile(curr_file, new_file)
+    copyfile(db_file['path'], new_file)
+    return '\n~ Back-up file saved\t{}'.format(new_file)
+
 
 
 # Change variable for .sqlite file name based on user input
@@ -31,73 +34,93 @@ def change_name(old_name):
     return input(msg.format(files, old_name))
 
 
-# Define database (db) file and menu text variables
-file = 'equitable'
-db = 'db/{}.sqlite'
-db_file = db.format(file)
-db_backup = 'db/backup/backup.sqlite'#_{}.sqlite'
-banner = ' Welcome to equiTable '
-gap = 6
-dash = '-'
-
-# Clear terminal, print menu and get user input
-os.system('clear')
-while True:
-
-    # Print options menu
-    options = {
-        '0' : 'Change file name (current = \'{}.sqlite\')'.format(file),
+# Print options menu
+def print_menu(names):
+    gap = 6
+    dash = '-'
+    banner = ' Welcome to equiTable '
+    file = '\'{}.sqlite\''.format(db_file['name'])
+    menu = {
+        '0' : 'Change file name (current = {})'.format(file),
         '1' : 'Create tables',
         '2' : 'Erase table records',
         '3' : 'Delete tables',
         '4' : 'Fetch data from API\'s',
         '5' : 'Create database backup'
     }
+
     print(dash * (len(banner) + gap * 2))
     print('{}{}{}'.format(dash * gap, banner, dash * gap))
     print('Menu:\n')
-    for k, v in options.items():
+    for k, v in menu.items():
         print(k, dash, v)
     print('\n' + dash * (len(banner) + gap * 2))
 
-    # Capture user selection and clear terminal output
-    inp0 = input('Enter option no.:\n:').strip()
-    if inp0 not in options.keys():
-        break
-    print()
+    return menu
 
-    reload(up)
-    inp = int(inp0)
-    start = time.time()
+
+# Print command line menu for user input
+def main(file):
+
+    while True:
+
+        # Print menu and capture user selection
+        options = print_menu(file)
+
+        inp0 = input('Enter option no.:\n:').strip()
+        if inp0 not in options.keys():
+            break
+        start = time.time()
+        inp = int(inp0)
+        msg = ''
+        reload(up)
+        print()
+
+        # Call function according to user input
+        try:
+            # Change db file name
+            if inp == 0:
+                db_file['name'] = change_name(db_file['name'])
+                db_file['path'] = db_file['npath'].format(db_file['name'])
+
+            # Create database tables
+            elif inp == 1:
+                up.create_tables(db_file['path'])
+
+            # Erase records from all tables
+            elif inp == 2:
+                up.erase_tables(db_file['path'])
+
+            # Delete all tables
+            elif inp == 3:
+                up.delete_tables(db_file['path'])
+
+            # Back-up database file
+            elif inp == int(list(options.keys())[-1]):
+                msg = backup_db(db_file)
+
+        except Exception as e:
+            print('\t### ERROR @ Main.py:', e, '\n')
+
+        # Call Fetch function to download data from urls listed in api.json
+        if inp == 4:
+            start = up.fetch(db_file['path'])
+
+        end = time.time()
+        #os.system('clear')
+        print(msg)
+        msg = '\n~ Execution Time\t{:.3f} sec\n'.format(end - start)
+        print(msg)
+
+
+# Define database (db) file and menu text variables
+db_file = dict()
+db_file['npath'] = 'db/{}.sqlite'
+db_file['name'] = 'equitable'
+db_file['path'] = db_file['npath'].format(db_file['name'])
+db_file['db_backup'] = 'db/backup/backup.sqlite'#_{}.sqlite'
+
+if __name__ == '__main__':
     os.system('clear')
-
-
-    # Call function according to user input
-    try:
-        # Change db file name
-        if inp == 0:
-            file = change_name(file)
-            db_file = db.format(file)
-        # Create database tables
-        elif inp == 1:
-            up.create_tables(db_file)
-        # Erase records from all tables
-        elif inp == 2:
-            up.erase_tables(db_file)
-        # Delete all tables
-        elif inp == 3:
-            up.delete_tables(db_file)
-        # Back-up database file
-        elif inp == int(list(options.keys())[-1]):
-            backup_db(db_file)
-
-    except Exception as e:
-        print('# ERROR:', e)
-
-    # Call Fetch function to download data from urls listed in api.json
-    if inp == 4:
-        start = up.fetch(db_file)
-
-    end = time.time()
-    msg = '\n~ Execution Time\t{:.3f} sec\n\n'.format(end - start)
-    up.print_(msg)
+    main(db_file)
+    print('Goodbye!\n\n')

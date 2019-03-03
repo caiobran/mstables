@@ -5,17 +5,6 @@ from csv import reader
 import requests, sqlite3, time, json, zlib, re, os, parse
 
 
-class DelayedException(Exception):
-
-    def __init__(self, ee):
-        self.ee = ee
-        __,  __, self.tb = sys.exc_info()
-        super(DelayedException, self).__init__(str(ee))
-
-    def re_raise(self):
-        raise (self.ee, None, self.tb)
-
-
 def create_tables(db_file):
     print_('Please wait ... Database tables are being created ...')
 
@@ -163,8 +152,10 @@ def fetch(db_file):
         results = []
         try:
             results = p.map(fetch_api_data, urls)
+        except KeyboardInterrupt as k:
+            raise 'Keyboard Interrupt executed ... goodbye'
         except Exception as e:
-            print('\n\n### ERROR @ 171:\n\n{}\n\n'.format(e))
+            print('\n\n#ERROR @ update.fetch:\n{}\n\n'.format(e))
 
         p.terminate()
         p.join()
@@ -217,23 +208,23 @@ def get_url_list(cur, stp):
 
         # Select list of tickers not yet updated for current API
         if url_id in [1, 2, 3]:
-            sql = sql_cmd1
+            sql = sql_cmd1.format(url_id)
         else:
             sql = sql_cmd2.format(url_id)
         tickers = execute_db(cur, sql).fetchall()
-        ticker_ct = len(tickers)
-        ticker_count[url_id] = ticker_ct
+        #df_cols = ['ticker_id', 'ticker', 'exch_id', 'exch']
+        #df_tickers = pd.DataFrame(tickers, columns=df_cols)
+        ticker_count[url_id] = len(tickers)
         ticker_list[url_id] = {}
+
 
         # Create list of URL's for each ticker
         def url_list(ct, tick):
-            sym_id, symbol, exch_id, exch_sym = tick[0], tick[1], 0, ''
-            if url_id in [1, 2, 3]:
-                url = url0.format(symbol)
-            else:
-                exch_id, exch_sym = tick[2], tick[3]
-                url = url0.format(exch_sym, symbol)
+            sym_id, symbol = tick[0], tick[1]
+            exch_id, exch_sym = tick[2], tick[3]
+            url = url0.format(exch_sym, symbol)
             ticker_list[url_id]['{}:{}'.format(exch_sym, symbol)] = ct
+
             return (sym_id, symbol, exch_id, exch_sym, url_id, url)
 
         print_('Creating URL list for API {} ...'.format(url_id))

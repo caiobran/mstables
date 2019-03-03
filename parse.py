@@ -4,13 +4,7 @@ from io import StringIO
 import update as up
 import pandas as pd
 import numpy as np
-import sqlite3
-import time
-import json
-import zlib
-import csv
-import re
-import sys
+import sqlite3, time, json, zlib, csv, sys, re
 
 
 # Main function
