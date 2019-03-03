@@ -53,10 +53,12 @@ def create_tables(db_file):
     cur.close()
     conn.close()
 
+    return 'Database tables have been successfully created ...'
+
 
 def csv_content(file, columns, header=False):
     with open(file) as csvfile:
-        info = csv.reader(csvfile)#, delimiter=',', quotechar='"')
+        info = reader(csvfile)#, delimiter=',', quotechar='"')
         if header == True:
             return [row[:columns] for row in info]
         return [row[:columns] for row in info][1:]
@@ -78,6 +80,8 @@ def delete_tables(db_file):
     cur.close()
     conn.close()
 
+    return 'Database tables have been successfully deleted ...'
+
 
 def erase_tables(db_file):
     print_('Please wait ... Database tables are being erased ...')
@@ -91,6 +95,8 @@ def erase_tables(db_file):
     save_db(conn)
     cur.close()
     conn.close()
+
+    return 'Database tables have been successfully erased ...'
 
 
 def execute_db(cur, sql):
@@ -148,15 +154,14 @@ def fetch(db_file):
         urls = get_url_list(cur, min(stp, divisor))
 
         # Use multiprocessing to fetch url data from API's
-        p = Pool(10)
+        p = Pool(5)
         results = []
-        try:
-            results = p.map(fetch_api_data, urls)
-        except KeyboardInterrupt as k:
+        '''try:'''
+        results = p.map(fetch_api_data, urls)
+        '''except KeyboardInterrupt as k:
             raise 'Keyboard Interrupt executed ... goodbye'
         except Exception as e:
-            print('\n\n#ERROR @ update.fetch:\n{}\n\n'.format(e))
-
+            print('\n\n#ERROR @ update.fetch:\n{}\n\n'.format(e))'''
         p.terminate()
         p.join()
 

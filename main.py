@@ -85,15 +85,15 @@ def main(file):
 
             # Create database tables
             elif inp == 1:
-                up.create_tables(db_file['path'])
+                msg = up.create_tables(db_file['path'])
 
             # Erase records from all tables
             elif inp == 2:
-                up.erase_tables(db_file['path'])
+                msg = up.erase_tables(db_file['path'])
 
             # Delete all tables
             elif inp == 3:
-                up.delete_tables(db_file['path'])
+                msg = up.delete_tables(db_file['path'])
 
             # Back-up database file
             elif inp == int(list(options.keys())[-1]):
@@ -107,7 +107,7 @@ def main(file):
             start = up.fetch(db_file['path'])
 
         end = time.time()
-        #os.system('clear')
+        os.system('clear')
         print(msg)
         msg = '\n~ Execution Time\t{:.3f} sec\n'.format(end - start)
         print(msg)
