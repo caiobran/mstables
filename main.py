@@ -24,7 +24,6 @@ def backup_db(file):
     return '\n~ Back-up file saved\t{}'.format(new_file)
 
 
-
 # Change variable for .sqlite file name based on user input
 def change_name(old_name):
     msg = 'Existing database files in directory \'db/\': {}\n'
@@ -61,7 +60,6 @@ def print_menu(names):
 
 # Print command line menu for user input
 def main(file):
-
     while True:
 
         # Print menu and capture user selection
@@ -100,7 +98,8 @@ def main(file):
                 msg = backup_db(db_file)
 
         except Exception as e:
-            print('\t### ERROR @ Main.py:', e, '\n')
+            print('\n\n### ERROR @ Main.py:\n', e, '\n')
+            raise e
 
         # Call Fetch function to download data from urls listed in api.json
         if inp == 4:
@@ -118,7 +117,7 @@ db_file = dict()
 db_file['npath'] = 'db/{}.sqlite'
 db_file['name'] = 'equitable'
 db_file['path'] = db_file['npath'].format(db_file['name'])
-db_file['db_backup'] = 'db/backup/backup.sqlite'#_{}.sqlite'
+db_file['db_backup'] = 'db/backup/{}.sqlite'
 
 if __name__ == '__main__':
     os.system('clear')

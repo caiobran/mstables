@@ -1,12 +1,12 @@
 import xml.etree.ElementTree as ET
-from multiprocessing import Pool
+#from multiprocessing import Pool
 from datetime import datetime
 from csv import reader
 import requests, sqlite3, time, json, zlib, re, os, parse
 
 
 def create_tables(db_file):
-    print_('Please wait ... Database tables are being created ...')
+    print_('Please wait, database tables are being created ...')
 
     # Create database connection
     conn = sqlite3.connect(db_file)
@@ -20,14 +20,23 @@ def create_tables(db_file):
         sql = 'CREATE TABLE IF NOT EXISTS {} ({})'.format(table, columns)
         execute_db(cur, sql)
 
-    # Insert list of tickers into Tickers table
-    std_list = [
-        'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-        'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
-    ]
-    sql = 'INSERT OR IGNORE INTO tickers (ticker) VALUES (?)'
-    cur.executemany(sql, ms_sitemap() + std_list)
+    # Insert list of tickers and exchanges previously retrieved into database
+    files = ['Tickers.json', 'Exchanges.json', 'Master.json']
+    if files[0] in os.listdir(fd_input):
+        with open(fd_input + files[0]) as file:
+            vals = json.loads(file.read())
+        print(vals)
+        #sql = 'INSERT OR IGNORE INTO {} (ticker) VALUES (?)'
+        #cur.executemany(sql, vals)
+        print(vals)
+    else:
+        std_list = [
+            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+            'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
+        ]
+        sql = 'INSERT OR IGNORE INTO tickers (ticker) VALUES (?)'
+        cur.executemany(sql, ms_sitemap() + std_list)
 
     # Insert list of countries into Countries table
     sql = '''INSERT OR IGNORE INTO Countries
@@ -35,13 +44,11 @@ def create_tables(db_file):
     cur.executemany(sql, csv_content('input/ctycodes.csv', 3))
 
     # Insert list of currencies into Currencies table
-    sql = '''INSERT OR IGNORE INTO Currencies
-        (currency, code) VALUES (?, ?)'''
+    sql = '''INSERT OR IGNORE INTO Currencies (currency, code) VALUES (?, ?)'''
     cur.executemany(sql, csv_content('input/symbols.csv', 2))
 
     # Insert list of types into Types table
-    sql = '''INSERT OR IGNORE INTO Types
-        (type_code, type) VALUES (?, ?)'''
+    sql = '''INSERT OR IGNORE INTO Types (type_code, type) VALUES (?, ?)'''
     cur.executemany(sql, csv_content('input/ms_investment-types.csv', 2))
 
     # Insert list of api URLs into URLs table
@@ -65,7 +72,7 @@ def csv_content(file, columns, header=False):
 
 
 def delete_tables(db_file):
-    print_('Please wait ... Database tables are being deleted ...')
+    print_('Please wait, database tables are being deleted ...')
 
     # Create database connection
     conn = sqlite3.connect(db_file)
@@ -73,6 +80,7 @@ def delete_tables(db_file):
 
     # Drop tables and commit database
     for table in tbl_names:
+        print_('Deleting database table {} ...'.format(table))
         sql = 'DROP TABLE IF EXISTS ' + table
         execute_db(cur, sql)
     save_db(conn)
@@ -84,12 +92,13 @@ def delete_tables(db_file):
 
 
 def erase_tables(db_file):
-    print_('Please wait ... Database tables are being erased ...')
+    print_('Please wait, database tables are being erased ...')
 
     # Create database connection
     conn = sqlite3.connect(db_file)
     cur = conn.cursor()
     for table in tbl_names:
+        print_('Erasing database table {} ...'.format(table))
         sql = 'DELETE FROM ' + table
         execute_db(cur, sql)
     save_db(conn)
@@ -134,36 +143,26 @@ def fetch(db_file):
     for i in range(runs):
 
         # Print current 'run' (iteration) info
-        msg = '\n\nInitiating run {} out of {}'
+        msg = 'Initiating run {} out of {}'
         msg += ' ({} tickers per API per run) ...\n'
         print(msg.format(i+1, runs, divisor))
 
         # Create db connection
-        while True:
-            try:
-                conn = sqlite3.connect(db_file)
-                cur = conn.cursor()
-            except sqlite3.OperationalError as err0:
-                print(err0)
-                continue
-            except Exception as err:
-                raise
-            break
+        conn = sqlite3.connect(db_file)
+        cur = conn.cursor()
 
         # Get url list for all API's
-        urls = get_url_list(cur, min(stp, divisor))
+        url_info = get_url_list(cur, min(stp, divisor))
 
-        # Use multiprocessing to fetch url data from API's
-        p = Pool(5)
-        results = []
-        '''try:'''
+        '''# Use multiprocessing to fetch url data from API's
+        p = Pool(10)
         results = p.map(fetch_api_data, urls)
-        '''except KeyboardInterrupt as k:
-            raise 'Keyboard Interrupt executed ... goodbye'
-        except Exception as e:
-            print('\n\n#ERROR @ update.fetch:\n{}\n\n'.format(e))'''
         p.terminate()
-        p.join()
+        p.join()'''
+
+        results = []
+        for item in url_info:
+            results.append(fetch_api_data(item))
 
         # Enter URL data into Fetched_urls
         if results != []:
@@ -175,6 +174,21 @@ def fetch(db_file):
         # Execute clean-up SQL command and close database
         print_('Executing Clean-up SQL cmds ... ')
         cur.executescript(sql_clean)
+
+        # Export new ticker and exchange lists to input folder
+        with open(fd_input + 'Tickers.json', 'w') as file:
+            sql = 'SELECT * FROM Tickers'
+            ticks = cur.execute(sql).fetchall()
+            
+            sql = 'SELECT * FROM Exchanges'
+            exchs = cur.execute(sql).fetchall()
+
+            sql = 'SELECT ticker_id, exchange_id FROM Master'
+            fetched = cur.execute(sql).fetchall()
+
+            file.write(str(fetched))
+
+        # Save (commit) changes and close db
         save_db(conn)
         cur.close()
         conn.close()
@@ -188,21 +202,23 @@ def fetch(db_file):
 def fetch_api_data(url_info):
 
     # Unpack variables
-    id, symbol, exch_id, exch_sym, url_id, url = url_info
-
-    # Print current url info being fetched
-    x = int(ticker_list[url_id]['{}:{}'.format(exch_sym, symbol)])
-    print_progress(url_id, x, ticker_count[url_id], exch_sym, symbol)
+    url_id, url, ticker_id, exch_id = url_info
+    num = ticker_list[url_id]['{}:{}'.format(exch_id, ticker_id)]
+    ct = ticker_count[url_id]
+    print_progress(url_id, num, ct)
 
     # Fetch URL data
-    page = requests.get(url)
-    status_code = page.status_code
-    data = re.sub('\'', '', page.text)
-    if data == '' or data is None:
-        code = 0
-    zipped = zlib.compress(data.encode())
+    try:
+        page = requests.get(url)
+    except requests.exceptions.ConnectionError as R:
+        status_code = 0
+        data = None
+    else:
+        status_code = page.status_code
+        data = re.sub('\'', '', page.text)
+        data = zlib.compress(data.encode())
 
-    return (url_id, id, exch_id, status_code, zipped)
+    return (url_id, ticker_id, exch_id, status_code, data)
 
 
 def get_url_list(cur, stp):
@@ -212,27 +228,23 @@ def get_url_list(cur, stp):
     for url_id, url0 in api:
 
         # Select list of tickers not yet updated for current API
+        print_('Creating URL list for API {} ...'.format(url_id))
         if url_id in [1, 2, 3]:
             sql = sql_cmd1.format(url_id)
         else:
             sql = sql_cmd2.format(url_id)
         tickers = execute_db(cur, sql).fetchall()
-        #df_cols = ['ticker_id', 'ticker', 'exch_id', 'exch']
-        #df_tickers = pd.DataFrame(tickers, columns=df_cols)
         ticker_count[url_id] = len(tickers)
         ticker_list[url_id] = {}
 
-
         # Create list of URL's for each ticker
         def url_list(ct, tick):
-            sym_id, symbol = tick[0], tick[1]
-            exch_id, exch_sym = tick[2], tick[3]
+            exch_id, exch_sym = tick[0], tick[1]
+            sym_id, symbol = tick[2], tick[3]
             url = url0.format(exch_sym, symbol)
-            ticker_list[url_id]['{}:{}'.format(exch_sym, symbol)] = ct
+            ticker_list[url_id]['{}:{}'.format(exch_id, sym_id)] = ct
+            return (url_id, url, sym_id, exch_id)
 
-            return (sym_id, symbol, exch_id, exch_sym, url_id, url)
-
-        print_('Creating URL list for API {} ...'.format(url_id))
         urls = urls + \
             [url_list(c, ticker) for c, ticker in enumerate(tickers[:stp])]
 
@@ -268,9 +280,9 @@ def print_list(msg0, dict0):
     print_(msg)
 
 
-def print_progress(api, num, ct, ex, sym):
-    msg = 'API #{}  {}/{} ({:.1%})\t| {}:{}'
-    msg = msg.format(api, num+1, ct, (num+1)/ct, ex, sym)
+def print_progress(api, num, ct):
+    msg = 'API #{}\t{}/{}\t({:.1%})'
+    msg = msg.format(api, num+1, ct, (num+1)/ct)
     msg = 'echo -en "\\r\\e[K{}"'.format(msg)
     os.system(msg)
 
@@ -317,11 +329,10 @@ def sql_insert_one_get_id(cur, tbl, col, val):
 
 
 # Reference variables
-global counter
-counter = 0
 ticker_list = {}
 ticker_count = {}
-sql_cmds = 'sql_cmd/{}'
+fd_input = 'input/'
+sql_cmds = '{}sql_cmd/{}'.format(fd_input, '{}')
 today   = datetime.today().strftime('%Y-%m-%d')
 with open(sql_cmds.format('select_notupdated1.txt')) as file:
     sql_cmd1 = file.read().strip()
@@ -329,8 +340,8 @@ with open(sql_cmds.format('select_notupdated2.txt')) as file:
     sql_cmd2 = file.read().strip()
 with open(sql_cmds.format('clean.txt')) as file:
     sql_clean = file.read().strip()
-with open('input/api.json') as file:
+with open('{}/api.json'.format(fd_input)) as file:
     apis = json.load(file)
-with open('input/tables.json') as file:
+with open('{}/tables.json'.format(fd_input)) as file:
     tbl_js = json.load(file)
 tbl_names = list(tbl_js.keys())

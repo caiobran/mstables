@@ -1,0 +1,3 @@
+SELECT /*UID, TID, EID,*/ 0, '', Tickers.id, Tickers.ticker
+	FROM Tickers LEFT JOIN (SELECT url_id AS UID, ticker_id AS TID, exch_id AS EID FROM Fetched_urls WHERE UID = {}) on Tickers.id = TID 
+	WHERE UID IS NULL
