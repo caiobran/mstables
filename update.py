@@ -179,7 +179,7 @@ def fetch(db_file):
         with open(fd_input + 'Tickers.json', 'w') as file:
             sql = 'SELECT * FROM Tickers'
             ticks = cur.execute(sql).fetchall()
-            
+
             sql = 'SELECT * FROM Exchanges'
             exchs = cur.execute(sql).fetchall()
 

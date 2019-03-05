@@ -1,7 +1,0 @@
---- Financial Reports API ---
-* reportType: is = Income Statement, cf = Cash Flow, bs = Balance Sheet
-* period: 12 for annual reporting, 3 for quarterly reporting
-* dataType: this doesn't seem to change and is always `A`
-* order: asc or desc (ascending or descending)
-* columnYear: 5 or 10 are the only two values supported
-* number: The units of the response data. 1 = None 2 = Thousands 3 = Millions 4 = Billions
