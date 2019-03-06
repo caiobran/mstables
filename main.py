@@ -44,8 +44,9 @@ def print_menu(names):
         '1' : 'Create tables',
         '2' : 'Erase table records',
         '3' : 'Delete tables',
-        '4' : 'Fetch data from API\'s',
-        '5' : 'Create database backup'
+        '4' : 'Erase download hisotry',
+        '5' : 'Fetch data from API\'s',
+        '6' : 'Create a database back-up file'
     }
 
     print(dash * (len(banner) + gap * 2))
@@ -72,38 +73,42 @@ def main(file):
         inp = int(inp0)
         msg = ''
         reload(up)
-        print()
 
         # Call function according to user input
-        try:
-            # Change db file name
-            if inp == 0:
-                db_file['name'] = change_name(db_file['name'])
-                db_file['path'] = db_file['npath'].format(db_file['name'])
+        if input('\nAre you sure? (Y/n):\n').lower() == 'y':
 
-            # Create database tables
-            elif inp == 1:
-                msg = up.create_tables(db_file['path'])
+            try:
+                # Change db file name
+                if inp == 0:
+                    db_file['name'] = change_name(db_file['name'])
+                    db_file['path'] = db_file['npath'].format(db_file['name'])
 
-            # Erase records from all tables
-            elif inp == 2:
-                msg = up.erase_tables(db_file['path'])
+                # Create database tables
+                elif inp == 1:
+                    msg = up.create_tables(db_file['path'])
 
-            # Delete all tables
-            elif inp == 3:
-                msg = up.delete_tables(db_file['path'])
+                # Erase records from all tables
+                elif inp == 2:
+                    msg = up.erase_tables(db_file['path'])
 
-            # Back-up database file
-            elif inp == int(list(options.keys())[-1]):
-                msg = backup_db(db_file)
+                # Delete all tables
+                elif inp == 3:
+                    msg = up.delete_tables(db_file['path'])
 
-        except Exception as e:
-            print('\n\n### ERROR @ Main.py:\n', e, '\n')
-            raise e
+                elif inp == 4:
+                    msg = up.delfetchhis(db_file['path'])
 
-        # Call Fetch function to download data from urls listed in api.json
-        if inp == 4:
-            start = up.fetch(db_file['path'])
+                # Back-up database file
+                elif inp == int(list(options.keys())[-1]):
+                    msg = backup_db(db_file)
+
+            except Exception as e:
+                print('\n\n### ERROR @ Main.py:\n', e, '\n')
+                raise e
+
+            # Call Fetch function to download data from urls listed in api.json
+            if inp == 5:
+                start = up.fetch(db_file['path'])
 
         end = time.time()
         os.system('clear')
