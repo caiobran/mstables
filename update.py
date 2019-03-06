@@ -1,16 +1,25 @@
 import xml.etree.ElementTree as ET
-#from multiprocessing import Pool
+from multiprocessing import Pool
 from datetime import datetime
 from csv import reader
 import requests, sqlite3, time, json, zlib, re, os, parse
 
 
 def create_tables(db_file):
-    print_('Please wait, database tables are being created ...')
+
+    def mssitemap():
+        tree = ET.parse('input/ms_sal-quote-stock-sitemap.xml')
+        url_tag = '{http://www.sitemaps.org/schemas/sitemap/0.9}url'
+        loc_tag = '{http://www.sitemaps.org/schemas/sitemap/0.9}loc'
+        urls = tree.findall('{}/{}'.format(url_tag, loc_tag))
+        get_ticker = lambda st: re.findall('/stocks/(\S+)/',
+            st)[0].split('/')[1].upper()
+        return [(get_ticker(url.text),) for url in urls]
+
 
     # Create database connection
+    print_('Please wait, database tables are being created ...')
     conn = sqlite3.connect(db_file)
-    #conn.execute('pragma synchronous = 0')
     conn.execute('pragma auto_vacuum = 1')
     cur = conn.cursor()
 
@@ -21,14 +30,22 @@ def create_tables(db_file):
         execute_db(cur, sql)
 
     # Insert list of tickers and exchanges previously retrieved into database
-    files = ['Tickers.json', 'Exchanges.json', 'Master.json']
-    if files[0] in os.listdir(fd_input):
-        with open(fd_input + files[0]) as file:
-            vals = json.loads(file.read())
-        print(vals)
-        #sql = 'INSERT OR IGNORE INTO {} (ticker) VALUES (?)'
-        #cur.executemany(sql, vals)
-        print(vals)
+    file = 'ticker_exch.json'
+    if file in os.listdir(fd_input):
+        with open(fd_input + file) as fi:
+            tbls = json.load(fi)
+        for tbl in tbls:
+            if tbl == 'Tickers':
+                col = '(id, ticker)'
+                val = '(?, ?)'
+            elif tbl == 'Exchanges':
+                col = '(id, exchange, exchange_sym, country_id)'
+                val = '(?, ?, ?, ?)'
+            elif tbl == 'Master':
+                col = '(ticker_id, exchange_id)'
+                val = '(?, ?)'
+            sql = 'INSERT OR IGNORE INTO {} {} VALUES {}'.format(tbl, col, val)
+            cur.executemany(sql, tbls[tbl])
     else:
         std_list = [
             'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
@@ -36,7 +53,7 @@ def create_tables(db_file):
             '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
         ]
         sql = 'INSERT OR IGNORE INTO tickers (ticker) VALUES (?)'
-        cur.executemany(sql, ms_sitemap() + std_list)
+        cur.executemany(sql, mssitemap() + std_list)
 
     # Insert list of countries into Countries table
     sql = '''INSERT OR IGNORE INTO Countries
@@ -152,17 +169,19 @@ def fetch(db_file):
         cur = conn.cursor()
 
         # Get url list for all API's
-        url_info = get_url_list(cur, min(stp, divisor))
+        url_info = geturllist(cur, min(stp, divisor))
 
-        '''# Use multiprocessing to fetch url data from API's
-        p = Pool(10)
-        results = p.map(fetch_api_data, urls)
-        p.terminate()
-        p.join()'''
-
+        # Use multiprocessing to fetch url data from API's
         results = []
-        for item in url_info:
-            results.append(fetch_api_data(item))
+        p = Pool(30)
+        for item in p.imap(fetchapi, url_info): #.imap_unordered(fetchapi, url_info):
+            results.append(item)
+        #results = p.map(fetchapi, url_info)
+        p.terminate()
+        p.join()
+
+        '''for item in url_info:
+            results.append(fetchapi(item))'''
 
         # Enter URL data into Fetched_urls
         if results != []:
@@ -176,17 +195,18 @@ def fetch(db_file):
         cur.executescript(sql_clean)
 
         # Export new ticker and exchange lists to input folder
-        with open(fd_input + 'Tickers.json', 'w') as file:
+        output = {}
+        with open(fd_input + 'ticker_exch.json', 'w') as file:
             sql = 'SELECT * FROM Tickers'
             ticks = cur.execute(sql).fetchall()
-
+            output['Tickers'] = ticks
             sql = 'SELECT * FROM Exchanges'
             exchs = cur.execute(sql).fetchall()
-
+            output['Exchanges'] = exchs
             sql = 'SELECT ticker_id, exchange_id FROM Master'
             fetched = cur.execute(sql).fetchall()
-
-            file.write(str(fetched))
+            output['Master'] = fetched
+            file.write(json.dumps(output, indent=2))
 
         # Save (commit) changes and close db
         save_db(conn)
@@ -199,7 +219,7 @@ def fetch(db_file):
     return start
 
 
-def fetch_api_data(url_info):
+def fetchapi(url_info):
 
     # Unpack variables
     url_id, url, ticker_id, exch_id = url_info
@@ -211,7 +231,7 @@ def fetch_api_data(url_info):
     try:
         page = requests.get(url)
     except requests.exceptions.ConnectionError as R:
-        status_code = 0
+        status_code = 69
         data = None
     else:
         status_code = page.status_code
@@ -221,7 +241,7 @@ def fetch_api_data(url_info):
     return (url_id, ticker_id, exch_id, status_code, data)
 
 
-def get_url_list(cur, stp):
+def geturllist(cur, stp):
 
     urls = []
     api = [(int(k), v) for k, v in apis.items()]
@@ -249,22 +269,10 @@ def get_url_list(cur, stp):
             [url_list(c, ticker) for c, ticker in enumerate(tickers[:stp])]
 
     # Print API list and no. of tickers to be updated for each
-    '''msg = '\nList of API\'s:\n'
-    print_list(msg, apis)'''
     msg = 'Qty. of symbols pending update per API no.:\n\n'
     print_list(msg, ticker_count)
 
     return sorted(urls)
-
-
-def ms_sitemap():
-    tree = ET.parse('input/ms_sal-quote-stock-sitemap.xml')
-    url_tag = '{http://www.sitemaps.org/schemas/sitemap/0.9}url'
-    loc_tag = '{http://www.sitemaps.org/schemas/sitemap/0.9}loc'
-    urls = tree.findall('{}/{}'.format(url_tag, loc_tag))
-    get_ticker = lambda st: re.findall('/stocks/(\S+)/',
-        st)[0].split('/')[1].upper()
-    return [(get_ticker(url.text),) for url in urls]
 
 
 def print_(msg):
