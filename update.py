@@ -79,7 +79,7 @@ def create_tables(db_file):
     cur.close()
     conn.close()
 
-    return 'Database tables have been successfully created ...'
+    return '\n~ Database tables created.'
 
 
 def csv_content(file, columns, header=False):
@@ -107,7 +107,7 @@ def delete_tables(db_file):
     cur.close()
     conn.close()
 
-    return 'Database tables have been deleted ...'
+    return '\n~ Database tables deleted.'
 
 
 def delfetchhis(db_file):
@@ -143,7 +143,7 @@ def erase_tables(db_file):
     cur.close()
     conn.close()
 
-    return 'Database tables have been successfully erased ...'
+    return '\n~ Database tablea erased.'
 
 
 def execute_db(cur, sql):
@@ -185,7 +185,7 @@ def fetch(db_file):
         t0 = time.time()
 
         # Print current 'run' (iteration) info
-        msg = '\nRun {} / {}'
+        msg = '\n\nRun {} / {}'
         if i == 0:
             msg += ' ({} tickers x {} API\'s per run) ...'
             print(msg.format(i+1, runs, div, len(apis)))
@@ -203,11 +203,10 @@ def fetch(db_file):
 
         j = i * div * len(apis)
         items = urls[j:j + div * len(apis)]
-
         sort0 = lambda x: (x[0], x[2], x[3])
         items = sorted(items, key=sort0)
 
-        # Use multiprocessing to fetch url data from API's
+        # Fetch Data with Pool
         results = []
         while True:
             try:
@@ -346,14 +345,13 @@ def geturllist(cur):
                                 for c, ticker in enumerate(tickers)]
 
     # Print API list and no. of tickers to be updated for each
-    msg = '\n\nQty. of symbols pending update per API no.:\n\n'
-    print(msg)
+    msg = 'Qty. of symbols pending update per API no.:\n'
+    print_(msg)
     df_tickct = pd.DataFrame([(k, '{:8,.0f}'.format(v))
         for k, v in ticker_count.items()])
-
     print(df_tickct.rename(columns={0:'API', 1:'Pending'})
             .set_index('API'))
-
+    df_tickct = None
     return sorted(urls, key=lambda x: (x[2], x[3], x[0]))
 
 

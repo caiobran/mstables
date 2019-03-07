@@ -64,10 +64,9 @@ def main(file):
     while True:
 
         # Print menu and capture user selection
-        options = print_menu(file)
-
+        ops = print_menu(file)
         inp0 = input('Enter option no.:\n:').strip()
-        if inp0 not in options.keys():
+        if inp0 not in ops.keys():
             break
         start = time.time()
         inp = int(inp0)
@@ -75,8 +74,9 @@ def main(file):
         reload(up)
 
         # Call function according to user input
-        if input('\nAre you sure? (Y/n):\n').lower() == 'y':
-
+        msg = ('\nAre you sure you want to {}? (Y/n):\n'
+            .format(ops[inp0].lower()))
+        if input(msg).lower() == 'y':
             try:
                 # Change db file name
                 if inp == 0:
@@ -99,7 +99,7 @@ def main(file):
                     msg = up.delfetchhis(db_file['path'])
 
                 # Back-up database file
-                elif inp == int(list(options.keys())[-1]):
+                elif inp == int(list(ops.keys())[-1]):
                     msg = backup_db(db_file)
 
             except Exception as e:
@@ -109,7 +109,7 @@ def main(file):
             # Call Fetch function to download data from urls listed in api.json
             if inp == 5:
                 start = up.fetch(db_file['path'])
-                msg = 'Database updated successful.'
+                msg = '\n~ Database updated successful.'
 
         end = time.time()
         os.system('clear')
