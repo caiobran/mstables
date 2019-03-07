@@ -198,7 +198,7 @@ def fetch(db_file):
         if i == 0:
             urls = geturllist(cur)
             msg = '\nTotal URL requests pending =\t{:9,.0f}\n'
-            msg += 'Total URL requests planned =\t{:9,.0f}'
+            msg += 'Total URL requests planned =\t{:9,.0f}\n'
             print(msg.format(len(urls), stp * len(apis)))
 
         j = i * div * len(apis)
@@ -345,7 +345,7 @@ def geturllist(cur):
                                 for c, ticker in enumerate(tickers)]
 
     # Print API list and no. of tickers to be updated for each
-    msg = 'Qty. of symbols pending update per API no.:\n'
+    msg = 'Qty. of symbols pending update per API no.:\n\n'
     print_(msg)
     df_tickct = pd.DataFrame([(k, '{:8,.0f}'.format(v))
         for k, v in ticker_count.items()])
@@ -361,7 +361,7 @@ def print_(msg):
 
 
 def printprogress(api, num, ct, spd):
-    msg = '\tAPI #{}\t\t{:,.0f} / {:,.0f}\t({:.1%}, {:.2f} ticker/sec)'
+    msg = '\tAPI {}\t\t{:,.0f} / {:,.0f}\t{:5.2%}\t{:5.2f} ticker/sec'
     msg = msg.format(api, num+1, ct, (num+1)/ct, spd)
     msg = 'echo -en "\\r\\e[K{}"'.format(msg)
     os.system(msg)
