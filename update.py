@@ -1,7 +1,9 @@
 import xml.etree.ElementTree as ET
-from multiprocessing import Pool
+import multiprocessing as mp
 from datetime import datetime
 from csv import reader
+import numpy as np
+import pandas as pd
 import requests, sqlite3, time, json, zlib, re, os, parse
 
 
@@ -24,9 +26,6 @@ def create_tables(db_file):
     cur = conn.cursor()
 
     # Create database tables based on table.json
-    with open('{}/tables.json'.format(fd_input)) as file:
-        tbl_js = json.load(file)
-    tbl_names = list(tbl_js.keys())
     for table in tbl_names:
         columns = ' '.join(['{} {}'.format(k, v) for k, v in tbl_js[table].items()])
         sql = 'CREATE TABLE IF NOT EXISTS {} ({})'.format(table, columns)
@@ -186,9 +185,10 @@ def fetch(db_file):
         t0 = time.time()
 
         # Print current 'run' (iteration) info
-        msg = '\nInitiating run {} out of {}'
-        msg += ' ({} tickers per API per run) ...'
-        print(msg.format(i+1, runs, div))
+        msg = '\nRun {} / {}'
+        if i == 0:
+            msg += ' ({} tickers x {} API\'s per run) ...'
+            print(msg.format(i+1, runs, div, len(apis)))
 
         # Create db connection
         conn = sqlite3.connect(db_file)
@@ -197,8 +197,8 @@ def fetch(db_file):
         # Get list of URL's to be retrieved
         if i == 0:
             urls = geturllist(cur)
-            msg = '\nTotal URL downloads pending =\t{:12,.0f}\n'
-            msg += 'Total to be updated now =\t{:12,.0f}'
+            msg = '\nTotal URL requests pending =\t{:9,.0f}\n'
+            msg += 'Total URL requests planned =\t{:9,.0f}'
             print(msg.format(len(urls), stp * len(apis)))
 
         j = i * div * len(apis)
@@ -209,19 +209,25 @@ def fetch(db_file):
 
         # Use multiprocessing to fetch url data from API's
         results = []
-        p = Pool(pool_size)
-        try:
-            #results = p.map(fetch_api, items)
-            #for item in p.imap(fetch_api, items):
-            for item in p.imap_unordered(fetch_api, items):
-                results.append(item)
-        except KeyboardInterrupt:
-            print('Keyboard Interrupt')
-            exit()
-        except:
-            raise
-        p.terminate()
-        p.join()
+        while True:
+            try:
+                with mp.Pool(pool_size) as p:
+                    #r = p.imap_unordered(fetch_api, items)
+                    #r = p.map(fetch_api, items)
+                    r = p.imap(fetch_api, items)
+                    for turn in range(len(items)):
+                        try:
+                            results.append(r.next(timeout=5))
+                        except mp.context.TimeoutError:
+                            pass
+                        '''if turn % pool_size == 0:
+                            time.sleep(0.5)'''
+                break
+            except KeyboardInterrupt:
+                print('Keyboard Interrupt')
+                exit()
+            except:
+                raise
 
         '''for item in url_info:
             results.append(fetch_api(item))'''
@@ -231,6 +237,7 @@ def fetch(db_file):
             print_('Storing fetched data into database ... ')
             cols = '(url_id, ticker_id, exch_id, status_code, source_text)'
             sql = sql_insert('Fetched_urls', cols, '(?, ?, ?, ?, ?)')
+            #print('\n\nSQL = {}\nResults = {}'.format(sql, results[1][:-1]))
             cur.executemany(sql, results)
 
         # Execute clean-up SQL command and close database
@@ -321,6 +328,8 @@ def geturllist(cur):
                 sql = sql_cmd1.format(url_id)
             else:
                 sql = sql_cmd2.format(url_id)
+            #print('\n\n*** SQL = {}\n'.format(sql))
+
             tickers = execute_db(cur, sql).fetchall()
             ticker_count[url_id] = len(tickers)
             ticker_list[url_id] = {}
@@ -338,10 +347,12 @@ def geturllist(cur):
 
     # Print API list and no. of tickers to be updated for each
     msg = '\n\nQty. of symbols pending update per API no.:\n\n'
-    msg += 'API\t|   Qty.'
     print(msg)
-    for k, v in ticker_count.items():
-        print('{}\t|{:9,.0f}'.format(k, v))
+    df_tickct = pd.DataFrame([(k, '{:8,.0f}'.format(v))
+        for k, v in ticker_count.items()])
+
+    print(df_tickct.rename(columns={0:'API', 1:'Pending'})
+            .set_index('API'))
 
     return sorted(urls, key=lambda x: (x[2], x[3], x[0]))
 
@@ -352,7 +363,7 @@ def print_(msg):
 
 
 def printprogress(api, num, ct, spd):
-    msg = '\tAPI #{}\t{}/{}\t({:.1%}, {:.2f} ticker/sec)'
+    msg = '\tAPI #{}\t\t{:,.0f} / {:,.0f}\t({:.1%}, {:.2f} ticker/sec)'
     msg = msg.format(api, num+1, ct, (num+1)/ct, spd)
     msg = 'echo -en "\\r\\e[K{}"'.format(msg)
     os.system(msg)
@@ -417,3 +428,6 @@ today   = datetime.today().strftime('%Y-%m-%d')
 sql_cmds = '{}sql_cmd/{}'.format(fd_input, '{}')
 with open('{}/api.json'.format(fd_input)) as file:
     apis = json.load(file)
+with open('{}/tables.json'.format(fd_input)) as file:
+    tbl_js = json.load(file)
+tbl_names = list(tbl_js.keys())

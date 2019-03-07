@@ -109,6 +109,7 @@ def main(file):
             # Call Fetch function to download data from urls listed in api.json
             if inp == 5:
                 start = up.fetch(db_file['path'])
+                msg = 'Database updated successful.'
 
         end = time.time()
         os.system('clear')

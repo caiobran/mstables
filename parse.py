@@ -1,5 +1,4 @@
 from bs4 import BeautifulSoup as bs
-from multiprocessing import Pool
 from datetime import date
 from io import StringIO
 import update as up
@@ -10,14 +9,17 @@ import sqlite3, time, json, zlib, csv, sys, re
 
 # Main function
 def parse(db_file):
+    start = time.time()
 
     # Create db connection
     up.print_('Please wait while the database is being queried ...')
+
     while True:
         try:
             conn = sqlite3.connect(db_file)
             cur = conn.cursor()
-        except sqlite3.OperationalError:
+        except sqlite3.OperationalError as S:
+            print('\nsqlite3 error: {}'.format(S))
             continue
         except:
             raise
@@ -31,8 +33,6 @@ def parse(db_file):
     sql = sql.format(cols)
     fetched = up.execute_db(cur, sql).fetchall()
 
-    # Call parse functions based on current item
-    start = time.time()
     parsing(conn, cur, fetched)
 
     up.save_db(conn)
@@ -43,6 +43,7 @@ def parse(db_file):
 
 def parsing(conn, cur, items):
     stp = len(items)
+    spds = []
     if stp > 0:
         for i in range(stp):
             start = time.time()
@@ -124,6 +125,10 @@ def parsing(conn, cur, items):
                 up.save_db(conn)
 
             spd = 1/(time.time()-start)
+            if spd < 500:
+                spds.append(spd)
+            spds = spds[-50:]
+            spd = np.average(spds)
             up.print_(msg.format(ct, stp, pct, spd))
 
 
