@@ -20,7 +20,8 @@ def parse(db_file):
             conn = sqlite3.connect(db_file)
             cur = conn.cursor()
         except sqlite3.OperationalError as S:
-            print('\nsqlite3 error: {}'.format(S))
+            up.print_('')
+            print('\tError - sqlite3 error: {}'.format(S))
             continue
         except:
             raise
@@ -79,7 +80,8 @@ def parsing(conn, cur, items):
 
 
             # Print progress message
-            msg = 'Parsing {:6,.0f} / {:6,.0f}\t({:6.1%} )'
+            msg = 'Parsing results into database'
+            msg += '\t{:6,.0f} / {:6,.0f}\t({:6.1%} )'
             ct = i + 1
             pct = (i + 1) / stp
             up.print_(msg.format(ct, stp, pct))
@@ -130,8 +132,9 @@ def execute_db(cur, sql, tpl):
         try:
             cur.execute(sql,tpl)
             break
-        except sqlite3.OperationalError as e:
-            print_(str(e)[:79])
+        except sqlite3.OperationalError as S:
+            up.print_('')
+            print('\tError - sqlite3 error: {}'.format(S))
         except:
             print('\n\nSQL cmd = \'{}\'\n{}\n'.format(sql, tpl))
             raise
@@ -159,7 +162,8 @@ def parse_1(cur, ticker_id, exch_id, data, api):
         if js['m'][0]['n'] != 0:
             results = js['m'][0]['r']
     except KeyError:
-        print('\n#ERROR: KeyError at Parse_1\n')
+        up.print_('')
+        print('\tError: KeyError at Parse_1\n')
         return 0
     except:
         print('\n\nTicker_id = {}, Exch_id = {}'.format(ticker_id, exch_id))

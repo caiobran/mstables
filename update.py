@@ -160,7 +160,7 @@ def execute_db(cur, sql):
 
 def fetch(db_file):
     div = 100
-    pool_size = 25
+    pool_size = 10
 
     # Get user input for stp (no. of tickers to update)
     while True:
@@ -183,18 +183,12 @@ def fetch(db_file):
     for i in range(runs):
         t0 = time.time()
 
-        # Print current 'run' (iteration) info
-        msg = '\n\nRun {} / {}'
-        if i == 0:
-            msg0 = ' ({} tickers x {} API\'s per run) ...'
-            msg += msg0.format(div, len(apis))
-        print(msg.format(i+1, runs))
-
         # Create db connection
         conn = sqlite3.connect(db_file)
         cur = conn.cursor()
 
-        # Get list of URL's to be retrieved
+        # Get list of URL's to be retrieved and print current run info
+        msg = '\nRun {} / {}'
         if i == 0:
             try:
                 urls = geturllist(cur)
@@ -202,9 +196,12 @@ def fetch(db_file):
                 exit()
             except:
                 raise
-            msg = '\nTotal URL requests pending =\t{:9,.0f}\n'
-            msg += 'Total URL requests planned =\t{:9,.0f}\n'
-            print(msg.format(len(urls), stp * len(apis)))
+            msg0 = '\nTotal URL requests pending =\t{:9,.0f}\n'
+            msg0 += 'Total URL requests planned =\t{:9,.0f}\n'
+            print(msg0.format(len(urls), stp * len(apis)))
+            msg0 = '\t({} requests per API per run = {} requests per run)'
+            msg += msg0.format(div, min(stp, div)*len(apis))
+        print(msg.format(i+1, runs))
 
         j = i * div * len(apis)
         items = urls[j:j + div * len(apis)]
@@ -238,17 +235,19 @@ def fetch(db_file):
 
         # Enter URL data into Fetched_urls
         if results != []:
-            print_('Storing fetched data into database ... ')
+            results = list(filter(lambda x: x is not None, results))
+            msg = '\t- Successful requests\t{:,.0f} out of {:,.0f} ({:.1%})'
+            totreq = min(stp, div)*len(apis)
+            srate = len(results)/totreq
+            print_('')
+            print(msg.format(len(results), totreq, srate))
+            print_('Storing data into database ... ')
             cols = 'url_id, ticker_id, exch_id, fetch_date, ' + \
                 'status_code, source_text'
             sql = 'INSERT OR IGNORE INTO Fetched_urls ({}) VALUES ({})'
             sql = sql.format(cols, '?, ?, ?, date(?), ?, ?')
-            cur.executemany(sql, results)
             #print('\n\nSQL = {}'.format(sql))
-            #for result in results[:10]:
-            #    print('\nResults = {}'.format(result[:-1]))
-
-
+            cur.executemany(sql, results)
 
         # Execute clean-up SQL command and close database
         print_('Executing Clean-up SQL cmds ... ')
@@ -278,7 +277,7 @@ def fetch(db_file):
         # Call parsing module from parse.py
         parse.parse(db_file)
         t1 = time.time()
-        print_('\tRun {} duration = {:.2f} sec'.format(i+1, t1-t0))
+        print_('\t- Run {} duration\t{:.2f} sec'.format(i+1, t1-t0))
 
     return start
 
@@ -298,31 +297,36 @@ def fetch_api(url_info):
         data = re.sub('\'', '', page.text)
         data = zlib.compress(data.encode())
     except requests.exceptions.ConnectionError:
-        print('\n\n#ERROR: requests.exceptions.ConnectionError')
+        print_('')
+        print('\n\tError: requests.exceptions.ConnectionError')
         msg = 'Ticker: {}, Exch: {}, URL: {}\n'
         print(msg.format(ticker_id, exch_id, url))
-        status_code = 69
-        data = None
+        return
     except requests.exceptions.ChunkedEncodingError:
-        print('\n\n#ERROR: requests.exceptions.ChunkedEncodingError')
+        print_('')
+        print('\n\tError: requests.exceptions.ChunkedEncodingError')
         msg = 'Ticker: {}, Exch: {}, URL: {}\n'
         print(msg.format(ticker_id, exch_id, url))
         time.sleep(4)
-        status_code = 69
-        data = None
+        return
     except KeyboardInterrupt:
         exit()
     except:
         raise
 
-    # Print progress
-    t1 = time.time()
-    spd = 1/(t1 - t0)
-    printprogress(url_id, num, ct, spd)
-
-    sec = 0
-    #time.sleep(max(sec, sec - (t1 - t0)))
-    time.sleep(sec)
+    # Timer to attemp to slow down and 'align' Pool requests
+    sec = 0.5
+    tvar = (time.time() - t0)
+    if tvar < sec:
+        time.sleep(sec - tvar)
+    elif tvar < 2 * sec:
+        time.sleep(2 * sec - tvar)
+    elif tvar < 3 * sec:
+        time.sleep(3 * sec - tvar)
+    else:
+        time.sleep(abs(10 * sec - tvar))
+    printprogress(url_id, num, ct)
+    #time.sleep(sec)
 
     return (url_id, ticker_id, exch_id, today, status_code, data)
 
@@ -361,7 +365,7 @@ def geturllist(cur):
                 for c, ticker in enumerate(tickers)]
 
     # Print API list and no. of tickers to be updated for each
-    msg = 'Qty. of symbols pending update per API no.:\n\n'
+    msg = '\nQty. of symbols pending update per API no.:\n\n'
     print_(msg)
     df_tickct = pd.DataFrame([(k, '{:8,.0f}'.format(v))
         for k, v in ticker_count.items()])
@@ -376,10 +380,9 @@ def print_(msg):
     os.system(msg)
 
 
-def printprogress(api, num, ct, spd):
-    msg = 'Fetching API {:2.0f} {:7,.0f} / {:7,.0f}'
-    msg += '\t({:6.1%}  | {:6,.2f} tickers/sec )'
-    msg = msg.format(api, num+1, ct, (num+1)/ct, spd)
+def printprogress(api, num, ct):
+    msg = 'Fetching API {:2.0f} {:7,.0f} / {:7,.0f}  ({:.2%})'
+    msg = msg.format(api, num+1, ct, (num+1)/ct)
     msg = 'echo -en "\\r\\e[K{}"'.format(msg)
     os.system(msg)
 

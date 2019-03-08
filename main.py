@@ -83,6 +83,7 @@ def main(file):
                 # Change db file name
                 if inp == 0:
                     db_file['name'] = change_name(db_file['name'])
+                    start = time.time()
                     db_file['path'] = db_file['npath'].format(db_file['name'])
 
                 # Create database tables
