@@ -196,7 +196,12 @@ def fetch(db_file):
 
         # Get list of URL's to be retrieved
         if i == 0:
-            urls = geturllist(cur)
+            try:
+                urls = geturllist(cur)
+            except KeyboardInterrupt:
+                exit()
+            except:
+                raise
             msg = '\nTotal URL requests pending =\t{:9,.0f}\n'
             msg += 'Total URL requests planned =\t{:9,.0f}\n'
             print(msg.format(len(urls), stp * len(apis)))
@@ -353,7 +358,7 @@ def geturllist(cur):
                 return (url_id, url, sym_id, exch_id)
 
             urls = urls + [url_list(c, ticker)
-                                for c, ticker in enumerate(tickers)]
+                for c, ticker in enumerate(tickers)]
 
     # Print API list and no. of tickers to be updated for each
     msg = 'Qty. of symbols pending update per API no.:\n\n'
@@ -372,8 +377,8 @@ def print_(msg):
 
 
 def printprogress(api, num, ct, spd):
-    msg = 'Fetching API {:2.0f} || {:7,.0f} / {:7,.0f}'
-    msg += ' || {:6.1%} || {:6,.2f} tickers/sec'
+    msg = 'Fetching API {:2.0f} {:7,.0f} / {:7,.0f}'
+    msg += '\t({:6.1%}  | {:6,.2f} tickers/sec )'
     msg = msg.format(api, num+1, ct, (num+1)/ct, spd)
     msg = 'echo -en "\\r\\e[K{}"'.format(msg)
     os.system(msg)

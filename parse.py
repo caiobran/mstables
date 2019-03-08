@@ -48,7 +48,6 @@ def parsing(conn, cur, items):
     spds = []
     if stp > 0:
         for i in range(stp):
-            start = time.time()
 
             # Unpack record from Fetched_urls
             api = items[i][0]
@@ -60,7 +59,7 @@ def parsing(conn, cur, items):
             parsed = 1
             code = 200
 
-            # Decompress and check if source data is available
+            # Decompress and check data integrity before parsing
             try:
                 if source_text is not None:
                     source_text = zlib.decompress(source_text).decode()
@@ -70,15 +69,20 @@ def parsing(conn, cur, items):
             except Exception as E:
                 print('\n\nE - {}'.format(str(E)))
                 raise
-            if source_text is None or len(source_text) == 0:
+            if (source_text is None or len(source_text) == 0 or
+                'Morningstar.com Error Page' in source_text or
+                'This page is temporarily unavailable' in source_text):
                 parse = False
                 source_text = 'null'
+                parsed = 0
+                code = 0
+
 
             # Print progress message
-            msg = 'Parsing {:6,.0f} / {:6,.0f}  ||'
-            msg += ' {:6.1%} || {:6.2f} tickers/sec ...'
+            msg = 'Parsing {:6,.0f} / {:6,.0f}\t({:6.1%} )'
             ct = i + 1
             pct = (i + 1) / stp
+            up.print_(msg.format(ct, stp, pct))
 
             # Invoke parsing function based on API number
             if parse == True:
@@ -120,13 +124,6 @@ def parsing(conn, cur, items):
             if i % 1000 == 0 and i + 1 != stp:
                 up.save_db(conn)
 
-            spd = 1/(time.time()-start)
-            if spd < 500:
-                spds.append(spd)
-            spds = spds[-50:]
-            spd = np.average(spds)
-            up.print_(msg.format(ct, stp, pct, spd))
-
 
 def execute_db(cur, sql, tpl):
     while True:
@@ -157,9 +154,17 @@ def gethtmltable(sp):
 def parse_1(cur, ticker_id, exch_id, data, api):
 
     results = []
-    js = json.loads(data)
-    if js['m'][0]['n'] != 0:
-        results = js['m'][0]['r']
+    try:
+        js = json.loads(data)
+        if js['m'][0]['n'] != 0:
+            results = js['m'][0]['r']
+    except KeyError:
+        print('\n#ERROR: KeyError at Parse_1\n')
+        return 0
+    except:
+        print('\n\nTicker_id = {}, Exch_id = {}'.format(ticker_id, exch_id))
+        print('Data = {} {}\n'.format(data, len(data)))
+        raise
 
     if results == []:
         return 0
@@ -241,7 +246,7 @@ def parse_2(cur, ticker_id, exch_id, data):
         ctype = tags[6].text.strip()
         fyend = tags[10].text.strip()
         style = tags[12].text.strip()
-    except Exception as E:
+    except:
         print('\n\nTicker_id = {}, Exch_id = {}'.format(ticker_id, exch_id))
         print('Data = {} {}\n'.format(data, len(data)))
         raise
@@ -441,14 +446,14 @@ def parse_4(cur, ticker_id, exch_id, data):
 def parse_5(cur, ticker_id, exch_id, data):
 
     # Check if source data has correct information
-    js = json.loads(data)['componentData']
-    if js is None:
-        return 0
     try:
+        js = json.loads(data)['componentData']
+        if js is None:
+            return 0
         soup = bs(js, 'html.parser')
     except:
-        print('\n', data)
-        print('\n', type(js))
+        print('\n\nTicker_id = {}, Exch_id = {}'.format(ticker_id, exch_id))
+        print('Data = {} {}\n'.format(data, len(data)))
         raise
 
     # Parse data batabase tables (5 tables)
@@ -529,15 +534,15 @@ def parse_5(cur, ticker_id, exch_id, data):
 def parse_6(cur, ticker_id, exch_id, data):
 
     # Check if source data has correct information
-    js = json.loads(data)['componentData']
-    if js is None:
-        return 0
     try:
+        js = json.loads(data)['componentData']
+        if js is None:
+            return 0
         soup = bs(js, 'html.parser')
         trs = soup.find_all('tr')
     except:
-        print('\n', data)
-        print('\n', type(js))
+        print('\n\nTicker_id = {}, Exch_id = {}'.format(ticker_id, exch_id))
+        print('Data = {} {}\n'.format(data, len(data)))
         raise
 
     # Parse table
@@ -609,9 +614,6 @@ def parse_6(cur, ticker_id, exch_id, data):
 def parse_7(cur, ticker_id, exch_id, data):
 
     # Calculate current moving averages
-    if 'Morningstar.com Error Page' in data or data == None or data == '':
-        return 0
-
     tbl = pd.read_csv(StringIO(data), sep=',', header=1)
     tbl = tbl.where(tbl['Volume'] != '???')
 
@@ -657,7 +659,7 @@ def parse_8(cur, api, ticker_id, exch_id, data):
         soup = bs(html, 'html.parser')
         tags = soup.find_all('div')
     except:
-        print('\n', json.dumps(js, indent=2))
+        print('\n\n', data)
         raise
 
     info = {}
