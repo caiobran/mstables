@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup as bs
+from importlib import reload #Comment out once done using
 from datetime import date
 from io import StringIO
 import update as up
@@ -33,6 +34,7 @@ def parse(db_file):
     sql = sql.format(cols)
     fetched = up.execute_db(cur, sql).fetchall()
 
+    # Call parsing methods
     parsing(conn, cur, fetched)
 
     up.save_db(conn)
@@ -53,58 +55,50 @@ def parsing(conn, cur, items):
             ticker_id = items[i][1]
             exch_id = items[i][2]
             fetch_date = items[i][3]
-            parsed = 1
+            source_text = items[i][4]
             parse = True
-            update = True
+            parsed = 1
             code = 200
 
+            # Decompress and check if source data is available
             try:
-                source_text = zlib.decompress(items[i][4]).decode()
-            except zlib.error as e:
-                msg = '\t*** Unzip ERROR at Ticker {}, Exch {} & API {}'
-                print(msg.format(ticker_id, exch_id, api))
-                print(e)
-                source_text = items[i][4]
-                parse = False
-                parsed = 0
-            except:
+                if source_text is not None:
+                    source_text = zlib.decompress(source_text).decode()
+            except BaseException as B:
+                print('\n\nB - {}'.format(str(B)))
                 raise
+            except Exception as E:
+                print('\n\nE - {}'.format(str(E)))
+                raise
+            if source_text is None or len(source_text) == 0:
+                parse = False
+                source_text = 'null'
 
             # Print progress message
-            msg = '\tParsing {}/{} ({:.1%}, {:.2f} ticker/sec) ...'
+            msg = 'Parsing {:6,.0f} / {:6,.0f}  ||'
+            msg += ' {:6.1%} || {:6.2f} tickers/sec ...'
             ct = i + 1
             pct = (i + 1) / stp
 
+            # Invoke parsing function based on API number
             if parse == True:
-                try:
-                    if api in [1, 2, 3]:
-                        code = parse_1(
-                            cur, ticker_id, exch_id, source_text)
-                    elif api == 4:
-                        code = parse_2(
-                            cur, ticker_id, exch_id, source_text)
-                    elif api == 5:
-                        code = parse_3(
-                            cur, ticker_id, exch_id, source_text)
-                    elif api == 6:
-                        code = parse_4(
-                            cur, ticker_id, exch_id, source_text)
-                    elif api == 7:
-                        code = parse_5(
-                            cur, ticker_id, exch_id, source_text)
-                    elif api == 8:
-                        code = parse_6(
-                            cur, ticker_id, exch_id, source_text)
-                    elif api == 9:
-                        code = parse_7(
-                            cur, ticker_id, exch_id, source_text)
-                    else:
-                        code = parse_8(
-                           cur, api, ticker_id, exch_id, source_text)
-                    source_text = 'null'
-                except:
-                    code = 0
-                    parsed = 0
+                if api in [1, 2, 3]:
+                    code = parse_1(cur, ticker_id, exch_id, source_text, api)
+                elif api == 4:
+                    code = parse_2(cur, ticker_id, exch_id, source_text)
+                elif api == 5:
+                    code = parse_3(cur, ticker_id, exch_id, source_text)
+                elif api == 6:
+                    code = parse_4(cur, ticker_id, exch_id, source_text)
+                elif api == 7:
+                    code = parse_5(cur, ticker_id, exch_id, source_text)
+                elif api == 8:
+                    code = parse_6(cur, ticker_id, exch_id, source_text)
+                elif api == 9:
+                    code = parse_7(cur, ticker_id, exch_id, source_text)
+                else:
+                    code = parse_8(cur, api, ticker_id, exch_id, source_text)
+                source_text = 'null'
 
             # Updated record in Fetched_urls with results from parsing
             dict1 = {
@@ -120,6 +114,8 @@ def parsing(conn, cur, items):
             }
             sql = update_record('Fetched_urls', dict1, dict2)
             up.execute_db(cur, sql)
+
+            #print('\n{} SQL = {}\n\n'.format(api, sql))
 
             if i % 1000 == 0 and i + 1 != stp:
                 up.save_db(conn)
@@ -158,7 +154,7 @@ def gethtmltable(sp):
 
 
 # https://www.morningstar.com/api/v2/search/securities/5/usquote-v2/
-def parse_1(cur, ticker_id, exch_id, data):
+def parse_1(cur, ticker_id, exch_id, data, api):
 
     results = []
     js = json.loads(data)
@@ -182,20 +178,27 @@ def parse_1(cur, ticker_id, exch_id, data):
             continue
 
         # Fetch id's for data from db and update tables
+
         # Tickers
         ticker_id = up.sql_insert_one_get_id(cur, 'Tickers', 'ticker', symbol)
+
         # Currencies
         curr_id = up.sql_insert_one_get_id(cur, 'Currencies', 'code', curr)
+
         # Companies
         comp_id = up.sql_insert_one_get_id(cur, 'Companies', 'company', comp)
+
         # Types
         type_id = up.sql_insert_one_get_id(cur, 'Types', 'type_code', type)
+
         # Countries
         country_id = up.sql_insert_one_get_id(cur,
             'Countries', 'a3_un', country)
+
         # Updated date
         update = date.today().strftime('%Y-%m-%d')
         date_id = up.sql_insert_one_get_id(cur, 'TimeRefs', 'dates', update)
+
         # Exchanges
         exch_id = up.sql_insert_one_get_id(cur,
             'Exchanges', 'exchange_sym', exch_sym)
@@ -231,11 +234,17 @@ def parse_2(cur, ticker_id, exch_id, data):
 
     soup = bs(data, 'html.parser')
     tags = soup.find_all('span')
-    sector = tags[2].text.strip()
-    industry = tags[4].text.strip()
-    ctype = tags[6].text.strip()
-    fyend = tags[10].text.strip()
-    style = tags[12].text.strip()
+
+    try:
+        sector = tags[2].text.strip()
+        industry = tags[4].text.strip()
+        ctype = tags[6].text.strip()
+        fyend = tags[10].text.strip()
+        style = tags[12].text.strip()
+    except Exception as E:
+        print('\n\nTicker_id = {}, Exch_id = {}'.format(ticker_id, exch_id))
+        print('Data = {} {}\n'.format(data, len(data)))
+        raise
 
     # Insert sector into Sectors
     sector_id = up.sql_insert_one_get_id(cur, 'Sectors', 'Sector', sector)
@@ -346,14 +355,15 @@ def parse_3(cur, ticker_id, exch_id, data):
     # Insert data into MSheader table
     info['ticker_id'] = ticker_id
     info['exchange_id'] = exch_id
-    sql = up.sql_insert('MSheader',
-        tuple(info.keys()), tuple(info.values()))
+    sql = up.sql_insert('MSheader', tuple(info.keys()), tuple(info.values()))
+    #print('\n\nSQL = {}\n'.format(sql))
     up.execute_db(cur, sql)
     del info['ticker_id']
     del info['exchange_id']
     dict2 = {'ticker_id':ticker_id, 'exchange_id':exch_id}
     sql = update_record('MSheader', info, dict2)
-    execute_db(cur, sql)
+    #print('\nSQL = {}\n'.format(sql))
+    up.execute_db(cur, sql)
 
     '''with open('test/api3.html', 'w') as file:
         file.write(soup.prettify())'''
@@ -430,8 +440,16 @@ def parse_4(cur, ticker_id, exch_id, data):
 # http://financials.morningstar.com/finan/financials/getKeyStatPart.html?
 def parse_5(cur, ticker_id, exch_id, data):
 
-    html = json.loads(data)['componentData']
-    soup = bs(html, 'html.parser')
+    # Check if source data has correct information
+    js = json.loads(data)['componentData']
+    if js is None:
+        return 0
+    try:
+        soup = bs(js, 'html.parser')
+    except:
+        print('\n', data)
+        print('\n', type(js))
+        raise
 
     # Parse data batabase tables (5 tables)
     tabs = soup.find_all('div')
@@ -510,16 +528,24 @@ def parse_5(cur, ticker_id, exch_id, data):
 # http://financials.morningstar.com/finan/financials/getFinancePart.html?
 def parse_6(cur, ticker_id, exch_id, data):
 
-    html = json.loads(data)['componentData']
-    soup = bs(html, 'html.parser')
-    trs = soup.find_all('tr')
+    # Check if source data has correct information
+    js = json.loads(data)['componentData']
+    if js is None:
+        return 0
+    try:
+        soup = bs(js, 'html.parser')
+        trs = soup.find_all('tr')
+    except:
+        print('\n', data)
+        print('\n', type(js))
+        raise
 
     # Parse table
     info = {}
     #info0 = {}
 
-    #with open('test/MSfinancials.json') as file:
-    #    info0 = json.load(file)
+    '''with open('test/MSfinancials.json') as file:
+        info0 = json.load(file)'''
 
     for tr in trs:
         tags = tr.find_all(['th', 'td'])
@@ -619,10 +645,20 @@ def parse_7(cur, ticker_id, exch_id, data):
 # http://financials.morningstar.com/ajax/ReportProcess4HtmlAjax.html?
 def parse_8(cur, api, ticker_id, exch_id, data):
 
-    js = json.loads(data)
-    html = js['result']
-    soup = bs(html, 'html.parser')
-    tags = soup.find_all('div')
+    # Check if source data has correct information
+    msg = 'There is no available information in our database to display.'
+    if msg in data:
+        return 0
+
+    # Parse source data with JSON and BeautifulSoup
+    try:
+        js = json.loads(data)
+        html = js['result']
+        soup = bs(html, 'html.parser')
+        tags = soup.find_all('div')
+    except:
+        print('\n', json.dumps(js, indent=2))
+        raise
 
     info = {}
     #info0 = {}

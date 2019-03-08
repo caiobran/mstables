@@ -2,7 +2,7 @@
 
 from shutil import copyfile
 from datetime import datetime
-from importlib import reload
+from importlib import reload #Comment out once done using
 import update as up
 import time, os, re
 
@@ -35,8 +35,8 @@ def change_name(old_name):
 
 # Print options menu
 def print_menu(names):
-    gap = 6
-    dash = '-'
+    gap = 15
+    dash = '='
     banner = ' Welcome to equiTable '
     file = '\'{}.sqlite\''.format(db_file['name'])
     menu = {
@@ -45,15 +45,16 @@ def print_menu(names):
         '2' : 'Erase table records',
         '3' : 'Delete tables',
         '4' : 'Erase download hisotry',
-        '5' : 'Fetch data from API\'s',
-        '6' : 'Create a database back-up file'
+        '5' : 'Download data from API\'s and update database',
+        '6' : 'TESTING: Parse',
+        '7' : 'Create a database back-up file'
     }
 
     print(dash * (len(banner) + gap * 2))
     print('{}{}{}'.format(dash * gap, banner, dash * gap))
-    print('Menu:\n')
+    print('\nAvailable actions:\n')
     for k, v in menu.items():
-        print(k, dash, v)
+        print(k, '-', v)
     print('\n' + dash * (len(banner) + gap * 2))
 
     return menu
@@ -65,18 +66,19 @@ def main(file):
 
         # Print menu and capture user selection
         ops = print_menu(file)
-        inp0 = input('Enter option no.:\n:').strip()
+        inp0 = input('Enter action no.: ').strip()
         if inp0 not in ops.keys():
             break
         start = time.time()
         inp = int(inp0)
         msg = ''
-        reload(up)
+        reload(up) #Comment out once done using
 
         # Call function according to user input
         msg = ('\nAre you sure you want to {}? (Y/n):\n'
             .format(ops[inp0].lower()))
         if input(msg).lower() == 'y':
+            print()
             try:
                 # Change db file name
                 if inp == 0:
@@ -110,6 +112,10 @@ def main(file):
             if inp == 5:
                 start = up.fetch(db_file['path'])
                 msg = '\n~ Database updated successful.'
+
+            elif inp == 6:
+                up.parse.parse(db_file['path'])
+                msg = 'FINISHED'
 
         end = time.time()
         os.system('clear')

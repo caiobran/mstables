@@ -1,6 +1,7 @@
 import xml.etree.ElementTree as ET
 import multiprocessing as mp
 from datetime import datetime
+from importlib import reload #Comment out once done using
 from csv import reader
 import numpy as np
 import pandas as pd
@@ -20,7 +21,7 @@ def create_tables(db_file):
 
 
     # Create database connection
-    print_('Please wait, database tables are being created ...')
+    print_('\nPlease wait, database tables are being created ...')
     conn = sqlite3.connect(db_file)
     conn.execute('pragma auto_vacuum = 1')
     cur = conn.cursor()
@@ -79,7 +80,7 @@ def create_tables(db_file):
     cur.close()
     conn.close()
 
-    return '\n~ Database tables created.'
+    return '\n\n~ Database tables created.'
 
 
 def csv_content(file, columns, header=False):
@@ -91,7 +92,7 @@ def csv_content(file, columns, header=False):
 
 
 def delete_tables(db_file):
-    print_('Please wait, database tables are being deleted ...')
+    print_('\nPlease wait, database tables are being deleted ...')
 
     # Create database connection
     conn = sqlite3.connect(db_file)
@@ -107,11 +108,11 @@ def delete_tables(db_file):
     cur.close()
     conn.close()
 
-    return '\n~ Database tables deleted.'
+    return '\n\n~ Database tables deleted.'
 
 
 def delfetchhis(db_file):
-    print_('Please wait, download history is being erased ...')
+    print_('\nPlease wait, download history is being erased ...')
 
     # Create database connection
     conn = sqlite3.connect(db_file)
@@ -126,11 +127,11 @@ def delfetchhis(db_file):
     cur.close()
     conn.close()
 
-    return 'Download history has been erased ...'
+    return '\n\n~ Download history (table Fetched_urls) erased.'
 
 
 def erase_tables(db_file):
-    print_('Please wait, database tables are being erased ...')
+    print_('\nPlease wait, database tables are being erased ...')
 
     # Create database connection
     conn = sqlite3.connect(db_file)
@@ -143,7 +144,7 @@ def erase_tables(db_file):
     cur.close()
     conn.close()
 
-    return '\n~ Database tablea erased.'
+    return '\n\n~ Database tablea erased.'
 
 
 def execute_db(cur, sql):
@@ -165,18 +166,16 @@ def fetch(db_file):
     while True:
         # User input for number of tickers to update
         try:
-            msg = '\nQty. to be updated:\n:'
+            msg = 'Qty. to be updated:\n:'
             stp = int(input(msg))
         except KeyboardInterrupt:
             exit()
         except Exception:
             continue
-        print()
         start = time.time()
         break
 
     # Fetch data for each API for tickers qty. = 'stp'
-
     dividend = max(stp, div)
     runs = dividend // div
     div = min(stp, div)
@@ -187,8 +186,9 @@ def fetch(db_file):
         # Print current 'run' (iteration) info
         msg = '\n\nRun {} / {}'
         if i == 0:
-            msg += ' ({} tickers x {} API\'s per run) ...'
-            print(msg.format(i+1, runs, div, len(apis)))
+            msg0 = ' ({} tickers x {} API\'s per run) ...'
+            msg += msg0.format(div, len(apis))
+        print(msg.format(i+1, runs))
 
         # Create db connection
         conn = sqlite3.connect(db_file)
@@ -206,7 +206,7 @@ def fetch(db_file):
         sort0 = lambda x: (x[0], x[2], x[3])
         items = sorted(items, key=sort0)
 
-        # Fetch Data with Pool
+        # Fetch data from API's using multiprocessing.Pool
         results = []
         while True:
             try:
@@ -234,10 +234,16 @@ def fetch(db_file):
         # Enter URL data into Fetched_urls
         if results != []:
             print_('Storing fetched data into database ... ')
-            cols = '(url_id, ticker_id, exch_id, status_code, source_text)'
-            sql = sql_insert('Fetched_urls', cols, '(?, ?, ?, ?, ?)')
-            #print('\n\nSQL = {}\nResults = {}'.format(sql, results[1][:-1]))
+            cols = 'url_id, ticker_id, exch_id, fetch_date, ' + \
+                'status_code, source_text'
+            sql = 'INSERT OR IGNORE INTO Fetched_urls ({}) VALUES ({})'
+            sql = sql.format(cols, '?, ?, ?, date(?), ?, ?')
             cur.executemany(sql, results)
+            #print('\n\nSQL = {}'.format(sql))
+            #for result in results[:10]:
+            #    print('\nResults = {}'.format(result[:-1]))
+
+
 
         # Execute clean-up SQL command and close database
         print_('Executing Clean-up SQL cmds ... ')
@@ -267,7 +273,7 @@ def fetch(db_file):
         # Call parsing module from parse.py
         parse.parse(db_file)
         t1 = time.time()
-        print_('\tRun {} duration = {:.2f} sec'.format(i, t1-t0))
+        print_('\tRun {} duration = {:.2f} sec'.format(i+1, t1-t0))
 
     return start
 
@@ -287,10 +293,16 @@ def fetch_api(url_info):
         data = re.sub('\'', '', page.text)
         data = zlib.compress(data.encode())
     except requests.exceptions.ConnectionError:
+        print('\n\n#ERROR: requests.exceptions.ConnectionError')
+        msg = 'Ticker: {}, Exch: {}, URL: {}\n'
+        print(msg.format(ticker_id, exch_id, url))
         status_code = 69
         data = None
     except requests.exceptions.ChunkedEncodingError:
-        time.sleep(2)
+        print('\n\n#ERROR: requests.exceptions.ChunkedEncodingError')
+        msg = 'Ticker: {}, Exch: {}, URL: {}\n'
+        print(msg.format(ticker_id, exch_id, url))
+        time.sleep(4)
         status_code = 69
         data = None
     except KeyboardInterrupt:
@@ -307,7 +319,7 @@ def fetch_api(url_info):
     #time.sleep(max(sec, sec - (t1 - t0)))
     time.sleep(sec)
 
-    return (url_id, ticker_id, exch_id, status_code, data)
+    return (url_id, ticker_id, exch_id, today, status_code, data)
 
 
 def geturllist(cur):
@@ -327,11 +339,10 @@ def geturllist(cur):
                 sql = sql_cmd1.format(url_id)
             else:
                 sql = sql_cmd2.format(url_id)
-            #print('\n\n*** SQL = {}\n'.format(sql))
-
             tickers = execute_db(cur, sql).fetchall()
             ticker_count[url_id] = len(tickers)
             ticker_list[url_id] = {}
+            #print('\n\n*** SQL = {}\n'.format(sql))
 
             # Create list of URL's for each ticker
             def url_list(ct, tick):
@@ -361,7 +372,8 @@ def print_(msg):
 
 
 def printprogress(api, num, ct, spd):
-    msg = '\tAPI {}\t\t{:,.0f} / {:,.0f}\t{:5.2%}\t{:5.2f} ticker/sec'
+    msg = 'Fetching API {:2.0f} || {:7,.0f} / {:7,.0f}'
+    msg += ' || {:6.1%} || {:6,.2f} tickers/sec'
     msg = msg.format(api, num+1, ct, (num+1)/ct, spd)
     msg = 'echo -en "\\r\\e[K{}"'.format(msg)
     os.system(msg)
@@ -419,6 +431,7 @@ def sql_insert_one_get_id(cur, tbl, col, val):
 
 
 # Reference variables
+reload(parse) #Comment out once done using
 ticker_list = {}
 ticker_count = {}
 fd_input = 'input/'
