@@ -667,7 +667,7 @@ def parse_8(cur, api, ticker_id, exch_id, data):
         raise
 
     info = {}
-    #info0 = {}
+    info0 = {}
     type = 'MSreport'
 
     if api in [10, 11]:
