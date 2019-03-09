@@ -160,7 +160,7 @@ def execute_db(cur, sql):
 
 def fetch(db_file):
     div = 100
-    pool_size = 25
+    pool_size = 20
 
     # Get user input for stp (no. of tickers to update)
     while True:
@@ -315,7 +315,7 @@ def fetch_api(url_info):
         raise
 
     # Timer to attemp to slow down and 'align' Pool requests
-    if False:
+    if True:
         sec = 0.5
         tvar = (time.time() - t0)
         if tvar < sec:
