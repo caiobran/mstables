@@ -154,14 +154,14 @@ def db_execute(cur, sql):
             return cur.execute(sql)
         except KeyboardInterrupt:
             exit()
-        except sqlite3.OperationalError as e:
-            print_(e)
+        except Exception as e:
             if x == 9:
-                raise e
-        except:
-            print('\n\nSQL cmd = \'{}\'\n'.format(sql))
-            raise
+                print('\n\nSQL cmd = \'{}\'\n'.format(sql))
+                print(type(e))
+                print(dir(e))
+                raise
         x += 1
+
 
 def fetch(db_file):
     div = 100

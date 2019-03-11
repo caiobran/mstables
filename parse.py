@@ -430,14 +430,20 @@ def parse_4(cur, ticker_id, exch_id, data):
     # Insert data into MSvaluation table
     info['ticker_id'] = ticker_id
     info['exchange_id'] = exch_id
-    sql = up.sql_insert('MSvaluation',
+    sql1 = up.sql_insert('MSvaluation',
         tuple(info.keys()), tuple(info.values()))
-    up.db_execute(cur, sql)
     del info['ticker_id']
     del info['exchange_id']
     dict2 = {'ticker_id':ticker_id, 'exchange_id':exch_id}
-    sql = update_record('MSvaluation', info, dict2)
-    up.db_execute(cur, sql)
+    sql2 = update_record('MSvaluation', info, dict2)
+
+    try:
+        up.db_execute(cur, sql1)
+        up.db_execute(cur, sql2)
+    except sqlite3.OperationalError:
+        pass
+    except:
+        raise
 
     # Check if parsing was successful
     if info == {}:
