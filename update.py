@@ -30,7 +30,7 @@ def create_tables(db_file):
     for table in tbl_names:
         columns = ' '.join(['{} {}'.format(k, v) for k, v in tbl_js[table].items()])
         sql = 'CREATE TABLE IF NOT EXISTS {} ({})'.format(table, columns)
-        execute_db(cur, sql)
+        db_execute(cur, sql)
 
     # Insert list of tickers and exchanges previously retrieved into database
     file = 'ticker_exch.json'
@@ -74,7 +74,7 @@ def create_tables(db_file):
     # Insert list of api URLs into URLs table
     for k, v in apis.items():
         sql = sql_insert('URLs', '(id, url)', (k, v))
-        execute_db(cur, sql)
+        db_execute(cur, sql)
 
     save_db(conn)
     cur.close()
@@ -102,7 +102,7 @@ def delete_tables(db_file):
     for table in tbl_names:
         print_('Deleting database table {} ...'.format(table))
         sql = 'DROP TABLE IF EXISTS ' + table
-        execute_db(cur, sql)
+        db_execute(cur, sql)
     save_db(conn)
 
     cur.close()
@@ -121,7 +121,7 @@ def delfetchhis(db_file):
     # Drop tables and commit database
     table = 'Fetched_urls'
     sql = 'DELETE FROM ' + table
-    execute_db(cur, sql)
+    db_execute(cur, sql)
     save_db(conn)
 
     cur.close()
@@ -139,7 +139,7 @@ def erase_tables(db_file):
     for table in tbl_names:
         print_('Erasing database table {} ...'.format(table))
         sql = 'DELETE FROM ' + table
-        execute_db(cur, sql)
+        db_execute(cur, sql)
     save_db(conn)
     cur.close()
     conn.close()
@@ -147,16 +147,21 @@ def erase_tables(db_file):
     return '\n\n~ Database tablea erased.'
 
 
-def execute_db(cur, sql):
-    while True:
+def db_execute(cur, sql):
+    x = 0
+    while x < 10:
         try:
             return cur.execute(sql)
+        except KeyboardInterrupt:
+            exit()
         except sqlite3.OperationalError as e:
-            print_(str(e)[:79])
+            print_(e)
+            if x == 9:
+                raise e
         except:
             print('\n\nSQL cmd = \'{}\'\n'.format(sql))
             raise
-
+        x += 1
 
 def fetch(db_file):
     div = 100
@@ -349,7 +354,7 @@ def geturllist(cur):
                 sql = sql_cmd1.format(url_id)
             else:
                 sql = sql_cmd2.format(url_id)
-            tickers = execute_db(cur, sql).fetchall()
+            tickers = db_execute(cur, sql).fetchall()
             ticker_count[url_id] = len(tickers)
             ticker_list[url_id] = {}
             #print('\n\n*** SQL = {}\n'.format(sql))
@@ -430,8 +435,8 @@ def sql_insert_one_get_id(cur, tbl, col, val):
 
     # Select ID from table for value
     try:
-        execute_db(cur, sql1)
-        id = execute_db(cur, sql2).fetchone()[0]
+        db_execute(cur, sql1)
+        id = db_execute(cur, sql2).fetchone()[0]
     except:
         print('\n\n\t# Error @ SQL1 =', sql1, '\n\nSQL2 =', sql2, '\n\n')
         raise

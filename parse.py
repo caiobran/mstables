@@ -33,7 +33,7 @@ def parse(db_file):
         WHERE status_code = 200 AND parsed = 0
         ORDER BY ticker_id asc, url_id desc'''
     sql = sql.format(cols)
-    fetched = up.execute_db(cur, sql).fetchall()
+    fetched = up.db_execute(cur, sql).fetchall()
 
     # Call parsing methods
     parsing(conn, cur, fetched)
@@ -119,7 +119,7 @@ def parsing(conn, cur, items):
                 'fetch_date':fetch_date
             }
             sql = update_record('Fetched_urls', dict1, dict2)
-            up.execute_db(cur, sql)
+            up.db_execute(cur, sql)
 
             #print('\n{} SQL = {}\n\n'.format(api, sql))
 
@@ -127,7 +127,7 @@ def parsing(conn, cur, items):
                 up.save_db(conn)
 
 
-def execute_db(cur, sql, tpl):
+def db_execute(cur, sql, tpl):
     while True:
         try:
             cur.execute(sql,tpl)
@@ -217,12 +217,12 @@ def parse_1(cur, ticker_id, exch_id, data, api):
             'country_id':country_id
         }
         sql = update_record('Exchanges', dict1, {'id':exch_id})
-        up.execute_db(cur, sql)
+        up.db_execute(cur, sql)
 
         # Master Table
         columns = '(ticker_id, exchange_id)'
         sql = up.sql_insert('Master', columns, (ticker_id, exch_id))
-        up.execute_db(cur, sql)
+        up.db_execute(cur, sql)
         dict1 = {
             'company_id':comp_id,
             'type_id':type_id,
@@ -233,7 +233,7 @@ def parse_1(cur, ticker_id, exch_id, data, api):
             'exchange_id':exch_id
             }
         sql = update_record('Master', dict1, dict2)
-        up.execute_db(cur, sql)
+        up.db_execute(cur, sql)
 
     return 200
 
@@ -261,9 +261,9 @@ def parse_2(cur, ticker_id, exch_id, data):
     # Insert industry into Industries
     sql = up.sql_insert('Industries',
         '(industry, sector_id)', (industry, sector_id))
-    up.execute_db(cur, sql)
+    up.db_execute(cur, sql)
     sql = up.sql_record_id('Industries', '(industry)', industry)
-    industry_id = up.execute_db(cur, sql).fetchone()[0]
+    industry_id = up.db_execute(cur, sql).fetchone()[0]
 
     # Insert companytype into CompanyTypes
     ctype_id = up.sql_insert_one_get_id(
@@ -279,7 +279,7 @@ def parse_2(cur, ticker_id, exch_id, data):
     sql = update_record('Master', {'industry_id':industry_id,
         'companytype_id':ctype_id, 'fyend_id':fyend_id, 'style_id':style_id},
         {'ticker_id':ticker_id, 'exchange_id':exch_id})
-    up.execute_db(cur, sql)
+    up.db_execute(cur, sql)
 
     return 200
 
@@ -366,13 +366,13 @@ def parse_3(cur, ticker_id, exch_id, data):
     info['exchange_id'] = exch_id
     sql = up.sql_insert('MSheader', tuple(info.keys()), tuple(info.values()))
     #print('\n\nSQL = {}\n'.format(sql))
-    up.execute_db(cur, sql)
+    up.db_execute(cur, sql)
     del info['ticker_id']
     del info['exchange_id']
     dict2 = {'ticker_id':ticker_id, 'exchange_id':exch_id}
     sql = update_record('MSheader', info, dict2)
     #print('\nSQL = {}\n'.format(sql))
-    up.execute_db(cur, sql)
+    up.db_execute(cur, sql)
 
     '''with open('test/api3.html', 'w') as file:
         file.write(soup.prettify())'''
@@ -432,12 +432,12 @@ def parse_4(cur, ticker_id, exch_id, data):
     info['exchange_id'] = exch_id
     sql = up.sql_insert('MSvaluation',
         tuple(info.keys()), tuple(info.values()))
-    up.execute_db(cur, sql)
+    up.db_execute(cur, sql)
     del info['ticker_id']
     del info['exchange_id']
     dict2 = {'ticker_id':ticker_id, 'exchange_id':exch_id}
     sql = update_record('MSvaluation', info, dict2)
-    up.execute_db(cur, sql)
+    up.db_execute(cur, sql)
 
     # Check if parsing was successful
     if info == {}:
@@ -509,12 +509,12 @@ def parse_5(cur, ticker_id, exch_id, data):
                 tables[table] = info
                 sql = up.sql_insert(table, tuple(info.keys()),
                     tuple(info.values()))
-                up.execute_db(cur, sql)
+                up.db_execute(cur, sql)
                 del info['ticker_id']
                 del info['exchange_id']
                 dict2 = {'ticker_id':ticker_id, 'exchange_id':exch_id}
                 sql = update_record(table, info, dict2)
-                up.execute_db(cur, sql)
+                up.db_execute(cur, sql)
 
             '''with open('test/{}.json'.format(table), 'w') as file:
                 file.write(json.dumps(info0, indent=2))'''
@@ -595,12 +595,12 @@ def parse_6(cur, ticker_id, exch_id, data):
     info['ticker_id'] = ticker_id #'INTEGER,'
     info['exchange_id'] = exch_id  #'INTEGER,'
     sql = up.sql_insert(table, tuple(info.keys()), tuple(info.values()))
-    up.execute_db(cur, sql)
+    up.db_execute(cur, sql)
     del info['ticker_id']
     del info['exchange_id']
     dict2 = {'ticker_id':ticker_id, 'exchange_id':exch_id}
     sql = update_record(table, info, dict2)
-    up.execute_db(cur, sql)
+    up.db_execute(cur, sql)
 
     '''for k, v in info.items():
         print(k, v)'''
@@ -632,14 +632,14 @@ def parse_7(cur, ticker_id, exch_id, data):
     # Insert record
     sql = 'INSERT OR IGNORE INTO {} {} VALUES (?, ?, ?, ?, ?, ?)'
     sql = sql.format(table, columns)
-    execute_db(cur, sql,
+    db_execute(cur, sql,
         (ticker_id, exch_id, prices, ave_50d, ave_100d, ave_200d))
 
     # Update record
     sql = '''UPDATE {} SET price_10yr = ?, ave_50d = ?, ave_100d = ?,
         ave_200d = ? WHERE ticker_id = ? AND exchange_id = ?'''
     sql = sql.format(table)
-    execute_db(cur, sql,
+    db_execute(cur, sql,
         (prices, ave_50d, ave_100d, ave_200d, ticker_id, exch_id))
 
     '''with open('test/api7.csv', 'w') as file:
@@ -726,12 +726,12 @@ def parse_8(cur, api, ticker_id, exch_id, data):
     info['ticker_id'] = ticker_id
     info['exchange_id'] = exch_id
     sql = up.sql_insert(type, tuple(info.keys()), tuple(info.values()))
-    up.execute_db(cur, sql)
+    up.db_execute(cur, sql)
     del info['ticker_id']
     del info['exchange_id']
     dict2 = {'ticker_id':ticker_id, 'exchange_id':exch_id}
     sql = update_record(type, info, dict2)
-    up.execute_db(cur, sql)
+    up.db_execute(cur, sql)
 
     return 200
 
