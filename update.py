@@ -165,7 +165,7 @@ def db_execute(cur, sql):
 
 def fetch(db_file):
     div = 100
-    pool_size = 20
+    pool_size = 10
 
     # Get user input for stp (no. of tickers to update)
     while True:
@@ -241,7 +241,7 @@ def fetch(db_file):
         # Enter URL data into Fetched_urls
         if results != []:
             results = list(filter(lambda x: x is not None, results))
-            msg = '\t- Successful requests\t{:,.0f} out of {:,.0f} ({:.1%})'
+            msg = '\t- Successful requests:\t{:,.0f} out of {:,.0f} ({:.1%})'
             totreq = min(stp, div)*len(apis)
             srate = len(results)/totreq
             print_('')
@@ -282,7 +282,7 @@ def fetch(db_file):
         # Call parsing module from parse.py
         parse.parse(db_file)
         t1 = time.time()
-        print_('\t- Run {} duration\t{:.2f} sec'.format(i+1, t1-t0))
+        print_('\t- Run {} duration:\t{:.2f} sec'.format(i+1, t1-t0))
 
     return start
 
@@ -387,7 +387,7 @@ def print_(msg):
 
 
 def printprogress(api, num, ct):
-    msg = 'Fetching API {:2.0f} {:7,.0f} / {:7,.0f}  ({:.2%})'
+    msg = 'Fetching API {:.0f}... {:7,.0f} / {:7,.0f}  ({:.2%})'
     msg = msg.format(api, num+1, ct, (num+1)/ct)
     msg = 'echo -en "\\r\\e[K{}"'.format(msg)
     os.system(msg)

@@ -80,7 +80,7 @@ def parsing(conn, cur, items):
 
 
             # Print progress message
-            msg = 'Parsing results into database'
+            msg = 'Parsing results into database...'
             msg += '\t{:6,.0f} / {:6,.0f}\t({:6.1%} )'
             ct = i + 1
             pct = (i + 1) / stp

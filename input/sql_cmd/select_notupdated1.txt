@@ -2,7 +2,7 @@ SELECT /*UID, TID, EID,*/ 0, '', Tickers.id, Tickers.ticker
 	FROM Tickers LEFT JOIN (
 
 		SELECT url_id AS UID, ticker_id AS TID, exch_id AS EID FROM Fetched_urls
-			WHERE UID = {} AND strftime('%Y%m', fetch_date) = strftime('%Y%m', 'now')
+			WHERE UID = {} AND strftime('%Y%W', fetch_date) = strftime('%Y%W', 'now')
 
 		) on Tickers.id = TID
 	WHERE UID IS NULL
