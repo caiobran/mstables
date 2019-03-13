@@ -17,7 +17,7 @@ Instructions
 
 From within the equiTable folder, execute file main.py with a Python interpreter to start the application. All .sqlite files created will be stored under db/. *(to be updated with step-by-step instructions)*
 
-This program should work as long as the structure of the responses do not change for the API's listed in [input/api.json](input/api.json).
+This program should work as long as the structure of the responses does not change for the API's listed in [input/api.json](input/api.json).
 
 Open file [data_overview.ipynb](data_overview.ipynb) from Jupyter to see examples on how to work with the data using the pandas and matplotlib modules.
 
