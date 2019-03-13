@@ -37,7 +37,7 @@ def change_name(old_name):
 def print_menu(names):
     gap = 15
     dash = '='
-    banner = ' Welcome to equiTable '
+    banner = ' Welcome to msTables '
     file = '\'{}.sqlite\''.format(db_file['name'])
     menu = {
         '0' : 'Change file name (current = {})'.format(file),
