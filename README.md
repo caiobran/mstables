@@ -1,8 +1,11 @@
 msTables
 ========
 
+Project Overview
+----------------
+
 ### Objective:
-Create a MorningStar.com scraper which stores the data into a relational SQLite database so one can perform fundamental analysis across publicly listed equities from around the world. *(to be updated with tables.py info)*
+Create a MorningStar.com scraper that stores data into a relational SQLite database for further analysis. *(to be updated with tables.py info)*
 
 ### Progress:
 Command line interface for the MorningStar.com scraper has been published including the automated parsing and storing of the data into an .slqite file.
@@ -11,31 +14,39 @@ Command line interface for the MorningStar.com scraper has been published includ
 - Implement pandas function for data processing and analysis (currently under test/)
 - Finalize documentation / instructions on how to use the tool including Jupyter examples
 
-
 Instructions
 ------------
-*(work in progress, to be updated with step-by-step instructions)*
 
-Clone project files and execute file main.py with a Python interpreter from the project root folder to start the parser Command Line Interface (CLI). If the program started correctly, you should see the following as the CLI:
+### Program Requirements:
+The scraper should run on any Linux distribution that has Python3 and the following modules installed:
 
-![Imgur](https://i.imgur.com/aisCne1.png)
-
-All .sqlite files created will be stored under db/.
-
-This program should work as long as the structure of the responses does not change for the API's listed in [input/api.json](input/api.json).
-
-Open file [data_overview.ipynb](data_overview.ipyn[Imgur](https://i.imgur.com/aisCne1.png)) from Jupyter to see examples on how to work with the data using the pandas and matplotlib modules.
-
-### Package required to run scraper:
-- Python3
 - Beautiful Soup
 - requests
 - sqlite3
 - pandas
 - numpy
+- git
 
-### Main database tables created:
-- `Master`:     Main bridge table with complete list of security and exchange symbol pairs, security name, sector, industry, type, and FY end dates
+To view the [data visualization examples][1] mentioned in the instructions, you must also have [jupyter](https://jupyter.org/) and [matplotlib](https://matplotlib.org/) installed.
+
+### Installation
+Open a Linux terminal in the desired installation directory and execute `git clone https://github.com/caiobran/msTables.git` to download the project files.
+
+#### Command Line Interface (CLI).
+
+Execute `python main.py` from the project root directory to start the scraper CLI. If the program started correctly, you should see the following:
+
+![Imgur](https://i.imgur.com/aisCne1.png)
+
+If you are running the scraper for the first time, you must first enter `1` to create the initial database tables. Once that action has been completed and on subsequent runs, enter `5` to fetch data from the MorningStar API's.
+*(documentation in progress, to be updated with instructions on remaining actions)*
+
+This program should work as long as the structure of the responses does not change for the API's listed in [input/api.json](input/api.json).
+
+### Database tables:
+The scraper will automatically create a directory *db/* in the root folder to store the *.sqlite* files generated. Each file will contains a relational database with the following main tables:
+
+- `Master`: Main bridge table with complete list of security and exchange symbol pairs, security name, sector, industry, type, and FY end dates
 - `MSheader`: Quote Summary data with day hi, day lo, 52wk hi, 52wk lo, forward P/E, div. yield, volumes, and current P/B, P/S, and P/CF ratios
 - `MSValuation`: 10yr stock valuation indicators (P/E, P/S, P/B, P/C)
 - `MSfinancials`: Key performance ratios for past 10 yrs
@@ -43,6 +54,8 @@ Open file [data_overview.ipynb](data_overview.ipyn[Imgur](https://i.imgur.com/ai
 - `MSreport_is_yr`, `MSreport_is_qt`: Income Statements for past 5 yrs and 5 qtrs, respectively
 - `MSreport_bs_yr`, `MSreport_bs_qt`: Balance Sheets for past 5 yrs and 5 qtrs, respectively
 - `MSreport_cf_yr`, `MSreport_cf_qt`: Cash Flow Statements for past 5 yrs and 5 qtrs, respectively
+
+See Jupyter notebook [data_overview.ipynb][1] for examples on how to create DataFrame objects to manipulate and visualize the data.
 
 
 MIT License
@@ -67,3 +80,5 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+[1]:data_overview.ipyn
