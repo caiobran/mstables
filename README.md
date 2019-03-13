@@ -17,7 +17,7 @@ Instructions
 *(work in progress, to be updated with step-by-step instructions)*
 Clone project files and execute file main.py with a Python interpreter from the project root folder to start the parser Command Line Interface (CLI). If the program started correctly, you should see the following as the CLI:
 
-[Imgur](https://i.imgur.com/28SO95R.png)
+![Imgur](https://i.imgur.com/28SO95R.png)
 
 All .sqlite files created will be stored under db/.
 
