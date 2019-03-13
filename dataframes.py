@@ -20,8 +20,8 @@ class DataFrames():
         self.cur = self.conn.cursor()
 
         # Row Headers
-        rowheaders = table(self.cur, 'RowHeaders', True)
-        self.rowheaders = rowheaders.set_index('id')
+        ColHeaders = table(self.cur, 'ColHeaders', True)
+        self.ColHeaders = ColHeaders.set_index('id')
 
         # Dates and time references
         timerefs = table(self.cur, 'TimeRefs', True)
@@ -133,7 +133,7 @@ class DataFrames():
             rep_is_yr.iloc[:,2:8].replace(self.timerefs['dates']))
         cols = [col for col in rep_is_yr.columns if 'label' in col]
         rep_is_yr[cols] = (
-            rep_is_yr[cols].replace(self.rowheaders['header']))
+            rep_is_yr[cols].replace(self.ColHeaders['header']))
         return rep_is_yr
 
     # Income Statement - Quarterly
@@ -143,7 +143,7 @@ class DataFrames():
             rep_is_qt.iloc[:,2:8].replace(self.timerefs['dates']))
         cols = [col for col in rep_is_qt.columns if 'label' in col]
         rep_is_qt[cols] = (
-            rep_is_qt[cols].replace(self.rowheaders['header']))
+            rep_is_qt[cols].replace(self.ColHeaders['header']))
         return rep_is_qt
 
     # Balance Sheet - Annual
@@ -153,7 +153,7 @@ class DataFrames():
             rep_bs_yr.iloc[:,2:7].replace(self.timerefs['dates']))
         cols = [col for col in rep_bs_yr.columns if 'label' in col]
         rep_bs_yr[cols] = (
-            rep_bs_yr[cols].replace(self.rowheaders['header']))
+            rep_bs_yr[cols].replace(self.ColHeaders['header']))
         return rep_bs_yr
 
     # Balance Sheet - Quarterly
@@ -163,7 +163,7 @@ class DataFrames():
             rep_bs_qt.iloc[:,2:7].replace(self.timerefs['dates']))
         cols = [col for col in rep_bs_qt.columns if 'label' in col]
         rep_bs_qt[cols] = (
-            rep_bs_qt[cols].replace(self.rowheaders['header']))
+            rep_bs_qt[cols].replace(self.ColHeaders['header']))
         return rep_bs_qt
 
     # Cashflow Statement - Annual
@@ -173,7 +173,7 @@ class DataFrames():
             rep_cf_yr.iloc[:,2:8].replace(self.timerefs['dates']))
         cols = [col for col in rep_cf_yr.columns if 'label' in col]
         rep_cf_yr[cols] = (
-            rep_cf_yr[cols].replace(self.rowheaders['header']))
+            rep_cf_yr[cols].replace(self.ColHeaders['header']))
         return rep_cf_yr
 
     # Cashflow Statement - Quarterly
@@ -183,7 +183,7 @@ class DataFrames():
             rep_cf_qt.iloc[:,2:8].replace(self.timerefs['dates']))
         cols = [col for col in rep_cf_qt.columns if 'label' in col]
         rep_cf_qt[cols] = (
-            rep_cf_qt[cols].replace(self.rowheaders['header']))
+            rep_cf_qt[cols].replace(self.ColHeaders['header']))
         return rep_cf_qt
 
     # 10yr Price History

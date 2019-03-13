@@ -497,7 +497,7 @@ def parse_5(cur, ticker_id, exch_id, data):
                     if 'id' in tag.attrs:
                         if ct == 0:
                             text_id = text_id = fetch.sql_insert_one_get_id(
-                                cur, 'RowHeaders', 'header', tag.text)
+                                cur, 'ColHeaders', 'header', tag.text)
                         else:
                             text_id = fetch.sql_insert_one_get_id(
                                 cur, 'TimeRefs', 'dates', tag.text)
@@ -585,7 +585,7 @@ def parse_6(cur, ticker_id, exch_id, data):
                     text = re.sub('\%|\*', '', text).strip()
                     text = re.sub('\s', '_', text)
                     text_id = fetch.sql_insert_one_get_id(
-                        cur, 'RowHeaders', 'header', text)
+                        cur, 'ColHeaders', 'header', text)
                 key = re.sub('-', '_', tag['id'])
                 info[key] = int(text_id)
                 #info0[tag['id']] = 'INTEGER,'
@@ -728,7 +728,7 @@ def parse_8(cur, api, ticker_id, exch_id, data):
             # Parse labels
             elif tag_id[:3] == 'lab' and 'padding' not in tag_id:
                 value_id = fetch.sql_insert_one_get_id(
-                    cur, 'RowHeaders', 'header', value)
+                    cur, 'ColHeaders', 'header', value)
                 info[tag_id] = value_id
                 #info0[tag_id] = 'INTEGER,'
 

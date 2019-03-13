@@ -4496,7 +4496,7 @@
     "id":"INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,",
     "ticker":"TEXT UNIQUE"
   },
-  "RowHeaders":{
+  "ColHeaders":{
     "id":"INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,",
     "header":"TEXT UNIQUE"
   }

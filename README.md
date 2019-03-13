@@ -9,7 +9,7 @@ Command line interface for the MorningStar.com scraper has been published includ
 
 ### Next steps:
 - Implement pandas function for data processing and analysis (currently under test/)
-- Create web-based application for visualization of data (longer term)
+- Finalize documentation / instructions on how to use the tool including Jupyter examples
 
 
 Instructions
@@ -17,10 +17,12 @@ Instructions
 
 From within the equiTable folder, execute file main.py with a Python interpreter to start the application. All .sqlite files created will be stored under db/. *(to be updated with step-by-step instructions)*
 
-This program should work as long as the structure of the responses do not change for the API's listed in input/api.json.
+This program should work as long as the structure of the responses do not change for the API's listed in [input/api.json](input/api.json).
 
-### Current Package Dependencies:
-- Python 3
+Open file [data_overview.ipynb](data_overview.ipynb) from Jupyter to see examples on how to work with the data using the pandas and matplotlib modules.
+
+### Package required to run scraper:
+- Python3
 - Beautiful Soup
 - requests
 - sqlite3
