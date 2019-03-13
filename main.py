@@ -3,8 +3,7 @@
 from shutil import copyfile
 from datetime import datetime
 from importlib import reload
-import update as up
-import time, os, re
+import fetch, time, os, re
 
 __author__ = "Caio Brandao"
 __copyright__ = "Copyright 2019+, Caio Brandao"
@@ -19,7 +18,7 @@ def backup_db(file):
     #today = datetime.today().strftime('%Y%m%d%H')
     new_file = db_file['db_backup'].format(
         input('Enter back-up file name:\n:'))
-    up.print_('Please wait ... Database file is being backed-up ...')
+    fetch.print_('Please wait ... Database file is being backed-up ...')
     copyfile(db_file['path'], new_file)
     return '\n~ Back-up file saved\t{}'.format(new_file)
 
@@ -72,7 +71,7 @@ def main(file):
         start = time.time()
         inp = int(inp0)
         msg = ''
-        reload(up) #Comment out once done using
+        reload(fetch) #Comment out once done using
 
         # Call function according to user input
         msg = ('\nAre you sure you want to {}? (Y/n):\n'
@@ -88,18 +87,18 @@ def main(file):
 
                 # Create database tables
                 elif inp == 1:
-                    msg = up.create_tables(db_file['path'])
+                    msg = fetch.create_tables(db_file['path'])
 
                 # Erase records from all tables
                 elif inp == 2:
-                    msg = up.erase_tables(db_file['path'])
+                    msg = fetch.erase_tables(db_file['path'])
 
                 # Delete all tables
                 elif inp == 3:
-                    msg = up.delete_tables(db_file['path'])
+                    msg = fetch.delete_tables(db_file['path'])
 
                 elif inp == 4:
-                    msg = up.delfetchhis(db_file['path'])
+                    msg = fetch.delfetchhis(db_file['path'])
 
                 # Back-up database file
                 elif inp == int(list(ops.keys())[-1]):
@@ -111,11 +110,11 @@ def main(file):
 
             # Call Fetch function to download data from urls listed in api.json
             if inp == 5:
-                start = up.fetch(db_file['path'])
+                start = fetch.fetch(db_file['path'])
                 msg = '\n~ Database updated successful.'
 
             elif inp == 6:
-                up.parse.parse(db_file['path'])
+                fetch.parse.parse(db_file['path'])
                 msg = 'FINISHED'
 
         end = time.time()

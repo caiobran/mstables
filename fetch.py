@@ -153,6 +153,7 @@ def db_execute(cur, sql):
         try:
             return cur.execute(sql)
         except KeyboardInterrupt:
+            print('\nGoodbye!')
             exit()
         except Exception as e:
             if x == 9:
@@ -174,6 +175,7 @@ def fetch(db_file):
             msg = 'Qty. to be updated:\n:'
             stp = int(input(msg))
         except KeyboardInterrupt:
+            print('\nGoodbye!')
             exit()
         except Exception:
             continue
@@ -198,6 +200,7 @@ def fetch(db_file):
             try:
                 urls = geturllist(cur)
             except KeyboardInterrupt:
+                print('\nGoodbye!')
                 exit()
             except:
                 raise
@@ -230,7 +233,7 @@ def fetch(db_file):
                             time.sleep(0.5)'''
                 break
             except KeyboardInterrupt:
-                print('Keyboard Interrupt')
+                print('\nGoodbye!')
                 exit()
             except:
                 raise
@@ -247,18 +250,21 @@ def fetch(db_file):
             print_('')
             print(msg.format(len(results), totreq, srate))
             print_('Storing data into database ... ')
+
+            # Remove old data
+            url_ids, ticker_ids, exch_ids, _, _, _ = zip(*results)
+            ids = zip(url_ids, ticker_ids, exch_ids)
+            sql = '''DELETE FROM Fetched_urls WHERE url_id=? AND
+                ticker_id=? AND exch_id=?'''
+            cur.executemany(sql, ids)
+
+            # Insert new data
             cols = 'url_id, ticker_id, exch_id, fetch_date, ' + \
                 'status_code, source_text'
             sql = 'INSERT OR IGNORE INTO Fetched_urls ({}) VALUES ({})'
             sql = sql.format(cols, '?, ?, ?, date(?), ?, ?')
             #print('\n\nSQL = {}'.format(sql))
             cur.executemany(sql, results)
-
-        # Execute clean-up SQL command and close database
-        print_('Executing Clean-up SQL cmds ... ')
-        with open(sql_cmds.format('clean.txt')) as file:
-            sql_clean = file.read().strip()
-        cur.executescript(sql_clean)
 
         # Export new ticker and exchange lists to input folder
         output = {}
@@ -315,6 +321,7 @@ def fetch_api(url_info):
         time.sleep(4)
         return
     except KeyboardInterrupt:
+        print('\nGoodbye!')
         exit()
     except:
         raise

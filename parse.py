@@ -2,10 +2,9 @@ from bs4 import BeautifulSoup as bs
 from importlib import reload #Comment out once done using
 from datetime import date
 from io import StringIO
-import update as up
 import pandas as pd
 import numpy as np
-import sqlite3, time, json, zlib, csv, sys, re
+import fetch, sqlite3, time, json, zlib, csv, sys, re
 
 
 # Main function
@@ -13,14 +12,14 @@ def parse(db_file):
     start = time.time()
 
     # Create db connection
-    up.print_('Please wait while the database is being queried ...')
+    fetch.print_('Please wait while the database is being queried ...')
 
     while True:
         try:
             conn = sqlite3.connect(db_file)
             cur = conn.cursor()
         except sqlite3.OperationalError as S:
-            up.print_('')
+            fetch.print_('')
             print('\tError - sqlite3 error: {}'.format(S))
             continue
         except:
@@ -33,12 +32,18 @@ def parse(db_file):
         WHERE status_code = 200 AND parsed = 0
         ORDER BY ticker_id asc, url_id desc'''
     sql = sql.format(cols)
-    fetched = up.db_execute(cur, sql).fetchall()
+    fetched = fetch.db_execute(cur, sql).fetchall()
 
     # Call parsing methods
     parsing(conn, cur, fetched)
 
-    up.save_db(conn)
+    # Execute clean-up SQL commands
+    fetch.print_('Executing Clean-up SQL cmds ... ')
+    with open(fetch.sql_cmds.format('clean.txt')) as file:
+        sql_clean = file.read().strip()
+    cur.executescript(sql_clean)
+
+    fetch.save_db(conn)
     cur.close()
     conn.close()
     fetched = None
@@ -84,7 +89,7 @@ def parsing(conn, cur, items):
             msg += '\t{:6,.0f} / {:6,.0f}\t({:6.1%} )'
             ct = i + 1
             pct = (i + 1) / stp
-            up.print_(msg.format(ct, stp, pct))
+            fetch.print_(msg.format(ct, stp, pct))
 
             # Invoke parsing function based on API number
             if parse == True:
@@ -119,12 +124,12 @@ def parsing(conn, cur, items):
                 'fetch_date':fetch_date
             }
             sql = update_record('Fetched_urls', dict1, dict2)
-            up.db_execute(cur, sql)
+            fetch.db_execute(cur, sql)
 
             #print('\n{} SQL = {}\n\n'.format(api, sql))
 
             if i % 1000 == 0 and i + 1 != stp:
-                up.save_db(conn)
+                fetch.save_db(conn)
 
 
 def db_execute(cur, sql, tpl):
@@ -133,7 +138,7 @@ def db_execute(cur, sql, tpl):
             cur.execute(sql,tpl)
             break
         except sqlite3.OperationalError as S:
-            up.print_('')
+            fetch.print_('')
             print('\tError - sqlite3 error: {}'.format(S))
         except:
             print('\n\nSQL cmd = \'{}\'\n{}\n'.format(sql, tpl))
@@ -162,7 +167,7 @@ def parse_1(cur, ticker_id, exch_id, data, api):
         if js['m'][0]['n'] != 0:
             results = js['m'][0]['r']
     except KeyError:
-        up.print_('')
+        fetch.print_('')
         print('\tError: KeyError at Parse_1\n')
         return 0
     except:
@@ -189,27 +194,29 @@ def parse_1(cur, ticker_id, exch_id, data, api):
         # Fetch id's for data from db and update tables
 
         # Tickers
-        ticker_id = up.sql_insert_one_get_id(cur, 'Tickers', 'ticker', symbol)
+        ticker_id = fetch.sql_insert_one_get_id(
+            cur, 'Tickers', 'ticker', symbol)
 
         # Currencies
-        curr_id = up.sql_insert_one_get_id(cur, 'Currencies', 'code', curr)
+        curr_id = fetch.sql_insert_one_get_id(cur, 'Currencies', 'code', curr)
 
         # Companies
-        comp_id = up.sql_insert_one_get_id(cur, 'Companies', 'company', comp)
+        comp_id = fetch.sql_insert_one_get_id(
+            cur, 'Companies', 'company', comp)
 
         # Types
-        type_id = up.sql_insert_one_get_id(cur, 'Types', 'type_code', type)
+        type_id = fetch.sql_insert_one_get_id(cur, 'Types', 'type_code', type)
 
         # Countries
-        country_id = up.sql_insert_one_get_id(cur,
+        country_id = fetch.sql_insert_one_get_id(cur,
             'Countries', 'a3_un', country)
 
         # Updated date
         update = date.today().strftime('%Y-%m-%d')
-        date_id = up.sql_insert_one_get_id(cur, 'TimeRefs', 'dates', update)
+        date_id = fetch.sql_insert_one_get_id(cur, 'TimeRefs', 'dates', update)
 
         # Exchanges
-        exch_id = up.sql_insert_one_get_id(cur,
+        exch_id = fetch.sql_insert_one_get_id(cur,
             'Exchanges', 'exchange_sym', exch_sym)
         dict1 = {
             'exchange':exch,
@@ -217,12 +224,12 @@ def parse_1(cur, ticker_id, exch_id, data, api):
             'country_id':country_id
         }
         sql = update_record('Exchanges', dict1, {'id':exch_id})
-        up.db_execute(cur, sql)
+        fetch.db_execute(cur, sql)
 
         # Master Table
         columns = '(ticker_id, exchange_id)'
-        sql = up.sql_insert('Master', columns, (ticker_id, exch_id))
-        up.db_execute(cur, sql)
+        sql = fetch.sql_insert('Master', columns, (ticker_id, exch_id))
+        fetch.db_execute(cur, sql)
         dict1 = {
             'company_id':comp_id,
             'type_id':type_id,
@@ -233,7 +240,7 @@ def parse_1(cur, ticker_id, exch_id, data, api):
             'exchange_id':exch_id
             }
         sql = update_record('Master', dict1, dict2)
-        up.db_execute(cur, sql)
+        fetch.db_execute(cur, sql)
 
     return 200
 
@@ -256,30 +263,30 @@ def parse_2(cur, ticker_id, exch_id, data):
         raise
 
     # Insert sector into Sectors
-    sector_id = up.sql_insert_one_get_id(cur, 'Sectors', 'Sector', sector)
+    sector_id = fetch.sql_insert_one_get_id(cur, 'Sectors', 'Sector', sector)
 
     # Insert industry into Industries
-    sql = up.sql_insert('Industries',
+    sql = fetch.sql_insert('Industries',
         '(industry, sector_id)', (industry, sector_id))
-    up.db_execute(cur, sql)
-    sql = up.sql_record_id('Industries', '(industry)', industry)
-    industry_id = up.db_execute(cur, sql).fetchone()[0]
+    fetch.db_execute(cur, sql)
+    sql = fetch.sql_record_id('Industries', '(industry)', industry)
+    industry_id = fetch.db_execute(cur, sql).fetchone()[0]
 
     # Insert companytype into CompanyTypes
-    ctype_id = up.sql_insert_one_get_id(
+    ctype_id = fetch.sql_insert_one_get_id(
         cur, 'CompanyTypes', 'companytype', ctype)
 
     # Insert fyend into FYEnds
-    fyend_id = up.sql_insert_one_get_id(cur, 'TimeRefs', 'dates', fyend)
+    fyend_id = fetch.sql_insert_one_get_id(cur, 'TimeRefs', 'dates', fyend)
 
     # Insert style into StockStyles
-    style_id = up.sql_insert_one_get_id(cur, 'StockStyles', 'style', style)
+    style_id = fetch.sql_insert_one_get_id(cur, 'StockStyles', 'style', style)
 
     # Update Tickers table with parsed data
     sql = update_record('Master', {'industry_id':industry_id,
         'companytype_id':ctype_id, 'fyend_id':fyend_id, 'style_id':style_id},
         {'ticker_id':ticker_id, 'exchange_id':exch_id})
-    up.db_execute(cur, sql)
+    fetch.db_execute(cur, sql)
 
     return 200
 
@@ -303,7 +310,7 @@ def parse_3(cur, ticker_id, exch_id, data):
             continue
 
         if attrs.get('vkey') == 'Currency':
-            val = up.sql_insert_one_get_id(cur, 'Currencies', 'code', text)
+            val = fetch.sql_insert_one_get_id(cur, 'Currencies', 'code', text)
             info['currency_id'] = val
         elif attrs.get('vkey') == 'OpenPrice':
             info['openprice'] = re.sub(',', '', text)
@@ -364,15 +371,16 @@ def parse_3(cur, ticker_id, exch_id, data):
     # Insert data into MSheader table
     info['ticker_id'] = ticker_id
     info['exchange_id'] = exch_id
-    sql = up.sql_insert('MSheader', tuple(info.keys()), tuple(info.values()))
+    sql = fetch.sql_insert(
+        'MSheader', tuple(info.keys()), tuple(info.values()))
     #print('\n\nSQL = {}\n'.format(sql))
-    up.db_execute(cur, sql)
+    fetch.db_execute(cur, sql)
     del info['ticker_id']
     del info['exchange_id']
     dict2 = {'ticker_id':ticker_id, 'exchange_id':exch_id}
     sql = update_record('MSheader', info, dict2)
     #print('\nSQL = {}\n'.format(sql))
-    up.db_execute(cur, sql)
+    fetch.db_execute(cur, sql)
 
     '''with open('test/api3.html', 'w') as file:
         file.write(soup.prettify())'''
@@ -399,7 +407,7 @@ def parse_4(cur, ticker_id, exch_id, data):
     for year, column in enumerate(columns):
         if column[0] % 2 == 0:
             yr = column[1]
-            yr_id = up.sql_insert_one_get_id(cur, 'TimeRefs', 'dates', yr)
+            yr_id = fetch.sql_insert_one_get_id(cur, 'TimeRefs', 'dates', yr)
             header = 'Y{}'.format(int((year-1)/2))
             info[header] = yr_id
 
@@ -430,7 +438,7 @@ def parse_4(cur, ticker_id, exch_id, data):
     # Insert data into MSvaluation table
     info['ticker_id'] = ticker_id
     info['exchange_id'] = exch_id
-    sql1 = up.sql_insert('MSvaluation',
+    sql1 = fetch.sql_insert('MSvaluation',
         tuple(info.keys()), tuple(info.values()))
     del info['ticker_id']
     del info['exchange_id']
@@ -438,8 +446,8 @@ def parse_4(cur, ticker_id, exch_id, data):
     sql2 = update_record('MSvaluation', info, dict2)
 
     try:
-        up.db_execute(cur, sql1)
-        up.db_execute(cur, sql2)
+        fetch.db_execute(cur, sql1)
+        fetch.db_execute(cur, sql2)
     except sqlite3.OperationalError:
         pass
     except:
@@ -488,10 +496,10 @@ def parse_5(cur, ticker_id, exch_id, data):
                     # Parse column and row headers
                     if 'id' in tag.attrs:
                         if ct == 0:
-                            text_id = text_id = up.sql_insert_one_get_id(
+                            text_id = text_id = fetch.sql_insert_one_get_id(
                                 cur, 'RowHeaders', 'header', tag.text)
                         else:
-                            text_id = up.sql_insert_one_get_id(
+                            text_id = fetch.sql_insert_one_get_id(
                                 cur, 'TimeRefs', 'dates', tag.text)
                         key = re.sub('-', '_', tag['id'])
                         info[key] = int(text_id)
@@ -513,14 +521,14 @@ def parse_5(cur, ticker_id, exch_id, data):
                 info['ticker_id'] = ticker_id #'INTEGER,'
                 info['exchange_id'] = exch_id  #'INTEGER,'
                 tables[table] = info
-                sql = up.sql_insert(table, tuple(info.keys()),
+                sql = fetch.sql_insert(table, tuple(info.keys()),
                     tuple(info.values()))
-                up.db_execute(cur, sql)
+                fetch.db_execute(cur, sql)
                 del info['ticker_id']
                 del info['exchange_id']
                 dict2 = {'ticker_id':ticker_id, 'exchange_id':exch_id}
                 sql = update_record(table, info, dict2)
-                up.db_execute(cur, sql)
+                fetch.db_execute(cur, sql)
 
             '''with open('test/{}.json'.format(table), 'w') as file:
                 file.write(json.dumps(info0, indent=2))'''
@@ -570,13 +578,13 @@ def parse_6(cur, ticker_id, exch_id, data):
             # Parse column and row headers
             if 'id' in tag.attrs:
                 if ct != 0:
-                    text_id = up.sql_insert_one_get_id(
+                    text_id = fetch.sql_insert_one_get_id(
                         cur, 'TimeRefs', 'dates', tag.text)
                 else:
                     text = re.findall('\>(.+?)\<', str(tag))[0]
                     text = re.sub('\%|\*', '', text).strip()
                     text = re.sub('\s', '_', text)
-                    text_id = up.sql_insert_one_get_id(
+                    text_id = fetch.sql_insert_one_get_id(
                         cur, 'RowHeaders', 'header', text)
                 key = re.sub('-', '_', tag['id'])
                 info[key] = int(text_id)
@@ -600,13 +608,13 @@ def parse_6(cur, ticker_id, exch_id, data):
     table = 'MSfinancials'
     info['ticker_id'] = ticker_id #'INTEGER,'
     info['exchange_id'] = exch_id  #'INTEGER,'
-    sql = up.sql_insert(table, tuple(info.keys()), tuple(info.values()))
-    up.db_execute(cur, sql)
+    sql = fetch.sql_insert(table, tuple(info.keys()), tuple(info.values()))
+    fetch.db_execute(cur, sql)
     del info['ticker_id']
     del info['exchange_id']
     dict2 = {'ticker_id':ticker_id, 'exchange_id':exch_id}
     sql = update_record(table, info, dict2)
-    up.db_execute(cur, sql)
+    fetch.db_execute(cur, sql)
 
     '''for k, v in info.items():
         print(k, v)'''
@@ -711,7 +719,7 @@ def parse_8(cur, api, ticker_id, exch_id, data):
                 else:
                     if 'title' in attrs:
                         value = tag['title']
-                    value_id = up.sql_insert_one_get_id(
+                    value_id = fetch.sql_insert_one_get_id(
                         cur, 'TimeRefs', 'dates', value)
                     info[key] = value_id
                     #info0[key] = 'INTEGER,'
@@ -719,7 +727,7 @@ def parse_8(cur, api, ticker_id, exch_id, data):
 
             # Parse labels
             elif tag_id[:3] == 'lab' and 'padding' not in tag_id:
-                value_id = up.sql_insert_one_get_id(
+                value_id = fetch.sql_insert_one_get_id(
                     cur, 'RowHeaders', 'header', value)
                 info[tag_id] = value_id
                 #info0[tag_id] = 'INTEGER,'
@@ -731,13 +739,13 @@ def parse_8(cur, api, ticker_id, exch_id, data):
     # Insert data into tables
     info['ticker_id'] = ticker_id
     info['exchange_id'] = exch_id
-    sql = up.sql_insert(type, tuple(info.keys()), tuple(info.values()))
-    up.db_execute(cur, sql)
+    sql = fetch.sql_insert(type, tuple(info.keys()), tuple(info.values()))
+    fetch.db_execute(cur, sql)
     del info['ticker_id']
     del info['exchange_id']
     dict2 = {'ticker_id':ticker_id, 'exchange_id':exch_id}
     sql = update_record(type, info, dict2)
-    up.db_execute(cur, sql)
+    fetch.db_execute(cur, sql)
 
     return 200
 

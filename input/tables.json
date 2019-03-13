@@ -4430,7 +4430,7 @@
     "status_code":"SMALLINT NOT NULL,",
     "source_text":"BLOB,",
     "parsed":"BIT DEFAULT 0 NOT NULL,",
-    "PRIMARY KEY":"(fetch_date, url_id, ticker_id, exch_id)"
+    "PRIMARY KEY":"(url_id, ticker_id, exch_id, fetch_date)"
   },
   "MSpricehistory":{
     "ticker_id": "INTEGER,",
