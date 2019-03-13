@@ -15,15 +15,16 @@ Command line interface for the MorningStar.com scraper has been published includ
 Instructions
 ------------
 *(work in progress, to be updated with step-by-step instructions)*
+
 Clone project files and execute file main.py with a Python interpreter from the project root folder to start the parser Command Line Interface (CLI). If the program started correctly, you should see the following as the CLI:
 
-![Imgur](https://i.imgur.com/28SO95R.png)
+![Imgur](https://i.imgur.com/aisCne1.png)
 
 All .sqlite files created will be stored under db/.
 
 This program should work as long as the structure of the responses does not change for the API's listed in [input/api.json](input/api.json).
 
-Open file [data_overview.ipynb](data_overview.ipynb) from Jupyter to see examples on how to work with the data using the pandas and matplotlib modules.
+Open file [data_overview.ipynb](data_overview.ipyn[Imgur](https://i.imgur.com/aisCne1.png)) from Jupyter to see examples on how to work with the data using the pandas and matplotlib modules.
 
 ### Package required to run scraper:
 - Python3
