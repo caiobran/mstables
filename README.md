@@ -1,17 +1,18 @@
-equiTable
-=========
+msTables
+========
 
 ### Objective:
-Create a MorningStar.com scraper which stores the data into a relational SQLite database so one can perform fundamental analysis across all publicly listed equities from around the world.
+Create a MorningStar.com scraper which stores the data into a relational SQLite database so one can perform fundamental analysis across publicly listed equities from around the world. *(to be updated with tables.py info)*
 
 ### Progress:
 Command line interface for the MorningStar.com scraper has been published including the automated parsing and storing of the data into an .slqite file.
-
 
 Instructions
 ------------
 
 From within the equiTable folder, execute file main.py with a Python interpreter to start the application. All .sqlite files created will be stored under db/.
+
+This program should work as long as the structure of the responses do not change for the API's listed in input/api.json.
 
 ### Current Package Dependencies:
 - Python 3

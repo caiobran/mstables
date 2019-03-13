@@ -2,7 +2,7 @@
 
 from shutil import copyfile
 from datetime import datetime
-from importlib import reload #Comment out once done using
+from importlib import reload
 import update as up
 import time, os, re
 
@@ -128,7 +128,7 @@ def main(file):
 # Define database (db) file and menu text variables
 db_file = dict()
 db_file['npath'] = 'db/{}.sqlite'
-db_file['name'] = 'equitable'
+db_file['name'] = 'mstables'
 db_file['path'] = db_file['npath'].format(db_file['name'])
 db_file['db_backup'] = 'db/backup/{}.sqlite'
 
