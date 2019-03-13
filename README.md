@@ -7,6 +7,11 @@ Create a MorningStar.com scraper which stores the data into a relational SQLite 
 ### Progress:
 Command line interface for the MorningStar.com scraper has been published including the automated parsing and storing of the data into an .slqite file.
 
+### Next steps:
+- Implement pandas function for data processing and analysis (currently under test/)
+- Create web-based application for visualization of data (longer term)
+
+
 Instructions
 ------------
 
@@ -22,19 +27,15 @@ This program should work as long as the structure of the responses do not change
 - pandas
 - numpy
 
-### Database tables with MorningStar data:
-- Stock quote summary page (day hi, day lo, 52wk hi, 52wk lo, forward P/E, etc.)
-- Company profile with industry and sector data
-- 10yr stock valuation indicators (P/E, P/S, P/B, P/C)
-- Key performance ratios for past 10 yrs
-- Annual financial results for past 10 yrs
-- Income statement for past 5 yrs and 5 qtrs
-- Balance Sheet for past 5 yrs and 5 qtrs
-- Cashflow Statement for past 5 yrs and 5 qtrs
-
-### Next steps:
-- Implement pandas function for data processing and analysis (currently under test/)
-- Create web-based application for visualization of data (longer term)
+### Main Database Tables created:
+- `Master`:     Main bridge table with complete list of security and exchange symbol pairs, security name, sector, industry, type, and FY end (for equities)
+- `MSheader`: Quote Summary data with day hi, day lo, 52wk hi, 52wk lo, forward P/E, div. yield, volumes, and current P/B, P/S, and P/CF ratios
+- `MSValuation`: 10yr stock valuation indicators (P/E, P/S, P/B, P/C)
+- `MSfinancials`: Key performance ratios for past 10 yrs
+- `MSratio_cashflow`, `MSratio_financial`, `MSratio_growth`, `MSratio_profitability`, `MSratio_efficiency`: Financial performance ratios for past 10 yrs
+- `MSreport_is_yr`, `MSreport_is_qt`: Income Statements for past 5 yrs and 5 qtrs, respectively
+- `MSreport_bs_yr`, `MSreport_bs_qt`: Balance Sheets for past 5 yrs and 5 qtrs, respectively
+- `MSreport_cf_yr`, `MSreport_cf_qt`: Cash Flow Statements for past 5 yrs and 5 qtrs, respectively
 
 
 MIT License
