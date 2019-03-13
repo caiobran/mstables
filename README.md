@@ -14,8 +14,12 @@ Command line interface for the MorningStar.com scraper has been published includ
 
 Instructions
 ------------
+*(work in progress, to be updated with step-by-step instructions)*
+Clone project files and execute file main.py with a Python interpreter from the project root folder to start the parser Command Line Interface (CLI). If the program started correctly, you should see the following as the CLI:
 
-From within the equiTable folder, execute file main.py with a Python interpreter to start the application. All .sqlite files created will be stored under db/. *(to be updated with step-by-step instructions)*
+[Imgur](https://i.imgur.com/28SO95R.png)
+
+All .sqlite files created will be stored under db/.
 
 This program should work as long as the structure of the responses does not change for the API's listed in [input/api.json](input/api.json).
 

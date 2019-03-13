@@ -45,8 +45,8 @@ def print_menu(names):
         '3' : 'Delete tables',
         '4' : 'Erase download hisotry',
         '5' : 'Download data from API\'s and update database',
-        '6' : 'TESTING: Parse',
-        '7' : 'Create a database back-up file'
+        #'6' : 'TESTING: Parse',
+        '6' : 'Create a database back-up file'
     }
 
     print(dash * (len(banner) + gap * 2))
@@ -65,7 +65,14 @@ def main(file):
 
         # Print menu and capture user selection
         ops = print_menu(file)
-        inp0 = input('Enter action no.: ').strip()
+        while True:
+            try:
+                inp0 = input('Enter action no.: ').strip()
+                break
+            except KeyboardInterrupt:
+                print('\nGoodbye!')
+                exit()
+
         if inp0 not in ops.keys():
             break
         start = time.time()
@@ -104,6 +111,9 @@ def main(file):
                 elif inp == int(list(ops.keys())[-1]):
                     msg = backup_db(db_file)
 
+            except KeyboardInterrupt:
+                print('\nGoodbye!')
+                exit()
             except Exception as e:
                 print('\n\n### ERROR @ Main.py:\n', e, '\n')
                 raise e
