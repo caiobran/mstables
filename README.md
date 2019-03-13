@@ -15,7 +15,7 @@ Command line interface for the MorningStar.com scraper has been published includ
 Instructions
 ------------
 
-From within the equiTable folder, execute file main.py with a Python interpreter to start the application. All .sqlite files created will be stored under db/.
+From within the equiTable folder, execute file main.py with a Python interpreter to start the application. All .sqlite files created will be stored under db/. *(to be updated with step-by-step instructions)*
 
 This program should work as long as the structure of the responses do not change for the API's listed in input/api.json.
 
@@ -28,7 +28,7 @@ This program should work as long as the structure of the responses do not change
 - numpy
 
 ### Main Database Tables created:
-- `Master`:     Main bridge table with complete list of security and exchange symbol pairs, security name, sector, industry, type, and FY end (for equities)
+- `Master`:     Main bridge table with complete list of security and exchange symbol pairs, security name, sector, industry, type, and FY end dates
 - `MSheader`: Quote Summary data with day hi, day lo, 52wk hi, 52wk lo, forward P/E, div. yield, volumes, and current P/B, P/S, and P/CF ratios
 - `MSValuation`: 10yr stock valuation indicators (P/E, P/S, P/B, P/C)
 - `MSfinancials`: Key performance ratios for past 10 yrs
