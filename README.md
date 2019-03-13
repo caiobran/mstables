@@ -27,7 +27,7 @@ This program should work as long as the structure of the responses do not change
 - pandas
 - numpy
 
-### Main Database Tables created:
+### Main database tables created:
 - `Master`:     Main bridge table with complete list of security and exchange symbol pairs, security name, sector, industry, type, and FY end dates
 - `MSheader`: Quote Summary data with day hi, day lo, 52wk hi, 52wk lo, forward P/E, div. yield, volumes, and current P/B, P/S, and P/CF ratios
 - `MSValuation`: 10yr stock valuation indicators (P/E, P/S, P/B, P/C)
