@@ -78,6 +78,10 @@ class DataFrames():
         print('Initial DataFrames created.')
 
 
+    def QuoteHeader(self):
+        return table(self.cur, 'MSheader')
+
+
     def Valuation(self):
         valuation = table(self.cur, 'MSvaluation')
         valuation.iloc[:,2:13] = (

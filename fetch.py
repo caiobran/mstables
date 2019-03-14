@@ -250,17 +250,8 @@ def fetch(db_file):
             print_('')
             print(msg.format(len(results), totreq, srate))
 
-            # Remove old data
-            msg = 'Deleting old source data from db table \'Fetched_urls\'...'
-            print_(msg)
-            url_ids, ticker_ids, exch_ids, _, _, _ = zip(*results)
-            ids = zip(url_ids, ticker_ids, exch_ids)
-            sql = '''DELETE FROM Fetched_urls WHERE url_id=? AND
-                ticker_id=? AND exch_id=?'''
-            cur.executemany(sql, ids)
-
             # Insert new data
-            msg = 'Storing new source data into db table \'Fetched_urls\'...'
+            msg = 'Storing source data into database table \'Fetched_urls\'...'
             print_(msg)
             cols = 'url_id, ticker_id, exch_id, fetch_date, ' + \
                 'status_code, source_text'

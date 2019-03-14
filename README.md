@@ -9,8 +9,9 @@ The scraper should work as long as the structure of the responses does not chang
 As a fan of [Benjamin Graham](https://en.wikipedia.org/wiki/Benjamin_Graham)'s [value investing](https://en.wikipedia.org/wiki/Value_investing), I have always searched for sources of consolidated financial data that would allow me to identify 'undervalued' companies from a large pool of global public stocks. However, most *(if not all)* financial services that provide such data consolidation are not free and, as a small retail investor, I was not willing to pay for their fees. In fact, most of the data I needed was already available for free on various financial website, just not in a consolidated format. Therefore, I decided to create a web scraper for [MorningStar.com](https://www.morningstar.com), the website that I found to have the most available data in a more standardized and structured format. MS was also one of the only website services that published free financial performance data for the past 10 yrs, while most sites only provided free data for last 5 yrs.
 
 ### Next steps:
-- Finalize Jupyter notebook examples
+- Incorporate code into fetch.py, under the create_tables method, to download and use the xml files listed in [MorningStar's robot.txt](https://www.morningstar.com/robots.txt) when the user creates new database tables  
 - Finalize instructions for the scraper CLI
+- Finalize Jupyter notebook with examples of how to use the DataFrames class from [dataframes.py](dataframes.py)
 
 
 Instructions
