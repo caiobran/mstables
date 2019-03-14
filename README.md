@@ -1,18 +1,17 @@
 msTables
 ========
 
-Project Overview
-----------------
+msTables is a simple [MorningStar.com](https://www.morningstar.com) scraper  that automatically parses and stores financial and market data for over 70k securities into a relational SQLite database for further analysis. The scraper provides a Command Line Interface (CLI) that allows the user greater flexibility for creating and managing multiple `.sqlite` files. With the [dataframes.py](dataframes.py) module, the user can easily create DataFrame objects from the database tables for further analysis.
 
-### Objective:
-Create a MorningStar.com scraper that stores data into a relational SQLite database for further analysis. *(to be updated with tables.py info)*
+The scraper should work as long as the structure of the responses does not change for the URL's used. See [input/api.json](input/api.json) for the complete list of URL's.
 
-### Progress:
-Parser with CLI has been published. Current version includes automatic parsing and storing of data. 
+### Motivation:
+As an fan of [Benjamin Graham](https://en.wikipedia.org/wiki/Benjamin_Graham)'s [value investing](https://en.wikipedia.org/wiki/Value_investing), I have always searched for sources of consolidated financial data that would allow me to identify 'undervalued' companies from a large pool of global public stocks. However, most *(if not all)* financial services that provide such data consolidation are not free; and, as a small retail investor, I was not willing to pay for their fees. In fact, most of the data I was after was available on-line for free on various financial website, just not in a consolidated format. Therefore, I decided to create a web scraper for MorningStar, the website that I found to have the most available data in a more standardized and structured format. MS also was one of the only website services that published free financial performance data for the past 10 yrs, while most sites only provide for the last 5 yrs.
 
 ### Next steps:
-- Implement pandas function for data processing and analysis (currently under test/)
-- Finalize documentation / instructions on how to use the tool including Jupyter examples
+- Finalize Jupyter notebook examples
+- Finalize instructions for the scraper CLI
+
 
 Instructions
 ------------
@@ -27,33 +26,36 @@ The scraper should run on any Linux distribution that has Python3 and the follow
 - numpy
 - git
 
-To view the [data visualization examples][1] mentioned in the instructions, you must also have [jupyter](https://jupyter.org/) and [matplotlib](https://matplotlib.org/) installed.
+To view the [data visualization examples][1] mentioned in the instructions below, you must also have [jupyter](https://jupyter.org/) and [matplotlib](https://matplotlib.org/) installed.
 
 ### Installation
 Open a Linux terminal in the desired installation directory and execute `git clone https://github.com/caiobran/msTables.git` to download the project files.
 
 #### Command Line Interface (CLI).
 
-Execute `python main.py` from the project root directory to start the scraper CLI. If the program started correctly, you should see the following:
+Execute `python main.py` from the project root directory to start the scraper CLI. If the program has started correctly, you should see the following interface:
 
 ![Imgur](https://i.imgur.com/aisCne1.png)
 
-If you are running the scraper for the first time, you must first enter `1` to create the initial database tables. Once that action has been completed and on subsequent runs, enter `5` to fetch data from the MorningStar API's.
+1. If you are running the scraper for the first time, enter option `1` to create the initial database tables.
+2. Once that action has been completed, and on subsequent runs, enter option `5` to download the latest data from the MorningStar [URL's](input/api.json).
+  - You will be prompted to enter the number of records you would like to update. You can enter a large number such as `1000000` if you would like the scraper to update all records. You may also enter smaller quantities if you do not want the scraper to run for a longer period of time.
+  - On average, it has taken about two days to update all records with the current program parameters and an Internet speed > 100mbps.
+  - One may want to increase the size of the multiprocessing pool in [main.py](main.py) that is used for URL requests to speed up the scraper. *However, I do not recommend doing that as the MorningStar servers will not be too happy about receiving many simultaneous GET requests from the same IP address.*
+
 *(documentation in progress, to be updated with instructions on remaining actions)*
 
-This program should work as long as the structure of the responses does not change for the API's listed in [input/api.json](input/api.json).
-
 ### Database tables:
-The scraper will automatically create a directory *db/* in the root folder to store the *.sqlite* files generated. Each file will contains a relational database with the following main tables:
+The scraper will automatically create a directory *db/* in the root folder to store the *.sqlite* files generated. The file name is displayed in the CLI under option `0`. Each file created will contain a relational database with the following main tables:
 
-- `Master`: Main bridge table with complete list of security and exchange symbol pairs, security name, sector, industry, type, and FY end dates
-- `MSheader`: Quote Summary data with day hi, day lo, 52wk hi, 52wk lo, forward P/E, div. yield, volumes, and current P/B, P/S, and P/CF ratios
-- `MSValuation`: 10yr stock valuation indicators (P/E, P/S, P/B, P/C)
-- `MSfinancials`: Key performance ratios for past 10 yrs
-- `MSratio_cashflow`, `MSratio_financial`, `MSratio_growth`, `MSratio_profitability`, `MSratio_efficiency`: Financial performance ratios for past 10 yrs
-- `MSreport_is_yr`, `MSreport_is_qt`: Income Statements for past 5 yrs and 5 qtrs, respectively
-- `MSreport_bs_yr`, `MSreport_bs_qt`: Balance Sheets for past 5 yrs and 5 qtrs, respectively
-- `MSreport_cf_yr`, `MSreport_cf_qt`: Cash Flow Statements for past 5 yrs and 5 qtrs, respectively
+- *Master*: Main bridge table with complete list of security and exchange symbol pairs, security name, sector, industry, security type, and FY end dates
+- *MSheader*: Quote Summary data with day hi, day lo, 52wk hi, 52wk lo, forward P/E, div. yield, volumes, and current P/B, P/S, and P/CF ratios
+- *MSValuation*: 10yr stock valuation indicators (P/E, P/S, P/B, P/C)
+- *MSfinancials*: Key performance ratios for past 10 yrs
+- *MSratio_cashflow*, *MSratio_financial*, *MSratio_growth*, *MSratio_profitability*, *MSratio_efficiency*: Financial performance ratios for past 10 yrs
+- *MSreport_is_yr*, *MSreport_is_qt*: Income Statements for past 5 yrs and 5 qtrs, respectively
+- *MSreport_bs_yr*, *MSreport_bs_qt*: Balance Sheets for past 5 yrs and 5 qtrs, respectively
+- *MSreport_cf_yr*, *MSreport_cf_qt*: Cash Flow Statements for past 5 yrs and 5 qtrs, respectively
 
 See Jupyter notebook [data_overview.ipynb][1] for examples on how to create DataFrame objects to manipulate and visualize the data.
 
