@@ -96,7 +96,7 @@ class DataFrames():
         return keyratios
 
 
-    def FinancialHealth(self):
+    def FinHealth(self):
         finanhealth = table(self.cur, 'MSratio_financial')
         finanhealth.iloc[:, 2:13] = (finanhealth
             .iloc[:, 2:13].replace(self.timerefs['dates']))
@@ -117,7 +117,7 @@ class DataFrames():
         return growth
 
 
-    def CashflowHealth(self):
+    def CFHealth(self):
         cfhealth = table(self.cur, 'MSratio_cashflow')
         cfhealth.iloc[:, 2:13] = (cfhealth
             .iloc[:, 2:13].replace(self.timerefs['dates']))
