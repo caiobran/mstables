@@ -172,7 +172,7 @@ def fetch(db_file):
     while True:
         # User input for number of tickers to update
         try:
-            msg = 'Qty. to be updated:\n:'
+            msg = 'Qty. of records to be updated:\n:'
             stp = int(input(msg))
         except KeyboardInterrupt:
             print('\nGoodbye!')
@@ -378,7 +378,7 @@ def geturllist(cur):
                 for c, ticker in enumerate(tickers)]
 
     # Print API list and no. of tickers to be updated for each
-    msg = '\nQty. of symbols pending update per API no.:\n\n'
+    msg = '\nQty. of records pending update per API no.:\n\n'
     print_(msg)
     df_tickct = pd.DataFrame([(k, '{:8,.0f}'.format(v))
         for k, v in ticker_count.items()])
