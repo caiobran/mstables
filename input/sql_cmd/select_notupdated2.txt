@@ -1,0 +1,10 @@
+SELECT /*Master.exchange_id AS EID, Master.ticker_id AS TID,*/ Exchanges.id, Exchanges.exchange_sym, Tickers.id, Tickers.ticker
+	FROM Master LEFT JOIN (
+
+		SELECT url_id AS UID, exch_id AS EID0, ticker_id AS TID0 FROM Fetched_urls
+			WHERE UID = {} AND strftime('%Y%W', fetch_date) = strftime('%Y%W', 'now') 
+		)
+		ON EID0 = Master.exchange_id AND TID0 = Master.ticker_id
+	JOIN Tickers ON Tickers.id = Master.ticker_id
+	JOIN Exchanges ON Exchanges.id = Master.exchange_id
+	WHERE UID IS NULL

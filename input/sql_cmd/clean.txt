@@ -1,0 +1,7 @@
+delete from Tickers where ticker = '';
+delete from Exchanges where exchange_sym = '';
+delete from Master where exchange_id in (
+	select Master.exchange_id
+		from Master left join Exchanges on Master.exchange_id = Exchanges.id
+		where Exchanges.exchange_sym is null
+	);
