@@ -1,6 +1,0 @@
-SELECT Tickers.id, Tickers.ticker, Exchanges.id, Exchanges.exchange_sym
-	FROM Master JOIN Tickers ON Master.ticker_id = Tickers.id JOIN Exchanges ON Master.exchange_id = Exchanges.id
-	WHERE (Tickers.ticker, Exchanges.exchange_sym) not in (
-		SELECT Tickers.ticker, Exchanges.exchange_sym
-			FROM Fetched_urls JOIN Tickers ON Fetched_urls.ticker_id = Tickers.id JOIN Exchanges ON Fetched_urls.exch_id = Exchanges.id
-			WHERE strftime('%Y%m', Fetched_urls.fetch_date) = strftime('%Y%m', 'now') and Fetched_urls.url_id = {})
