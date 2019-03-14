@@ -8,7 +8,7 @@ Project Overview
 Create a MorningStar.com scraper that stores data into a relational SQLite database for further analysis. *(to be updated with tables.py info)*
 
 ### Progress:
-Command line interface for the MorningStar.com scraper has been published including the automated parsing and storing of the data into an .slqite file.
+Parser with CLI has been published. Current version includes automatic parsing and storing of data. 
 
 ### Next steps:
 - Implement pandas function for data processing and analysis (currently under test/)
