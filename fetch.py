@@ -249,9 +249,10 @@ def fetch(db_file):
             srate = len(results)/totreq
             print_('')
             print(msg.format(len(results), totreq, srate))
-            print_('Storing data into database ... ')
 
             # Remove old data
+            msg = 'Deleting old source data from db table \'Fetched_urls\'...'
+            print_(msg)
             url_ids, ticker_ids, exch_ids, _, _, _ = zip(*results)
             ids = zip(url_ids, ticker_ids, exch_ids)
             sql = '''DELETE FROM Fetched_urls WHERE url_id=? AND
@@ -259,6 +260,8 @@ def fetch(db_file):
             cur.executemany(sql, ids)
 
             # Insert new data
+            msg = 'Storing new source data into db table \'Fetched_urls\'...'
+            print_(msg)
             cols = 'url_id, ticker_id, exch_id, fetch_date, ' + \
                 'status_code, source_text'
             sql = 'INSERT OR IGNORE INTO Fetched_urls ({}) VALUES ({})'
@@ -326,18 +329,9 @@ def fetch_api(url_info):
     except:
         raise
 
-    # Timer to attemp to slow down and 'align' Pool requests
+    # Timer to attemp to slow down and 'align' Pool requests to every sec
     if True:
-        sec = 0.5
-        tvar = (time.time() - t0)
-        if tvar < sec:
-            time.sleep(sec - tvar)
-        elif tvar < 2 * sec:
-            time.sleep(2 * sec - tvar)
-        elif tvar < 3 * sec:
-            time.sleep(3 * sec - tvar)
-        else:
-            time.sleep(abs(10 * sec - tvar))
+        time.sleep(1 - (time.time() % 1))
     printprogress(url_id, num, ct)
     #time.sleep(sec)
 
