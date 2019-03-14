@@ -1,6 +1,0 @@
-SELECT Tickers.ticker
-  FROM Tickers
-    JOIN Fetched_urls ON Tickers.id = Fetched_urls.ticker_id
-    JOIN URLs ON URLs.id = Fetched_urls.url_id
-  WHERE URLs.id = (?)
-    --AND Fetched_urls.updated_id = (?)

@@ -1,1 +1,0 @@
-DELETE FROM Fetched_urls WHERE status_code = 200 and source_text = ''
