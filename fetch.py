@@ -64,7 +64,8 @@ def create_tables(db_file):
     cur.executemany(sql, csv_content('input/ctycodes.csv', 3))
 
     # Insert list of currencies into Currencies table
-    sql = '''INSERT OR IGNORE INTO Currencies (currency, code) VALUES (?, ?)'''
+    sql = '''INSERT OR IGNORE INTO Currencies (currency, currency_code)
+        VALUES (?, ?)'''
     cur.executemany(sql, csv_content('input/symbols.csv', 2))
 
     # Insert list of types into SecurityTypes table
@@ -152,6 +153,7 @@ def db_execute(cur, sql):
     x = 0
     while x < 10:
         try:
+            sql = re.sub('\'Null\'|\'null\'', 'null', sql)
             return cur.execute(sql)
         except KeyboardInterrupt:
             print('\nGoodbye!')
@@ -330,7 +332,6 @@ def fetch_api(url_info):
     if True:
         time.sleep(1 - (time.time() % 1))
     printprogress(url_id, num, ct)
-    #time.sleep(sec)
 
     return (url_id, ticker_id, exch_id, today, status_code, data)
 

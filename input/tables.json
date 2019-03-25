@@ -4461,7 +4461,7 @@
   "Currencies":{
     "id":"INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,",
     "currency":"TEXT,",
-    "code":"TEXT UNIQUE"
+    "currency_code":"TEXT UNIQUE"
   },
   "SecurityTypes":{
     "id":"INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,",

@@ -12,16 +12,17 @@ class DataFrames():
     dbfile = 'db/mstables.sqlite' # Standard db file name
 
     def __init__(self, file = dbfile):
-
-        print('Creating intial DataFrames ...')
+        msg = 'Creating intial DataFrames from file {}...'
+        print(msg.format(file))
 
         # SQLite connection
+        self.file = file
         self.conn = sqlite3.connect(file)
         self.cur = self.conn.cursor()
 
         # Row Headers
         ColHeaders = table(self.cur, 'ColHeaders', True)
-        self.ColHeaders = ColHeaders.set_index('id')
+        self.colheaders = ColHeaders.set_index('id')
 
         # Dates and time references
         timerefs = table(self.cur, 'TimeRefs', True)
@@ -42,106 +43,68 @@ class DataFrames():
         #self.fetchedurls = table(self.cur, 'Fetched_urls', True)
 
         # Master table
-        self.master = table(self.cur, 'Master', True, np.int32)
+        self.master = table(self.cur, 'Master', True)
 
-        '''
-        master = (self.master0
-            .drop(['stock_type_id', 'style_id'] , axis=1)
-            .rename(columns={'fyend_id':'fy_end', 'update_date_id':'updated'})
-            .merge(self.tickers, left_on='ticker_id', right_on='id')
-            .drop(['id'] , axis=1)
-            .merge(self.exchanges, left_on='exchange_id', right_on='id')
-            .drop(['id'] , axis=1)
-            .rename(columns={'exchange_sym':'exchange_symbol'})
-            .merge(self.countries, left_on='country_id', right_on='id')
-            .drop(['id', 'country_id', 'a2_iso'] , axis=1)
-            .merge(self.companies, left_on='company_id', right_on='id')
-            .drop(['id', 'company_id'] , axis=1)
-            .merge(self.industries, left_on='industry_id', right_on='id')
-            .drop(['id', 'industry_id'] , axis=1)
-            .merge(self.sectors, left_on='sector_id', right_on='id')
-            .drop(['id', 'sector_id'] , axis=1)
-            .merge(self.securitytypes, left_on='security_type_id', right_on='id')
-            .drop(['id', 'security_type_id'] , axis=1)
-            .rename(columns={'country':'country_name', 'a3_un':'country'})
-            .replace(['', '—'], None)
-            )
-
-        master = master[[
-            'ticker_id', 'exchange_id', 'country', 'country_name',
-            'exchange_symbol', 'exchange', 'ticker', 'company', 'security_type_code',
-            'security_type', 'sector', 'industry', 'fy_end', 'updated']]
-
-        master['updated'] = master['updated'].astype('int')
-
-        master['fy_end'] = master['fy_end'].astype('int')
-
-        master[['fy_end', 'updated']] = (
-            master[['fy_end', 'updated']].replace(self.timerefs['dates' ]))
-
-        master['fy_end'] = pd.to_datetime(master['fy_end'])
-
-        master['updated'] = pd.to_datetime(master['updated'])
-
-        self.master = master.sort_values(by='fy_end', ascending=False)
-        '''
         print('Initial DataFrames created.')
 
 
-    def QuoteHeader(self):
+    def quoteheader(self):
         return table(self.cur, 'MSheader')
 
 
-    def Valuation(self):
-        valuation = table(self.cur, 'MSvaluation')
-        valuation.iloc[:,2:13] = (
-            valuation.iloc[:,2:13].replace(self.timerefs['dates']))
-        return valuation
+    def valuation(self):
+        val = table(self.cur, 'MSvaluation')
+        yrs = val.iloc[0, 2:13].replace(self.timerefs['dates']).to_dict()
+        cols = val.columns[:13].values.tolist() + list(map(
+            lambda col: ''.join([col[:3], yrs[col[3:]]]), val.columns[13:]))
+        val.columns = cols
+
+        return val.set_index(['exchange_id', 'ticker_id']).iloc[:, 11:]
 
 
-    def KeyRatios(self):
+    def keyratios(self):
         keyratios = table(self.cur, 'MSfinancials')
         keyratios.iloc[:,2:13] = (
             keyratios.iloc[:,2:13].replace(self.timerefs['dates']))
         return keyratios
 
 
-    def FinHealth(self):
+    def finhealth(self):
         finanhealth = table(self.cur, 'MSratio_financial')
         finanhealth.iloc[:, 2:13] = (finanhealth
             .iloc[:, 2:13].replace(self.timerefs['dates']))
         return finanhealth
 
 
-    def Profitability(self):
+    def profitability(self):
         profitab = table(self.cur, 'MSratio_profitability')
         profitab.iloc[:, 2:13] = (profitab
             .iloc[:, 2:13].replace(self.timerefs['dates']))
         return profitab
 
 
-    def Growth(self):
+    def growth(self):
         growth = table(self.cur, 'MSratio_growth')
         growth.iloc[:, 2:13] = (growth
             .iloc[:, 2:13].replace(self.timerefs['dates']))
         return growth
 
 
-    def CFHealth(self):
+    def cfhealth(self):
         cfhealth = table(self.cur, 'MSratio_cashflow')
         cfhealth.iloc[:, 2:13] = (cfhealth
             .iloc[:, 2:13].replace(self.timerefs['dates']))
         return cfhealth
 
 
-    def Efficiency(self):
+    def efficiency(self):
         efficiency = table(self.cur, 'MSratio_efficiency')
         efficiency.iloc[:, 2:13] = (efficiency
             .iloc[:, 2:13].replace(self.timerefs['dates']))
         return efficiency
 
     # Income Statement - Annual
-    def AnnualIS(self):
+    def annualIS(self):
         rep_is_yr = table(self.cur, 'MSreport_is_yr')
         rep_is_yr.iloc[:,2:8] = (
             rep_is_yr.iloc[:,2:8].replace(self.timerefs['dates']))
@@ -151,7 +114,7 @@ class DataFrames():
         return rep_is_yr
 
     # Income Statement - Quarterly
-    def QuarterlyIS(self):
+    def quarterlyIS(self):
         rep_is_qt = table(self.cur, 'MSreport_is_qt')
         rep_is_qt.iloc[:,2:8] = (
             rep_is_qt.iloc[:,2:8].replace(self.timerefs['dates']))
@@ -161,7 +124,7 @@ class DataFrames():
         return rep_is_qt
 
     # Balance Sheet - Annual
-    def AnnualBS(self):
+    def annualBS(self):
         rep_bs_yr = table(self.cur, 'MSreport_bs_yr')
         rep_bs_yr.iloc[:,2:7] = (
             rep_bs_yr.iloc[:,2:7].replace(self.timerefs['dates']))
@@ -171,7 +134,7 @@ class DataFrames():
         return rep_bs_yr
 
     # Balance Sheet - Quarterly
-    def QuarterlyBS(self):
+    def quarterlyBS(self):
         rep_bs_qt = table(self.cur, 'MSreport_bs_qt')
         rep_bs_qt.iloc[:,2:7] = (
             rep_bs_qt.iloc[:,2:7].replace(self.timerefs['dates']))
@@ -181,7 +144,7 @@ class DataFrames():
         return rep_bs_qt
 
     # Cashflow Statement - Annual
-    def AnnualCF(self):
+    def annualCF(self):
         rep_cf_yr = table(self.cur, 'MSreport_cf_yr')
         rep_cf_yr.iloc[:,2:8] = (
             rep_cf_yr.iloc[:,2:8].replace(self.timerefs['dates']))
@@ -191,7 +154,7 @@ class DataFrames():
         return rep_cf_yr
 
     # Cashflow Statement - Quarterly
-    def QuarterlyCF(self):
+    def quarterlyCF(self):
         rep_cf_qt = table(self.cur, 'MSreport_cf_qt')
         rep_cf_qt.iloc[:,2:8] = (
             rep_cf_qt.iloc[:,2:8].replace(self.timerefs['dates']))
@@ -201,15 +164,17 @@ class DataFrames():
         return rep_cf_qt
 
     # 10yr Price History
-    def PriceHistory(self):
+    def priceHistory(self):
         return table(self.cur, 'MSpricehistory')
+
 
     def __del__(self):
         self.cur.close()
         self.conn.close()
+        #print('Database connection for file {} closed.'.format(self.file))
 
 
-def table(cur, tbl, prnt = False, type = None):
+def table(cur, tbl, prnt = False):
     cur.execute('select * from {}'.format(tbl))
     cols = list(tbl_js[tbl].keys())
     if 'PRIMARY KEY' in cols: cols = cols[:-1]
@@ -218,7 +183,7 @@ def table(cur, tbl, prnt = False, type = None):
         if prnt == True:
             msg = 'Creating DataFrame \'{}\' ...'
             print(msg.format(tbl.lower()))
-        return pd.DataFrame(cur.fetchall(), columns=cols, dtype=type)
+        return pd.DataFrame(cur.fetchall(), columns=cols)
     except:
         raise
 

@@ -22,6 +22,9 @@ def parse(db_file):
             fetch.print_('')
             print('\tError - sqlite3 error: {}'.format(S))
             continue
+        except KeyboardInterrupt:
+            print('\nGoodbye!')
+            exit()
         except:
             raise
         break
@@ -75,6 +78,9 @@ def parsing(conn, cur, items):
             except Exception as E:
                 print('\n\nE - {}'.format(str(E)))
                 raise
+            except KeyboardInterrupt:
+                print('\nGoodbye!')
+                exit()
             if (source_text is None or len(source_text) == 0 or
                 'Morningstar.com Error Page' in source_text or
                 'This page is temporarily unavailable' in source_text):
@@ -140,6 +146,9 @@ def db_execute(cur, sql, tpl):
         except sqlite3.OperationalError as S:
             fetch.print_('')
             print('\tError - sqlite3 error: {}'.format(S))
+        except KeyboardInterrupt:
+            print('\nGoodbye!')
+            exit()
         except:
             print('\n\nSQL cmd = \'{}\'\n{}\n'.format(sql, tpl))
             raise
@@ -170,6 +179,9 @@ def parse_1(cur, ticker_id, exch_id, data, api):
         fetch.print_('')
         print('\tError: KeyError at Parse_1\n')
         return 0
+    except KeyboardInterrupt:
+        print('\nGoodbye!')
+        exit()
     except:
         print('\n\nTicker_id = {}, Exch_id = {}'.format(ticker_id, exch_id))
         print('Data = {} {}\n'.format(data, len(data)))
@@ -198,7 +210,8 @@ def parse_1(cur, ticker_id, exch_id, data, api):
             cur, 'Tickers', 'ticker', symbol)
 
         # Currencies
-        curr_id = fetch.sql_insert_one_get_id(cur, 'Currencies', 'code', curr)
+        curr_id = fetch.sql_insert_one_get_id(
+            cur, 'Currencies', 'currency_code', curr)
 
         # Companies
         comp_id = fetch.sql_insert_one_get_id(
@@ -257,6 +270,9 @@ def parse_2(cur, ticker_id, exch_id, data):
         stype = tags[6].text.strip()
         fyend = tags[10].text.strip()
         style = tags[12].text.strip()
+    except KeyboardInterrupt:
+        print('\nGoodbye!')
+        exit()
     except:
         print('\n\nTicker_id = {}, Exch_id = {}'.format(ticker_id, exch_id))
         print('Data = {} {}\n'.format(data, len(data)))
@@ -310,7 +326,8 @@ def parse_3(cur, ticker_id, exch_id, data):
             continue
 
         if attrs.get('vkey') == 'Currency':
-            val = fetch.sql_insert_one_get_id(cur, 'Currencies', 'code', text)
+            val = fetch.sql_insert_one_get_id(
+                cur, 'Currencies', 'currency_code', text)
             info['currency_id'] = val
         elif attrs.get('vkey') == 'OpenPrice':
             info['openprice'] = re.sub(',', '', text)
@@ -367,6 +384,11 @@ def parse_3(cur, ticker_id, exch_id, data):
 
     if 'fpe' in locals() and fpe != 'Forward' and 'fpe' in info:
         del info['fpe']
+
+    # Remove 'empty' string values
+    for k, v in info.items():
+        if v == '' or v == ' ':
+            info[k] = 'Null'
 
     # Insert data into MSheader table
     info['ticker_id'] = ticker_id
@@ -469,6 +491,9 @@ def parse_5(cur, ticker_id, exch_id, data):
         if js is None:
             return 0
         soup = bs(js, 'html.parser')
+    except KeyboardInterrupt:
+        print('\nGoodbye!')
+        exit()
     except:
         print('\n\nTicker_id = {}, Exch_id = {}'.format(ticker_id, exch_id))
         print('Data = {} {}\n'.format(data, len(data)))
@@ -558,6 +583,9 @@ def parse_6(cur, ticker_id, exch_id, data):
             return 0
         soup = bs(js, 'html.parser')
         trs = soup.find_all('tr')
+    except KeyboardInterrupt:
+        print('\nGoodbye!')
+        exit()
     except:
         print('\n\nTicker_id = {}, Exch_id = {}'.format(ticker_id, exch_id))
         print('Data = {} {}\n'.format(data, len(data)))
@@ -676,6 +704,9 @@ def parse_8(cur, api, ticker_id, exch_id, data):
         html = js['result']
         soup = bs(html, 'html.parser')
         tags = soup.find_all('div')
+    except KeyboardInterrupt:
+        print('\nGoodbye!')
+        exit()
     except:
         print('\n\n', data)
         raise
