@@ -204,8 +204,8 @@ def parse_1(cur, ticker_id, exch_id, data, api):
         comp_id = fetch.sql_insert_one_get_id(
             cur, 'Companies', 'company', comp)
 
-        # Types
-        type_id = fetch.sql_insert_one_get_id(cur, 'Types', 'type_code', type)
+        # SecurityTypes
+        type_id = fetch.sql_insert_one_get_id(cur, 'SecurityTypes', 'security_type_code', type)
 
         # Countries
         country_id = fetch.sql_insert_one_get_id(cur,
@@ -232,7 +232,7 @@ def parse_1(cur, ticker_id, exch_id, data, api):
         fetch.db_execute(cur, sql)
         dict1 = {
             'company_id':comp_id,
-            'type_id':type_id,
+            'security_type_id':type_id,
             'update_date_id':date_id
             }
         dict2 = {
@@ -254,7 +254,7 @@ def parse_2(cur, ticker_id, exch_id, data):
     try:
         sector = tags[2].text.strip()
         industry = tags[4].text.strip()
-        ctype = tags[6].text.strip()
+        stype = tags[6].text.strip()
         fyend = tags[10].text.strip()
         style = tags[12].text.strip()
     except:
@@ -272,9 +272,9 @@ def parse_2(cur, ticker_id, exch_id, data):
     sql = fetch.sql_record_id('Industries', '(industry)', industry)
     industry_id = fetch.db_execute(cur, sql).fetchone()[0]
 
-    # Insert companytype into CompanyTypes
-    ctype_id = fetch.sql_insert_one_get_id(
-        cur, 'CompanyTypes', 'companytype', ctype)
+    # Insert stock_type into StockTypes
+    stype_id = fetch.sql_insert_one_get_id(
+        cur, 'StockTypes', 'stock_type', stype)
 
     # Insert fyend into FYEnds
     fyend_id = fetch.sql_insert_one_get_id(cur, 'TimeRefs', 'dates', fyend)
@@ -284,7 +284,7 @@ def parse_2(cur, ticker_id, exch_id, data):
 
     # Update Tickers table with parsed data
     sql = update_record('Master', {'industry_id':industry_id,
-        'companytype_id':ctype_id, 'fyend_id':fyend_id, 'style_id':style_id},
+        'stock_type_id':stype_id, 'fyend_id':fyend_id, 'style_id':style_id},
         {'ticker_id':ticker_id, 'exchange_id':exch_id})
     fetch.db_execute(cur, sql)
 

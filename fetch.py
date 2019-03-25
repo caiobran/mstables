@@ -67,8 +67,9 @@ def create_tables(db_file):
     sql = '''INSERT OR IGNORE INTO Currencies (currency, code) VALUES (?, ?)'''
     cur.executemany(sql, csv_content('input/symbols.csv', 2))
 
-    # Insert list of types into Types table
-    sql = '''INSERT OR IGNORE INTO Types (type_code, type) VALUES (?, ?)'''
+    # Insert list of types into SecurityTypes table
+    sql = '''INSERT OR IGNORE INTO SecurityTypes
+        (security_type_code, security_type) VALUES (?, ?)'''
     cur.executemany(sql, csv_content('input/ms_investment-types.csv', 2))
 
     # Insert list of api URLs into URLs table
@@ -165,8 +166,8 @@ def db_execute(cur, sql):
 
 
 def fetch(db_file):
-    div = 100
-    pool_size = 10
+    div = 120
+    pool_size = 30
 
     # Get user input for stp (no. of tickers to update)
     while True:
@@ -296,29 +297,34 @@ def fetch_api(url_info):
     ct = ticker_count[url_id]
 
     # Fetch URL data
-    try:
-        page = requests.get(url)
-        status_code = page.status_code
-        data = re.sub('\'', '', page.text)
-        data = zlib.compress(data.encode())
-    except requests.exceptions.ConnectionError:
-        print_('')
-        print('\n\tError: requests.exceptions.ConnectionError')
-        msg = 'Ticker: {}, Exch: {}, URL: {}\n'
-        print(msg.format(ticker_id, exch_id, url))
-        return
-    except requests.exceptions.ChunkedEncodingError:
-        print_('')
-        print('\n\tError: requests.exceptions.ChunkedEncodingError')
-        msg = 'Ticker: {}, Exch: {}, URL: {}\n'
-        print(msg.format(ticker_id, exch_id, url))
-        time.sleep(4)
-        return
-    except KeyboardInterrupt:
-        print('\nGoodbye!')
-        exit()
-    except:
-        raise
+    x = 0
+    while True:
+        try:
+            page = requests.get(url)
+            status_code = page.status_code
+            data = re.sub('\'', '', page.text)
+            data = zlib.compress(data.encode())
+            break
+        except requests.exceptions.ConnectionError:
+            if x > 9:
+                print_('')
+                print('\n\tError: requests.exceptions.ConnectionError')
+                msg = 'Ticker: {}, Exch: {}, URL: {}\n'
+                print(msg.format(ticker_id, exch_id, url))
+                return
+        except requests.exceptions.ChunkedEncodingError:
+            print_('')
+            print('\n\tError: requests.exceptions.ChunkedEncodingError')
+            msg = 'Ticker: {}, Exch: {}, URL: {}\n'
+            print(msg.format(ticker_id, exch_id, url))
+            time.sleep(4)
+            return
+        except KeyboardInterrupt:
+            print('\nGoodbye!')
+            exit()
+        except:
+            raise
+        x += 1
 
     # Timer to attemp to slow down and 'align' Pool requests to every sec
     if True:

@@ -4415,8 +4415,8 @@
     "company_id":"INTEGER,",
     "exchange_id":"INTEGER,",
     "industry_id":"INTEGER,",
-    "type_id":"INTEGER,",
-    "companytype_id":"INTEGER,",
+    "security_type_id":"INTEGER,",
+    "stock_type_id":"INTEGER,",
     "fyend_id":"INTEGER,",
     "style_id":"INTEGER,",
     "update_date_id":"INTEGER,",
@@ -4463,10 +4463,10 @@
     "currency":"TEXT,",
     "code":"TEXT UNIQUE"
   },
-  "Types":{
+  "SecurityTypes":{
     "id":"INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,",
-    "type_code":"TEXT UNIQUE,",
-    "type":"TEXT"
+    "security_type_code":"TEXT UNIQUE,",
+    "security_type":"TEXT"
   },
   "Sectors":{
     "id":"INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,",
@@ -4476,9 +4476,9 @@
     "id":"INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,",
     "company":"TEXT UNIQUE"
   },
-  "CompanyTypes":{
+  "StockTypes":{
     "id":"INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,",
-    "companytype":"TEXT UNIQUE"
+    "stock_type":"TEXT UNIQUE"
   },
   "URLs":{
     "id":"INTEGER NOT NULL UNIQUE PRIMARY KEY,",

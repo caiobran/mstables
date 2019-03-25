@@ -29,7 +29,7 @@ class DataFrames():
 
         # Reference tables
         self.urls = table(self.cur, 'URLs', True)
-        self.types = table(self.cur, 'Types', True)
+        self.securitytypes = table(self.cur, 'SecurityTypes', True)
         self.tickers = table(self.cur, 'Tickers', True)
         self.sectors = table(self.cur, 'Sectors', True)
         self.industries = table(self.cur, 'Industries', True)
@@ -38,12 +38,15 @@ class DataFrames():
         self.countries = table(self.cur, 'Countries', True)
         self.companies = table(self.cur, 'Companies', True)
         self.currencies = table(self.cur, 'Currencies', True)
-        self.companytypes = table(self.cur, 'CompanyTypes', True)
+        self.stocktypes = table(self.cur, 'StockTypes', True)
         #self.fetchedurls = table(self.cur, 'Fetched_urls', True)
 
         # Master table
-        master = (table(self.cur, 'Master', True)
-            .drop(['companytype_id', 'style_id'] , axis=1)
+        self.master = table(self.cur, 'Master', True, np.int32)
+
+        '''
+        master = (self.master0
+            .drop(['stock_type_id', 'style_id'] , axis=1)
             .rename(columns={'fyend_id':'fy_end', 'update_date_id':'updated'})
             .merge(self.tickers, left_on='ticker_id', right_on='id')
             .drop(['id'] , axis=1)
@@ -58,23 +61,30 @@ class DataFrames():
             .drop(['id', 'industry_id'] , axis=1)
             .merge(self.sectors, left_on='sector_id', right_on='id')
             .drop(['id', 'sector_id'] , axis=1)
-            .merge(self.types, left_on='type_id', right_on='id')
-            .drop(['id', 'type_id'] , axis=1)
+            .merge(self.securitytypes, left_on='security_type_id', right_on='id')
+            .drop(['id', 'security_type_id'] , axis=1)
             .rename(columns={'country':'country_name', 'a3_un':'country'})
             .replace(['', '—'], None)
             )
+
         master = master[[
             'ticker_id', 'exchange_id', 'country', 'country_name',
-            'exchange_symbol', 'exchange', 'ticker', 'company', 'type_code',
-            'type', 'sector', 'industry', 'fy_end', 'updated']]
+            'exchange_symbol', 'exchange', 'ticker', 'company', 'security_type_code',
+            'security_type', 'sector', 'industry', 'fy_end', 'updated']]
+
         master['updated'] = master['updated'].astype('int')
+
         master['fy_end'] = master['fy_end'].astype('int')
+
         master[['fy_end', 'updated']] = (
             master[['fy_end', 'updated']].replace(self.timerefs['dates' ]))
+
         master['fy_end'] = pd.to_datetime(master['fy_end'])
+
         master['updated'] = pd.to_datetime(master['updated'])
 
         self.master = master.sort_values(by='fy_end', ascending=False)
+        '''
         print('Initial DataFrames created.')
 
 
@@ -199,7 +209,7 @@ class DataFrames():
         self.conn.close()
 
 
-def table(cur, tbl, prnt = False):
+def table(cur, tbl, prnt = False, type = None):
     cur.execute('select * from {}'.format(tbl))
     cols = list(tbl_js[tbl].keys())
     if 'PRIMARY KEY' in cols: cols = cols[:-1]
@@ -208,7 +218,7 @@ def table(cur, tbl, prnt = False):
         if prnt == True:
             msg = 'Creating DataFrame \'{}\' ...'
             print(msg.format(tbl.lower()))
-        return pd.DataFrame(cur.fetchall(), columns=cols)
+        return pd.DataFrame(cur.fetchall(), columns=cols, dtype=type)
     except:
         raise
 
