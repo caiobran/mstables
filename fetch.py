@@ -166,8 +166,8 @@ def db_execute(cur, sql):
 
 
 def fetch(db_file):
-    div = 120
-    pool_size = 30
+    div = 100
+    pool_size = 10
 
     # Get user input for stp (no. of tickers to update)
     while True:
