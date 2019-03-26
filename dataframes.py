@@ -21,8 +21,8 @@ class DataFrames():
         self.cur = self.conn.cursor()
 
         # Row Headers
-        ColHeaders = table(self.cur, 'ColHeaders', True)
-        self.colheaders = ColHeaders.set_index('id')
+        colheaders = table(self.cur, 'ColHeaders', True)
+        self.colheaders = colheaders.set_index('id')
 
         # Dates and time references
         timerefs = table(self.cur, 'TimeRefs', True)
@@ -48,6 +48,33 @@ class DataFrames():
         print('Initial DataFrames created.')
 
 
+    def add_yr_cols(self, df):
+        return (df
+         .merge(self.timerefs, left_on='Y0', right_on='id')
+         .drop('Y0', axis=1).rename(columns={'dates':'Y0'})
+         .merge(self.timerefs, left_on='Y1', right_on='id')
+         .drop('Y1', axis=1).rename(columns={'dates':'Y1'})
+         .merge(self.timerefs, left_on='Y2', right_on='id')
+         .drop('Y2', axis=1).rename(columns={'dates':'Y2'})
+         .merge(self.timerefs, left_on='Y3', right_on='id')
+         .drop('Y3', axis=1).rename(columns={'dates':'Y3'})
+         .merge(self.timerefs, left_on='Y4', right_on='id')
+         .drop('Y4', axis=1).rename(columns={'dates':'Y4'})
+         .merge(self.timerefs, left_on='Y5', right_on='id')
+         .drop('Y5', axis=1).rename(columns={'dates':'Y5'})
+         .merge(self.timerefs, left_on='Y6', right_on='id')
+         .drop('Y6', axis=1).rename(columns={'dates':'Y6'})
+         .merge(self.timerefs, left_on='Y7', right_on='id')
+         .drop('Y7', axis=1).rename(columns={'dates':'Y7'})
+         .merge(self.timerefs, left_on='Y8', right_on='id')
+         .drop('Y8', axis=1).rename(columns={'dates':'Y8'})
+         .merge(self.timerefs, left_on='Y9', right_on='id')
+         .drop('Y9', axis=1).rename(columns={'dates':'Y9'})
+         .merge(self.timerefs, left_on='Y10', right_on='id')
+         .drop('Y10', axis=1).rename(columns={'dates':'Y10'})
+        )
+
+
     def quoteheader(self):
         return table(self.cur, 'MSheader')
 
@@ -64,43 +91,31 @@ class DataFrames():
 
     def keyratios(self):
         keyratios = table(self.cur, 'MSfinancials')
-        keyratios.iloc[:,2:13] = (
-            keyratios.iloc[:,2:13].replace(self.timerefs['dates']))
-        return keyratios
+        return self.add_yr_cols(keyratios)
 
 
     def finhealth(self):
         finanhealth = table(self.cur, 'MSratio_financial')
-        finanhealth.iloc[:, 2:13] = (finanhealth
-            .iloc[:, 2:13].replace(self.timerefs['dates']))
         return finanhealth
 
 
     def profitability(self):
         profitab = table(self.cur, 'MSratio_profitability')
-        profitab.iloc[:, 2:13] = (profitab
-            .iloc[:, 2:13].replace(self.timerefs['dates']))
         return profitab
 
 
     def growth(self):
         growth = table(self.cur, 'MSratio_growth')
-        growth.iloc[:, 2:13] = (growth
-            .iloc[:, 2:13].replace(self.timerefs['dates']))
         return growth
 
 
     def cfhealth(self):
         cfhealth = table(self.cur, 'MSratio_cashflow')
-        cfhealth.iloc[:, 2:13] = (cfhealth
-            .iloc[:, 2:13].replace(self.timerefs['dates']))
         return cfhealth
 
 
     def efficiency(self):
         efficiency = table(self.cur, 'MSratio_efficiency')
-        efficiency.iloc[:, 2:13] = (efficiency
-            .iloc[:, 2:13].replace(self.timerefs['dates']))
         return efficiency
 
     # Income Statement - Annual
@@ -110,7 +125,7 @@ class DataFrames():
             rep_is_yr.iloc[:,2:8].replace(self.timerefs['dates']))
         cols = [col for col in rep_is_yr.columns if 'label' in col]
         rep_is_yr[cols] = (
-            rep_is_yr[cols].replace(self.ColHeaders['header']))
+            rep_is_yr[cols].replace(self.colheaders['header']))
         return rep_is_yr
 
     # Income Statement - Quarterly
@@ -120,7 +135,7 @@ class DataFrames():
             rep_is_qt.iloc[:,2:8].replace(self.timerefs['dates']))
         cols = [col for col in rep_is_qt.columns if 'label' in col]
         rep_is_qt[cols] = (
-            rep_is_qt[cols].replace(self.ColHeaders['header']))
+            rep_is_qt[cols].replace(self.colheaders['header']))
         return rep_is_qt
 
     # Balance Sheet - Annual
@@ -130,7 +145,7 @@ class DataFrames():
             rep_bs_yr.iloc[:,2:7].replace(self.timerefs['dates']))
         cols = [col for col in rep_bs_yr.columns if 'label' in col]
         rep_bs_yr[cols] = (
-            rep_bs_yr[cols].replace(self.ColHeaders['header']))
+            rep_bs_yr[cols].replace(self.colheaders['header']))
         return rep_bs_yr
 
     # Balance Sheet - Quarterly
@@ -140,7 +155,7 @@ class DataFrames():
             rep_bs_qt.iloc[:,2:7].replace(self.timerefs['dates']))
         cols = [col for col in rep_bs_qt.columns if 'label' in col]
         rep_bs_qt[cols] = (
-            rep_bs_qt[cols].replace(self.ColHeaders['header']))
+            rep_bs_qt[cols].replace(self.colheaders['header']))
         return rep_bs_qt
 
     # Cashflow Statement - Annual
@@ -150,7 +165,7 @@ class DataFrames():
             rep_cf_yr.iloc[:,2:8].replace(self.timerefs['dates']))
         cols = [col for col in rep_cf_yr.columns if 'label' in col]
         rep_cf_yr[cols] = (
-            rep_cf_yr[cols].replace(self.ColHeaders['header']))
+            rep_cf_yr[cols].replace(self.colheaders['header']))
         return rep_cf_yr
 
     # Cashflow Statement - Quarterly
@@ -160,7 +175,7 @@ class DataFrames():
             rep_cf_qt.iloc[:,2:8].replace(self.timerefs['dates']))
         cols = [col for col in rep_cf_qt.columns if 'label' in col]
         rep_cf_qt[cols] = (
-            rep_cf_qt[cols].replace(self.ColHeaders['header']))
+            rep_cf_qt[cols].replace(self.colheaders['header']))
         return rep_cf_qt
 
     # 10yr Price History

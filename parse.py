@@ -89,7 +89,6 @@ def parsing(conn, cur, items):
                 parsed = 0
                 code = 0
 
-
             # Print progress message
             msg = 'Parsing results into database...'
             msg += '\t{:6,.0f} / {:6,.0f}\t({:6.1%} )'
@@ -313,70 +312,127 @@ def parse_3(cur, ticker_id, exch_id, data):
     soup = bs(data, 'html.parser')
     tags = soup.find_all('span') + soup.find_all('div')
 
-    # Parse data into info dictionary
     info = {}
+    noise = ['', '-', '—', '— mil', '— bil']
 
+    # Parse data into info dictionary
     for count, tag in enumerate(tags):
 
         attrs = tag.attrs
         text = re.sub('[\n\t]', '', tag.text.strip())
         text = re.sub('\s\s*', ' ', text)
 
-        if text == '—' or text == '— mil' or text == '— bil':
-            continue
+        try:
+            if attrs.get('vkey') == 'Currency':
+                if text in noise:
+                    info['currency_id'] = 'null'
+                else:
+                    val = fetch.sql_insert_one_get_id(
+                        cur, 'Currencies', 'currency_code', text)
+                    info['currency_id'] = val
 
-        if attrs.get('vkey') == 'Currency':
-            val = fetch.sql_insert_one_get_id(
-                cur, 'Currencies', 'currency_code', text)
-            info['currency_id'] = val
-        elif attrs.get('vkey') == 'OpenPrice':
-            info['openprice'] = re.sub(',', '', text)
-        elif attrs.get('vkey') == 'LastPrice':
-            info['lastprice'] = re.sub(',', '', text)
-        elif attrs.get('vkey') == 'DayRange':
-            info['day_hi'] = re.sub(',', '', text.split('-')[0])
-            info['day_lo'] = re.sub(',', '', text.split('-')[1])
-        elif attrs.get('vkey') == '_52Week':
-            info['_52wk_hi'] = re.sub(',', '', text.split('-')[0])
-            info['_52wk_lo'] = re.sub(',', '', text.split('-')[1])
-        elif attrs.get('vkey') == 'ProjectedYield':
-            info['yield'] = re.sub('[%,]', '', text)
-        elif attrs.get('vkey') == 'Volume':
-            if ',' in text:
-                text = float(re.sub(',', '', text))
-            elif ' ' in text:
-                s = text.find(' ')
-                unit = 1
-                if text[s + 1:] == 'mil':
-                    unit = 10E6
-                elif text[s + 1:] == 'bil':
-                    unit = 10E9
-                elif text[s + 1:] == 'tri':
-                    unit = 10E12
-                info['aprvol'] = float(text[:s]) * unit
-        elif attrs.get('vkey') == 'AverageVolume':
-            if ',' in text:
-                text = float(re.sub(',', '', text))
-            elif ' ' in text:
-                s = text.find(' ')
-                unit = 1
-                if text[s + 1:] == 'mil':
-                    unit = 10E6
-                elif text[s + 1:] == 'bil':
-                    unit = 10E9
-                elif text[s + 1:] == 'tri':
-                    unit = 10E12
-                info['avevol'] = float(text[:s]) * unit
-        elif attrs.get('gkey') == 'Forward':
-            fpe = text
-        elif attrs.get('vkey') == 'PE':
-            info['fpe'] = re.sub(',', '', text)
-        elif attrs.get('vkey') == 'PB':
-            info['pb'] = re.sub(',', '', text)
-        elif attrs.get('vkey') == 'PS':
-            info['ps'] = re.sub(',', '', text)
-        elif attrs.get('vkey') == 'PC':
-            info['pc'] = re.sub(',', '', text)
+            elif attrs.get('vkey') == 'DayRange':
+                text = re.sub('^-0.00', '0.00', text)
+                vals = text.split('-')
+                if text in noise or '' in vals:
+                    info['day_lo'] = 'null'
+                    info['day_hi'] = 'null'
+                else:
+                    info['day_lo'] = float(re.sub(',', '', vals[0]))
+                    info['day_hi'] = float(re.sub(',', '', vals[1]))
+
+            elif attrs.get('vkey') == '_52Week':
+                text = re.sub('^-0.00', '0.00', text)
+                vals = text.split('-')
+                if text in noise or '' in vals:
+                    info['_52wk_lo'] = 'null'
+                    info['_52wk_hi'] = 'null'
+                else:
+                    info['_52wk_lo'] = float(re.sub(',', '', vals[0]))
+                    info['_52wk_hi'] = float(re.sub(',', '', vals[1]))
+
+            elif attrs.get('vkey') == 'Volume':
+                if text in noise:
+                    info['aprvol'] = 'null'
+                else:
+                    text = re.sub(',', '', text)
+                    unit = 1
+                    if ' mil' in text:
+                        unit = 10E6
+                        text = text.replace(' mil', '')
+                    elif ' bil' in text:
+                        unit = 10E9
+                        text = text.replace(' bil', '')
+                    elif ' tri' in text:
+                        unit = 10E12
+                        text = text.replace(' tri', '')
+                    info['aprvol'] = float(text) * unit
+
+            elif attrs.get('vkey') == 'AverageVolume':
+                if text in noise:
+                    info['avevol'] = 'null'
+                else:
+                    text = re.sub(',', '', text)
+                    unit = 1
+                    if ' mil' in text:
+                        unit = 10E6
+                        text = text.replace(' mil', '')
+                    elif ' bil' in text:
+                        unit = 10E9
+                        text = text.replace(' bil', '')
+                    elif ' tri' in text:
+                        unit = 10E12
+                        text = text.replace(' tri', '')
+                    info['avevol'] = float(text) * unit
+
+            elif attrs.get('gkey') == 'Forward':
+                fpe = text
+
+            elif attrs.get('vkey') == 'OpenPrice':
+                if text in noise:
+                    info['openprice'] = 'null'
+                else:
+                    info['openprice'] = float(re.sub(',', '', text))
+
+            elif attrs.get('vkey') == 'LastPrice':
+                if text in noise:
+                    info['lastprice'] = 'null'
+                else:
+                    info['lastprice'] = float(re.sub(',', '', text))
+
+            elif attrs.get('vkey') == 'ProjectedYield':
+                if text in noise:
+                    info['yield'] = 'null'
+                else:
+                    info['yield'] = float(re.sub('[%,]', '', text))
+
+            elif attrs.get('vkey') == 'PE':
+                if text in noise:
+                    info['fpe'] = 'null'
+                else:
+                    info['fpe'] = float(re.sub(',', '', text))
+
+            elif attrs.get('vkey') == 'PB':
+                if text in noise:
+                    info['pb'] = 'null'
+                else:
+                    info['pb'] = float(re.sub(',', '', text))
+
+            elif attrs.get('vkey') == 'PS':
+                if text in noise:
+                    info['ps'] = 'null'
+                else:
+                    info['ps'] = float(re.sub(',', '', text))
+
+            elif attrs.get('vkey') == 'PC':
+                if text in noise:
+                    info['pc'] = 'null'
+                else:
+                    info['pc'] = float(re.sub(',', '', text))
+
+        except:
+            print('\n\n{' + text + '}\n')
+            raise
 
     # Check if parsing was successful
     if info == {}:
@@ -388,7 +444,7 @@ def parse_3(cur, ticker_id, exch_id, data):
     # Remove 'empty' string values
     for k, v in info.items():
         if v == '' or v == ' ':
-            info[k] = 'Null'
+            info[k] = 'null'
 
     # Insert data into MSheader table
     info['ticker_id'] = ticker_id
