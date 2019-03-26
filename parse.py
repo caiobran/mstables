@@ -334,7 +334,7 @@ def parse_3(cur, ticker_id, exch_id, data):
             elif attrs.get('vkey') == 'DayRange':
                 text = re.sub('^-0.00', '0.00', text)
                 vals = text.split('-')
-                if text in noise or '' in vals:
+                if '-' not in text or text in noise or '' in vals:
                     info['day_lo'] = 'null'
                     info['day_hi'] = 'null'
                 else:
@@ -344,7 +344,7 @@ def parse_3(cur, ticker_id, exch_id, data):
             elif attrs.get('vkey') == '_52Week':
                 text = re.sub('^-0.00', '0.00', text)
                 vals = text.split('-')
-                if text in noise or '' in vals:
+                if '-' not in text or text in noise or '' in vals:
                     info['_52wk_lo'] = 'null'
                     info['_52wk_hi'] = 'null'
                 else:

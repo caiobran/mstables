@@ -168,8 +168,8 @@ def db_execute(cur, sql):
 
 
 def fetch(db_file):
-    div = 150
-    pool_size = 50
+    div = 180
+    pool_size = 60
 
     # Get user input for stp (no. of tickers to update)
     while True:
@@ -285,7 +285,9 @@ def fetch(db_file):
         # Call parsing module from parse.py
         parse.parse(db_file)
         t1 = time.time()
-        print_('\t- Run {} duration:\t{:.2f} sec'.format(i+1, t1-t0))
+        print_('\t- Duration:\t\t{:.2f} sec\n'.format(t1-t0))
+        print('\t- Speed:\t\t\t{:.2f} records/sec'.format(
+            len(results)/(t1-t0)))
 
     return start
 
