@@ -11,7 +11,7 @@ As a fan of [Benjamin Graham](https://en.wikipedia.org/wiki/Benjamin_Graham)'s [
 ### Next steps:
 - Incorporate new code into fetch.py, under the create_tables method, to download and use the xml files listed on [MorningStar's robot.txt](https://www.morningstar.com/robots.txt) as references for when creating new database tables (current version only uses the [ms_sal-quote-stock-sitemap.xml](input/ms_sal-quote-stock-sitemap.xml) file which was downloaded and stored locally for reference)
 - Finalize instructions for the scraper CLI
-- Finalize Jupyter notebook with examples of how to use the DataFrames class from [dataframes.py](dataframes.py)
+- Finalize Jupyter [notebook][1] with examples of how to use the DataFrames class from [dataframes.py](dataframes.py)
 
 
 Instructions
@@ -84,4 +84,4 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-[1]:https://github.com/caiobran/msTables/blob/master/dataframes.py
+[1]:https://github.com/caiobran/msTables/blob/master/data_overview.ipynb

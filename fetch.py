@@ -286,7 +286,7 @@ def fetch(db_file):
         parse.parse(db_file)
         t1 = time.time()
         print_('\t- Duration:\t\t{:.2f} sec\n'.format(t1-t0))
-        print('\t- Speed:\t\t\t{:.2f} records/sec'.format(
+        print('\t- Speed:\t\t{:.2f} records/sec'.format(
             len(results)/(t1-t0)))
 
     return start
