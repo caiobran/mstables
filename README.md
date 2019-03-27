@@ -20,12 +20,12 @@ Instructions
 ### Program Requirements:
 The scraper should run on any Linux distribution that has Python3 and the following modules installed:
 
-- Beautiful Soup
-- requests
-- sqlite3
-- pandas
-- numpy
-- git
+- [Beautiful Soup](https://www.crummy.com/software/BeautifulSoup/)
+- [requests](http://docs.python-requests.org/en/master/)
+- [sqlite3](https://docs.python.org/3/library/sqlite3.html)
+- [pandas](https://pandas.pydata.org/)
+- [numpy](http://www.numpy.org/)
+- [git](https://pypi.org/project/GitPython/)
 
 To view the [notebook with data visualization examples][1] mentioned in the instructions below, you must also have [Jupyter](https://jupyter.org/) and [matplotlib](https://matplotlib.org/) installed.
 
@@ -38,8 +38,8 @@ Execute `python main.py` from the project root directory to start the scraper CL
 
 ![Imgur](https://i.imgur.com/D1Y25LN.png)
 
-1. If you are running the scraper for the first time, enter option `1` to create the initial database tables.
-2. Once that action has been completed, and on subsequent runs, enter option `5` to download the latest data from the MorningStar [URL's](input/api.json).
+1. If you are running the scraper for the first time, enter option `1` to create the initial SQLite database tables.
+2. Once that action has been completed, and on subsequent runs, enter option `2` to download the latest data from the MorningStar [URL's](input/api.json).
     - You will be prompted to enter the number of records you would like to update. You can enter a large number such as `1000000` if you would like the scraper to update all records. You may also enter smaller quantities if you do not want the scraper to run for a long period of time.
     - On average, it has taken about three days to update all records with the current program parameters and an Internet speed > 100mbps. The program can be interrupted at any time using <kbd>Ctrl</kbd>+<kbd>C</kbd>.
     - One may want to increase the size of the multiprocessing pool in [main.py](main.py) that is used for URL requests to speed up the scraper. *However, I do not recommend doing that as the MorningStar servers will not be too happy about receiving many simultaneous GET requests from the same IP address.*
