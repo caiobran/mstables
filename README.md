@@ -49,14 +49,14 @@ Execute `python main.py` from the project root directory to start the scraper CL
 #### Database tables:
 The scraper will automatically create a directory *db/* in the root folder to store the *.sqlite* files generated. The file name is displayed in the CLI under option `0`. Each file created will contain a relational database with the following main tables:
 
-- *Master*: Main bridge table with complete list of security and exchange symbol pairs, security name, sector, industry, security type, and FY end dates
-- *MSheader*: Quote Summary data with day hi, day lo, 52wk hi, 52wk lo, forward P/E, div. yield, volumes, and current P/B, P/S, and P/CF ratios
-- *MSValuation*: 10yr stock valuation indicators (P/E, P/S, P/B, P/C)
-- *MSfinancials*: Key performance ratios for past 10 yrs
-- *MSratio_cashflow*, *MSratio_financial*, *MSratio_growth*, *MSratio_profitability*, *MSratio_efficiency*: Financial performance ratios for past 10 yrs
-- *MSreport_is_yr*, *MSreport_is_qt*: Income Statements for past 5 yrs and 5 qtrs, respectively
-- *MSreport_bs_yr*, *MSreport_bs_qt*: Balance Sheets for past 5 yrs and 5 qtrs, respectively
-- *MSreport_cf_yr*, *MSreport_cf_qt*: Cash Flow Statements for past 5 yrs and 5 qtrs, respectively
+- _**Master**_: Main bridge table with complete list of security and exchange symbol pairs, security name, sector, industry, security type, and FY end dates
+- _**MSheader**_: Quote Summary data with day hi, day lo, 52wk hi, 52wk lo, forward P/E, div. yield, volumes, and current P/B, P/S, and P/CF ratios
+- _**MSvaluation**_: 10yr stock valuation indicators (P/E, P/S, P/B, P/C)
+- _**MSfinancials**_: Key performance ratios for past 10 yrs
+- _**MSratio_cashflow**_, _**MSratio_financial**_, _**MSratio_growth**_, _**MSratio_profitability**_, _**MSratio_efficiency**_: Financial performance ratios for past 10 yrs
+- _**MSreport_is_yr**_, _**MSreport_is_qt**_: Income Statements for past 5 yrs and 5 qtrs, respectively
+- _**MSreport_bs_yr**_, _**MSreport_bs_qt**_: Balance Sheets for past 5 yrs and 5 qtrs, respectively
+- _**MSreport_cf_yr**_, _**MSreport_cf_qt**_: Cash Flow Statements for past 5 yrs and 5 qtrs, respectively
 
 See Jupyter notebook [data_overview.ipynb][1] for examples on how to create DataFrame objects to manipulate and visualize the data.
 
