@@ -36,7 +36,7 @@ Open a Linux terminal in the desired installation directory and execute `git clo
 
 Execute `python main.py` from the project root directory to start the scraper CLI. If the program has started correctly, you should see the following interface:
 
-![Imgur](https://i.imgur.com/aisCne1.png)
+![Imgur](https://imgur.com/D1Y25LN)
 
 1. If you are running the scraper for the first time, enter option `1` to create the initial database tables.
 2. Once that action has been completed, and on subsequent runs, enter option `5` to download the latest data from the MorningStar [URL's](input/api.json).

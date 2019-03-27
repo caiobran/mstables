@@ -17,7 +17,7 @@ __email__ = "caiobran88@gmail.com"
 def backup_db(file):
     #today = datetime.today().strftime('%Y%m%d%H')
     new_file = db_file['db_backup'].format(
-        input('Enter back-up file name:\n:'))
+        input('Enter back-up file name:\n'))
     fetch.print_('Please wait ... Database file is being backed-up ...')
     copyfile(db_file['path'], new_file)
     return '\n~ Back-up file saved\t{}'.format(new_file)
@@ -26,7 +26,7 @@ def backup_db(file):
 # Change variable for .sqlite file name based on user input
 def change_name(old_name):
     msg = 'Existing database files in directory \'db/\': {}\n'
-    msg += 'Enter new name for .sqlite file (current = \'{}\'):\n:'
+    msg += 'Enter new name for .sqlite file (current = \'{}\'):\n'
     fname = lambda x: re.sub('.sqlite', '', x)
     files = [fname(f) for f in os.listdir('db/') if '.sqlite' in f]
     return input(msg.format(files, old_name))
@@ -34,17 +34,17 @@ def change_name(old_name):
 
 # Print options menu
 def print_menu(names):
-    gap = 15
+    gap = 22
     dash = '='
     banner = ' Welcome to msTables '
     file = '\'{}.sqlite\''.format(db_file['name'])
     menu = {
-        '0' : 'Change file name (current = {})'.format(file),
-        '1' : 'Create tables',
-        '2' : 'Erase table records',
-        '3' : 'Delete tables',
-        '4' : 'Erase download hisotry',
-        '5' : 'Download data from API\'s and update database',
+        '0' : 'Change database file name (current name = {})'.format(file),
+        '1' : 'Create database tables',
+        '2' : 'Download data from MorningStar.com into database',
+        '3' : 'Erase all records from database tables',
+        '4' : 'Delete all database tables',
+        '5' : 'Erase all downloaded history from \'Fetched_urls\' table',
         #'6' : 'TESTING: Parse',
         '6' : 'Create a database back-up file'
     }
@@ -97,14 +97,15 @@ def main(file):
                     msg = fetch.create_tables(db_file['path'])
 
                 # Erase records from all tables
-                elif inp == 2:
+                elif inp == 3:
                     msg = fetch.erase_tables(db_file['path'])
 
                 # Delete all tables
-                elif inp == 3:
+                elif inp == 4:
                     msg = fetch.delete_tables(db_file['path'])
 
-                elif inp == 4:
+                # Delete Fetched_urls table records
+                elif inp == 5:
                     msg = fetch.delfetchhis(db_file['path'])
 
                 # Back-up database file
@@ -119,13 +120,13 @@ def main(file):
                 raise e
 
             # Call Fetch function to download data from urls listed in api.json
-            if inp == 5:
+            if inp == 2:
                 start = fetch.fetch(db_file['path'])
                 msg = '\n~ Database updated successful.'
 
-            elif inp == 6:
+            '''elif inp == 6:
                 fetch.parse.parse(db_file['path'])
-                msg = 'FINISHED'
+                msg = 'FINISHED' '''
 
         end = time.time()
         os.system('clear')

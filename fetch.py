@@ -93,6 +93,23 @@ def csv_content(file, columns, header=False):
         return [row[:columns] for row in info][1:]
 
 
+def db_execute(cur, sql):
+    x = 0
+    while x < 10:
+        try:
+            sql = re.sub('\'Null\'|\'null\'', 'null', sql)
+            return cur.execute(sql)
+        except KeyboardInterrupt:
+            print('\nGoodbye!')
+            exit()
+        except Exception as e:
+            if x == 9:
+                print('\n\nSQL cmd = \'{}\'\n'.format(sql))
+                print(type(e))
+                raise
+        x += 1
+
+
 def delete_tables(db_file):
     print_('\nPlease wait, database tables are being deleted ...')
 
@@ -149,33 +166,15 @@ def erase_tables(db_file):
     return '\n\n~ Database tablea erased.'
 
 
-def db_execute(cur, sql):
-    x = 0
-    while x < 10:
-        try:
-            sql = re.sub('\'Null\'|\'null\'', 'null', sql)
-            return cur.execute(sql)
-        except KeyboardInterrupt:
-            print('\nGoodbye!')
-            exit()
-        except Exception as e:
-            if x == 9:
-                print('\n\nSQL cmd = \'{}\'\n'.format(sql))
-                print(type(e))
-                print(dir(e))
-                raise
-        x += 1
-
-
 def fetch(db_file):
-    div = 180
-    pool_size = 60
+    div = 150
+    pool_size = 150
 
     # Get user input for stp (no. of tickers to update)
     while True:
         # User input for number of tickers to update
         try:
-            msg = 'Qty. of records to be updated:\n:'
+            msg = 'Qty. of records to be updated:\n'
             stp = int(input(msg))
         except KeyboardInterrupt:
             print('\nGoodbye!')
@@ -218,6 +217,9 @@ def fetch(db_file):
         items = urls[j:j + div * len(apis)]
         sort0 = lambda x: (x[0], x[2], x[3])
         items = sorted(items, key=sort0)
+        if len(items) == 0:
+            print('EMPTY BASKET')
+            break
 
         # Fetch data from API's using multiprocessing.Pool
         results = []
@@ -247,7 +249,7 @@ def fetch(db_file):
         # Enter URL data into Fetched_urls
         if results != []:
             results = list(filter(lambda x: x is not None, results))
-            msg = '\t- Successful requests:\t{:,.0f} out of {:,.0f} ({:.1%})'
+            msg = ' - Success rate:\t{:,.0f} out of {:,.0f} ({:.1%})'
             totreq = min(stp, div)*len(apis)
             srate = len(results)/totreq
             print_('')
@@ -283,10 +285,12 @@ def fetch(db_file):
         conn.close()
 
         # Call parsing module from parse.py
+        t1 = time.time()
+        print_(' - Fetch Duration:\t{:.2f} sec\n'.format(t1-t0))
         parse.parse(db_file)
         t1 = time.time()
-        print_('\t- Duration:\t\t{:.2f} sec\n'.format(t1-t0))
-        print('\t- Speed:\t\t{:.2f} records/sec'.format(
+        print_(' - Total Duration:\t{:.2f} sec\n'.format(t1-t0))
+        print(' - Speed:\t\t{:.2f} records/sec'.format(
             len(results)/(t1-t0)))
 
     return start
@@ -332,7 +336,7 @@ def fetch_api(url_info):
 
     # Timer to attemp to slow down and 'align' Pool requests to every sec
     if True:
-        time.sleep(1 - (time.time() % 1))
+        time.sleep((1 - (time.time() % 1)))
     printprogress(url_id, num, ct)
 
     return (url_id, ticker_id, exch_id, today, status_code, data)
@@ -372,7 +376,7 @@ def geturllist(cur):
                 for c, ticker in enumerate(tickers)]
 
     # Print API list and no. of tickers to be updated for each
-    msg = '\nQty. of records pending update per API no.:\n\n'
+    msg = '\nQty. of records pending update per API no.\n'
     print_(msg)
     df_tickct = pd.DataFrame([(k, '{:8,.0f}'.format(v))
         for k, v in ticker_count.items()])
