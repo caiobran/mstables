@@ -6,7 +6,7 @@ msTables is a simple [MorningStar.com](https://www.morningstar.com) scraper  tha
 The scraper should work as long as the structure of the responses does not change for the URL's used. See [input/api.json](input/api.json) for the complete list of URL's.
 
 ### Motivation:
-As a fan of [Benjamin Graham](https://en.wikipedia.org/wiki/Benjamin_Graham)'s [value investing](https://en.wikipedia.org/wiki/Value_investing), I have always searched for sources of consolidated financial data that would allow me to identify 'undervalued' companies from a large pool of global public stocks. However, most *(if not all)* financial services that provide such data consolidation are not free and, as a small retail investor, I was not willing to pay for their fees. In fact, most of the data I needed was already available for free on various financial website, just not in a consolidated format. Therefore, I decided to create a web scraper for [MorningStar.com](https://www.morningstar.com), the website that I found to have the most available data in a more standardized and structured format. MS was also one of the only website services that published free financial performance data for the past 10 yrs, while most sites only provided free data for last 5 yrs.
+As a fan of [Benjamin Graham](https://en.wikipedia.org/wiki/Benjamin_Graham)'s [value investing](https://en.wikipedia.org/wiki/Value_investing), I have always searched for sources of consolidated financial data that would allow me to identify 'undervalued' companies from a large pool of global public stocks. However, most *(if not all)* financial services that provide such data consolidation are not free and, as a small retail investor, I was not willing to pay for their fees. In fact, most of the data I needed was already available for free on various financial website, just not in a consolidated format. Therefore, I decided to create a web scraper for [MorningStar.com](https://www.morningstar.com), which is the website that I found to have the most available data in a more standardized and structured format. MS was also one of the only website services that published free financial performance data for the past 10 yrs, while most sites only provided free data for last 5 yrs.
 
 ### Next steps:
 - Incorporate new code into fetch.py, under the create_tables method, to download and use the xml files listed on [MorningStar's robot.txt](https://www.morningstar.com/robots.txt) as references for when creating new database tables (current version only uses the [ms_sal-quote-stock-sitemap.xml](input/ms_sal-quote-stock-sitemap.xml) file which was downloaded and stored locally for reference)
@@ -27,7 +27,7 @@ The scraper should run on any Linux distribution that has Python3 and the follow
 - numpy
 - git
 
-To view the [data visualization examples][1] mentioned in the instructions below, you must also have [jupyter](https://jupyter.org/) and [matplotlib](https://matplotlib.org/) installed.
+To view the [notebook with data visualization examples][1] mentioned in the instructions below, you must also have [Jupyter](https://jupyter.org/) and [matplotlib](https://matplotlib.org/) installed.
 
 ### Installation
 Open a Linux terminal in the desired installation directory and execute `git clone https://github.com/caiobran/msTables.git` to download the project files.
@@ -36,7 +36,7 @@ Open a Linux terminal in the desired installation directory and execute `git clo
 
 Execute `python main.py` from the project root directory to start the scraper CLI. If the program has started correctly, you should see the following interface:
 
-![Imgur](https://imgur.com/D1Y25LN)
+![Imgur](https://i.imgur.com/D1Y25LN.png)
 
 1. If you are running the scraper for the first time, enter option `1` to create the initial database tables.
 2. Once that action has been completed, and on subsequent runs, enter option `5` to download the latest data from the MorningStar [URL's](input/api.json).
