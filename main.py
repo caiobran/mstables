@@ -3,7 +3,7 @@
 from shutil import copyfile
 from datetime import datetime
 from importlib import reload
-import fetch, time, os, re
+import fetch, time, os, re, sqlite3
 
 __author__ = "Caio Brandao"
 __copyright__ = "Copyright 2019+, Caio Brandao"
@@ -45,7 +45,7 @@ def print_menu(names):
         '3' : 'Erase all records from database tables',
         '4' : 'Delete all database tables',
         '5' : 'Erase all downloaded history from \'Fetched_urls\' table',
-        #'6' : 'TESTING: Parse',
+        #'X' : 'Parse (FOR TESTING PURPOSES)',
         '6' : 'Create a database back-up file'
     }
 
@@ -72,18 +72,14 @@ def main(file):
             except KeyboardInterrupt:
                 print('\nGoodbye!')
                 exit()
-
-        if inp0 not in ops.keys():
-            break
+        if inp0 not in ops.keys(): break
+        reload(fetch) #Comment out after development
         start = time.time()
         inp = int(inp0)
-        msg = ''
-        reload(fetch) #Comment out once done using
 
         # Call function according to user input
-        msg = ('\nAre you sure you want to {}? (Y/n):\n'
-            .format(ops[inp0].lower()))
-        if input(msg).lower() == 'y':
+        msg = '\nAre you sure you would like to {}? (Y/n):\n'
+        if input(msg.format(ops[inp0].lower())).lower() == 'y':
             print()
             try:
                 # Change db file name
@@ -95,6 +91,11 @@ def main(file):
                 # Create database tables
                 elif inp == 1:
                     msg = fetch.create_tables(db_file['path'])
+
+                # Download data from urls listed in api.json
+                elif inp == 2:
+                    start = fetch.fetch(db_file['path'])
+                    msg = '\n~ Database updated successful.'
 
                 # Erase records from all tables
                 elif inp == 3:
@@ -112,28 +113,33 @@ def main(file):
                 elif inp == int(list(ops.keys())[-1]):
                     msg = backup_db(db_file)
 
+                # TESTING
+                elif inp == 99:
+                    fetch.parse.parse(db_file['path'])
+                    msg = 'FINISHED'
+
+            except sqlite3.OperationalError as S:
+                msg = '### Error message - {}'.format(S) + \
+                    '\n### Scroll up for more details. If table does not ' + \
+                    'exist, make sure to execute action 1 before choosing' + \
+                    ' other actions.'
+                pass
             except KeyboardInterrupt:
                 print('\nGoodbye!')
                 exit()
             except Exception as e:
-                print('\n\n### ERROR @ Main.py:\n', e, '\n')
+                print('\n\n### Error @ main.py:\n {}\n'.format(e))
                 raise e
 
-            # Call Fetch function to download data from urls listed in api.json
-            if inp == 2:
-                start = fetch.fetch(db_file['path'])
-                msg = '\n~ Database updated successful.'
+            # Print output message
+            os.system('clear')
+            print(msg)
 
-            '''elif inp == 6:
-                fetch.parse.parse(db_file['path'])
-                msg = 'FINISHED' '''
-
-        end = time.time()
-        os.system('clear')
-        print(msg)
-        msg = '\n~ Execution Time\t{:.3f} sec\n'.format(end - start)
-        print(msg)
-
+            # Calculate and print execution time
+            end = time.time()
+            print('\n~ Execution Time\t{:.2f} sec\n'.format(end - start))
+        else:
+            os.system('clear')
 
 # Define database (db) file and menu text variables
 db_file = dict()

@@ -82,7 +82,11 @@ def create_tables(db_file):
     cur.close()
     conn.close()
 
-    return '\n\n~ Database tables created.'
+    msg = '\n~ The following {} database tables were successfully created:\n'
+    tbls = json.dumps(sorted(tbl_names), indent=2)
+    tbls = re.sub('\[|\]|",|"\n', '', tbls)
+    msg += re.sub('"', '- ', tbls)
+    return msg.format(len(tbl_names))
 
 
 def csv_content(file, columns, header=False):
@@ -104,8 +108,10 @@ def db_execute(cur, sql):
             exit()
         except Exception as e:
             if x == 9:
-                print('\n\nSQL cmd = \'{}\'\n'.format(sql))
-                print(type(e))
+                msg = '\n\n### Error occured while executing SQL cmd:'
+                msg += '\n\n \'{}\'\n'
+                print(msg.format(sql))
+                print('### Error type - {}'.format(type(e)))
                 raise
         x += 1
 
@@ -127,7 +133,8 @@ def delete_tables(db_file):
     cur.close()
     conn.close()
 
-    return '\n\n~ Database tables deleted.'
+    msg = '\n~ {} database tables were sucessfully deleted.'
+    return msg.format(len(tbl_names))
 
 
 def delfetchhis(db_file):
@@ -146,7 +153,7 @@ def delfetchhis(db_file):
     cur.close()
     conn.close()
 
-    return '\n\n~ Download history (table Fetched_urls) erased.'
+    return '\n~ Download history (table Fetched_urls) erased.'
 
 
 def erase_tables(db_file):
@@ -163,7 +170,8 @@ def erase_tables(db_file):
     cur.close()
     conn.close()
 
-    return '\n\n~ Database tablea erased.'
+    msg = '\n~ Records from {} database tables were sucessfully erased.'
+    return msg.format(len(tbl_names))
 
 
 def fetch(db_file):
@@ -449,8 +457,9 @@ def sql_insert_one_get_id(cur, tbl, col, val):
     return id
 
 
+reload(parse) #Comment out after development
+
 # Reference variables
-reload(parse) #Comment out once done using
 ticker_list = {}
 ticker_count = {}
 fd_input = 'input/'
