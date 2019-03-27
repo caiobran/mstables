@@ -225,8 +225,11 @@ def fetch(db_file):
         items = urls[j:j + div * len(apis)]
         sort0 = lambda x: (x[0], x[2], x[3])
         items = sorted(items, key=sort0)
+
+        # Execute sql clean.txt and exit loop if no records remain to update
         if len(items) == 0:
-            print('EMPTY BASKET')
+            with open(sql_cmds.format('clean.txt')) as file:
+                cur.executescript(file.read().strip())
             break
 
         # Fetch data from API's using multiprocessing.Pool

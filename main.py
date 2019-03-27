@@ -76,10 +76,15 @@ def main(file):
         reload(fetch) #Comment out after development
         start = time.time()
         inp = int(inp0)
+        ans = 'y'
+
+        # Ask user to confirm selection if input > 2
+        if inp > 2:
+            msg = '\nAre you sure you would like to {}? (Y/n):\n'
+            ans = input(msg.format(ops[inp0].lower())).lower()
 
         # Call function according to user input
-        msg = '\nAre you sure you would like to {}? (Y/n):\n'
-        if input(msg.format(ops[inp0].lower())).lower() == 'y':
+        if ans == 'y':
             print()
             try:
                 # Change db file name
