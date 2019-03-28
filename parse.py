@@ -789,12 +789,20 @@ def parse_8(cur, api, ticker_id, exch_id, data):
     # Parse data into info dictionary
     for tag in tags:
         attrs = tag.attrs
+
         if 'id' in attrs:
             tag_id = tag['id']
             value = tag.text
 
+            # Parse currency and FY End month number
+            if tag_id == 'unitsAndFiscalYear':
+                info['fye_month'] = int(tag['fyenumber'])
+                curr_id = fetch.sql_insert_one_get_id(
+                    cur, 'Currencies', 'currency_code', tag['currency'])
+                info['currency_id'] = curr_id
+
             # Parse Yrly or Qtrly values
-            if tag_id[:2] == 'Y_':
+            elif tag_id[:2] == 'Y_':
                 parent = tag.parent['id']
                 key = '{}_{}'.format(parent, tag_id)
 
@@ -810,7 +818,6 @@ def parse_8(cur, api, ticker_id, exch_id, data):
                         cur, 'TimeRefs', 'dates', value)
                     info[key] = value_id
                     #info0[key] = 'INTEGER,'
-
 
             # Parse labels
             elif tag_id[:3] == 'lab' and 'padding' not in tag_id:

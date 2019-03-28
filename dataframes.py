@@ -91,7 +91,11 @@ class DataFrames():
 
     def keyratios(self):
         keyratios = table(self.cur, 'MSfinancials')
-        return self.add_yr_cols(keyratios)
+        keyratios = self.add_yr_cols(keyratios)
+        keyratios.loc[:, 'Y0':'Y9'] = (
+            keyratios.loc[:, 'Y0':'Y9'].astype('datetime64'))
+
+        return keyratios
 
 
     def finhealth(self):
@@ -121,18 +125,27 @@ class DataFrames():
     # Income Statement - Annual
     def annualIS(self):
         rep_is_yr = table(self.cur, 'MSreport_is_yr')
-        rep_is_yr.iloc[:,2:8] = (
-            rep_is_yr.iloc[:,2:8].replace(self.timerefs['dates']))
+
+        # Replace date Columns
+        rep_is_yr.iloc[:,2:8] = (rep_is_yr.iloc[:,2:8]
+            .replace(self.timerefs['dates']))
+
+        # Format Date Columns
+        rep_is_yr.iloc[:,2:7] = (rep_is_yr.iloc[:,2:7].astype('datetime64'))
+
+        # Replace column header values in label columns
         cols = [col for col in rep_is_yr.columns if 'label' in col]
         rep_is_yr[cols] = (
             rep_is_yr[cols].replace(self.colheaders['header']))
+
         return rep_is_yr
 
     # Income Statement - Quarterly
     def quarterlyIS(self):
         rep_is_qt = table(self.cur, 'MSreport_is_qt')
-        rep_is_qt.iloc[:,2:8] = (
-            rep_is_qt.iloc[:,2:8].replace(self.timerefs['dates']))
+        rep_is_qt.iloc[:,2:8] = (rep_is_qt.iloc[:,2:8]
+            .replace(self.timerefs['dates']))
+        rep_is_qt.iloc[:,2:7] = (rep_is_qt.iloc[:,2:7].astype('datetime64'))
         cols = [col for col in rep_is_qt.columns if 'label' in col]
         rep_is_qt[cols] = (
             rep_is_qt[cols].replace(self.colheaders['header']))
@@ -141,8 +154,9 @@ class DataFrames():
     # Balance Sheet - Annual
     def annualBS(self):
         rep_bs_yr = table(self.cur, 'MSreport_bs_yr')
-        rep_bs_yr.iloc[:,2:7] = (
-            rep_bs_yr.iloc[:,2:7].replace(self.timerefs['dates']))
+        rep_bs_yr.iloc[:,2:7] = (rep_bs_yr.iloc[:,2:7]
+            .replace(self.timerefs['dates'])
+            .astype('datetime64'))
         cols = [col for col in rep_bs_yr.columns if 'label' in col]
         rep_bs_yr[cols] = (
             rep_bs_yr[cols].replace(self.colheaders['header']))
@@ -151,8 +165,9 @@ class DataFrames():
     # Balance Sheet - Quarterly
     def quarterlyBS(self):
         rep_bs_qt = table(self.cur, 'MSreport_bs_qt')
-        rep_bs_qt.iloc[:,2:7] = (
-            rep_bs_qt.iloc[:,2:7].replace(self.timerefs['dates']))
+        rep_bs_qt.iloc[:,2:7] = (rep_bs_qt.iloc[:,2:7]
+            .replace(self.timerefs['dates'])
+            .astype('datetime64'))
         cols = [col for col in rep_bs_qt.columns if 'label' in col]
         rep_bs_qt[cols] = (
             rep_bs_qt[cols].replace(self.colheaders['header']))
@@ -161,8 +176,9 @@ class DataFrames():
     # Cashflow Statement - Annual
     def annualCF(self):
         rep_cf_yr = table(self.cur, 'MSreport_cf_yr')
-        rep_cf_yr.iloc[:,2:8] = (
-            rep_cf_yr.iloc[:,2:8].replace(self.timerefs['dates']))
+        rep_cf_yr.iloc[:,2:8] = (rep_cf_yr.iloc[:,2:8]
+            .replace(self.timerefs['dates']))
+        rep_cf_yr.iloc[:,2:7] = (rep_cf_yr.iloc[:,2:7].astype('datetime64'))
         cols = [col for col in rep_cf_yr.columns if 'label' in col]
         rep_cf_yr[cols] = (
             rep_cf_yr[cols].replace(self.colheaders['header']))
@@ -171,8 +187,9 @@ class DataFrames():
     # Cashflow Statement - Quarterly
     def quarterlyCF(self):
         rep_cf_qt = table(self.cur, 'MSreport_cf_qt')
-        rep_cf_qt.iloc[:,2:8] = (
-            rep_cf_qt.iloc[:,2:8].replace(self.timerefs['dates']))
+        rep_cf_qt.iloc[:,2:8] = (rep_cf_qt.iloc[:,2:8]
+            .replace(self.timerefs['dates']))
+        rep_cf_qt.iloc[:,2:7] = (rep_cf_qt.iloc[:,2:7].astype('datetime64'))
         cols = [col for col in rep_cf_qt.columns if 'label' in col]
         rep_cf_qt[cols] = (
             rep_cf_qt[cols].replace(self.colheaders['header']))

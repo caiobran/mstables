@@ -18,7 +18,7 @@ def backup_db(file):
     #today = datetime.today().strftime('%Y%m%d%H')
     new_file = db_file['db_backup'].format(
         input('Enter back-up file name:\n'))
-    fetch.print_('Please wait ... Database file is being backed-up ...')
+    fetch.print_('Please wait while the database file is backed-up ...')
     copyfile(db_file['path'], new_file)
     return '\n~ Back-up file saved\t{}'.format(new_file)
 
@@ -92,6 +92,8 @@ def main(file):
                     db_file['name'] = change_name(db_file['name'])
                     start = time.time()
                     db_file['path'] = db_file['npath'].format(db_file['name'])
+                    msg = ('~ Database file \'{}\' selected'
+                        .format(db_file['name']))
 
                 # Create database tables
                 elif inp == 1:
