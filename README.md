@@ -5,10 +5,10 @@ msTables is a [MorningStar.com](https://www.morningstar.com) scraper written in 
 
 The scraper should work as long as the structure of the responses does not change for the URL's used. See [input/api.json](input/api.json) for the complete list of URL's.
 
-### Motivation:
+## Motivation:
 As a fan of [Benjamin Graham](https://en.wikipedia.org/wiki/Benjamin_Graham)'s [value investing](https://en.wikipedia.org/wiki/Value_investing), I have always searched for sources of consolidated financial data that would allow me to identify 'undervalued' companies from a large pool of global public stocks. However, most *(if not all)* financial services that provide such data consolidation are not free and, as a small retail investor, I was not willing to pay for their fees. In fact, most of the data I needed was already available for free on various financial website, just not in a consolidated format. Therefore, I decided to create a web scraper for [MorningStar.com](https://www.morningstar.com), which is the website that I found to have the most available data in a more standardized and structured format. MS was also one of the only website services that published free financial performance data for the past 10 yrs, while most sites only provided free data for last 5 yrs.
 
-### Next steps:
+## Next steps:
 - Incorporate new code into fetch.py, under the create_tables method, to download and use the xml files listed on [MorningStar's robot.txt](https://www.morningstar.com/robots.txt) as references for when creating new database tables (current version only uses the [ms_sal-quote-stock-sitemap.xml](input/ms_sal-quote-stock-sitemap.xml) file which was downloaded and stored locally for reference)
 - Finalize instructions for the scraper CLI
 - Finalize Jupyter [notebook][1] with examples of how to use the DataFrames class from [dataframes.py](dataframes.py)
@@ -32,7 +32,7 @@ To view the [notebook with data visualization examples][1] mentioned in the inst
 ### Installation
 Open a Linux terminal in the desired installation directory and execute `git clone https://github.com/caiobran/msTables.git` to download the project files.
 
-#### Command Line Interface (CLI).
+### Using the scraper Command Line Interface (CLI).
 
 Execute `python main.py` from the project root directory to start the scraper CLI. If the program has started correctly, you should see the following interface:
 
@@ -46,7 +46,7 @@ Execute `python main.py` from the project root directory to start the scraper CL
 
 *(documentation in progress, to be updated with instructions on remaining actions)*
 
-#### Database tables and how to access their data with the _dataframes_ module:
+### How to access the SQLite database tables using module _dataframes.py_:
 The scraper will automatically create a directory *db/* in the root folder to store the *.sqlite* files generated. The file name is displayed in the CLI under option `0`. Each file created will contain a relational database with the following main tables:
 
 **Database Tables**
@@ -61,7 +61,6 @@ The scraper will automatically create a directory *db/* in the root folder to st
 - _**MSpricehistory**_: Table with current 50, 100 and 200 day price averages and 10 year price history (compressed)
 
 **Using _dataframes.py_ to easily access the data downloaded**
-
 Module _dataframes_ contains a custom `DataFrames` class that can be used to generate pandas DataFrame objects from the SQLite database file.
 
 See the Jupyter notebook [data_overview.ipynb][1] for examples on how to create DataFrame objects to manipulate and visualize the data. If loaded correctly, the notebook header should like the following image:
