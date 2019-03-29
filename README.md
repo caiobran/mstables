@@ -47,7 +47,7 @@ Execute `python main.py` from the project root directory to start the scraper CL
 *(documentation in progress, to be updated with instructions on remaining actions)*
 
 ### How to access the SQLite database tables using module _dataframes.py_:
-The scraper will automatically create a directory *db/* in the root folder to store the *.sqlite* files generated. The file name is displayed in the CLI under option `0`. Each file created will contain a relational database with the following main tables:
+The scraper will automatically create a directory *db/* in the root folder to store the *.sqlite* database files generated. The current file name in use will be displayed on the scraper CLI under action `0` (see CLI figure above). Database files will contain a relational database with the following main tables:
 
 **Database Tables**
 
