@@ -50,6 +50,7 @@ Execute `python main.py` from the project root directory to start the scraper CL
 The scraper will automatically create a directory *db/* in the root folder to store the *.sqlite* files generated. The file name is displayed in the CLI under option `0`. Each file created will contain a relational database with the following main tables:
 
 **Database Tables**
+
 - _**Master**_: Main bridge table with complete list of security and exchange symbol pairs, security name, sector, industry, security type, and FY end dates
 - _**MSheader**_: Quote Summary data with day hi, day lo, 52wk hi, 52wk lo, forward P/E, div. yield, volumes, and current P/B, P/S, and P/CF ratios
 - _**MSvaluation**_: 10yr stock valuation indicators (P/E, P/S, P/B, P/C)
@@ -60,7 +61,8 @@ The scraper will automatically create a directory *db/* in the root folder to st
 - _**MSreport_cf_yr**_, _**MSreport_cf_qt**_: Cash Flow Statements for past 5 yrs and 5 qtrs, respectively
 - _**MSpricehistory**_: Table with current 50, 100 and 200 day price averages and 10 year price history (compressed)
 
-**Using _dataframes.py_ to easily access the data downloaded**
+**Using _dataframes.py_ to easily access the data**
+
 Module _dataframes_ contains a custom `DataFrames` class that can be used to generate pandas DataFrame objects from the SQLite database file.
 
 See the Jupyter notebook [data_overview.ipynb][1] for examples on how to create DataFrame objects to manipulate and visualize the data. If loaded correctly, the notebook header should like the following image:
