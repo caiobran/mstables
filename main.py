@@ -67,7 +67,7 @@ def main(file):
         ops = print_menu(file)
         while True:
             try:
-                inp0 = input('Enter action no.: ').strip()
+                inp0 = input('Enter action no.:\n').strip()
                 break
             except KeyboardInterrupt:
                 print('\nGoodbye!')
@@ -81,7 +81,7 @@ def main(file):
         # Ask user to confirm selection if input > 2
         if inp > 2:
             msg = '\nAre you sure you would like to {}? (Y/n):\n'
-            ans = input(msg.format(ops[inp0].lower())).lower()
+            ans = input(msg.format(ops[inp0].upper())).lower()
 
         # Call function according to user input
         if ans == 'y':
@@ -147,6 +147,7 @@ def main(file):
             print('\n~ Execution Time\t{:.2f} sec\n'.format(end - start))
         else:
             os.system('clear')
+
 
 # Define database (db) file and menu text variables
 db_file = dict()

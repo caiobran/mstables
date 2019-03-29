@@ -99,7 +99,7 @@ def csv_content(file, columns, header=False):
 
 def db_execute(cur, sql):
     x = 0
-    while x < 10:
+    while x < 100:
         try:
             sql = re.sub('\'Null\'|\'null\'', 'null', sql)
             return cur.execute(sql)
@@ -107,7 +107,7 @@ def db_execute(cur, sql):
             print('\nGoodbye!')
             exit()
         except Exception as e:
-            if x == 9:
+            if x == 99:
                 msg = '\n\n### Error occured while executing SQL cmd:'
                 msg += '\n\n \'{}\'\n'
                 print(msg.format(sql))
@@ -175,8 +175,8 @@ def erase_tables(db_file):
 
 
 def fetch(db_file):
-    div = 150
-    pool_size = 150
+    div = 160
+    pool_size = 80
 
     # Get user input for stp (no. of tickers to update)
     while True:
@@ -245,8 +245,6 @@ def fetch(db_file):
                             results.append(r.next(timeout=5))
                         except mp.context.TimeoutError:
                             pass
-                        '''if turn % pool_size == 0:
-                            time.sleep(0.5)'''
                 break
             except KeyboardInterrupt:
                 print('\nGoodbye!')
@@ -346,7 +344,7 @@ def fetch_api(url_info):
         x += 1
 
     # Timer to attemp to slow down and 'align' Pool requests to every sec
-    if True:
+    if False:
         time.sleep((1 - (time.time() % 1)))
     printprogress(url_id, num, ct)
 
