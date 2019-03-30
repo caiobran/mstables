@@ -92,7 +92,6 @@ class DataFrames():
 
     def keyratios(self):
         keyratios = self.table('MSfinancials')
-
         keyratios = self.add_yr_cols(keyratios)
         keyratios.loc[:, 'Y0':'Y9'] = (
             keyratios.loc[:, 'Y0':'Y9'].astype('datetime64'))
