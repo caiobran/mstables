@@ -40,12 +40,7 @@ def parse(db_file):
     # Call parsing methods
     parsing(conn, cur, fetched)
 
-    # Execute clean-up SQL commands
-    fetch.print_('Executing Clean-up SQL cmds ... ')
-    with open(fetch.sql_cmds.format('clean.txt')) as file:
-        sql_clean = file.read().strip()
-    cur.executescript(sql_clean)
-
+    # Save db and close db connection
     fetch.save_db(conn)
     cur.close()
     conn.close()
