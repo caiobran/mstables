@@ -48,33 +48,6 @@ class DataFrames():
         print('Initial DataFrames created.')
 
 
-    def add_yr_cols(self, df):
-        return (df
-         .merge(self.timerefs, left_on='Y0', right_on='id')
-         .drop('Y0', axis=1).rename(columns={'dates':'Y0'})
-         .merge(self.timerefs, left_on='Y1', right_on='id')
-         .drop('Y1', axis=1).rename(columns={'dates':'Y1'})
-         .merge(self.timerefs, left_on='Y2', right_on='id')
-         .drop('Y2', axis=1).rename(columns={'dates':'Y2'})
-         .merge(self.timerefs, left_on='Y3', right_on='id')
-         .drop('Y3', axis=1).rename(columns={'dates':'Y3'})
-         .merge(self.timerefs, left_on='Y4', right_on='id')
-         .drop('Y4', axis=1).rename(columns={'dates':'Y4'})
-         .merge(self.timerefs, left_on='Y5', right_on='id')
-         .drop('Y5', axis=1).rename(columns={'dates':'Y5'})
-         .merge(self.timerefs, left_on='Y6', right_on='id')
-         .drop('Y6', axis=1).rename(columns={'dates':'Y6'})
-         .merge(self.timerefs, left_on='Y7', right_on='id')
-         .drop('Y7', axis=1).rename(columns={'dates':'Y7'})
-         .merge(self.timerefs, left_on='Y8', right_on='id')
-         .drop('Y8', axis=1).rename(columns={'dates':'Y8'})
-         .merge(self.timerefs, left_on='Y9', right_on='id')
-         .drop('Y9', axis=1).rename(columns={'dates':'Y9'})
-         .merge(self.timerefs, left_on='Y10', right_on='id')
-         .drop('Y10', axis=1).rename(columns={'dates':'Y10'})
-        )
-
-
     def quoteheader(self):
         return self.table('MSheader')
 
@@ -91,8 +64,14 @@ class DataFrames():
 
 
     def keyratios(self):
+        yr_cols = ['Y0', 'Y1', 'Y2', 'Y3', 'Y4', 'Y5', 'Y6',
+                    'Y7', 'Y8', 'Y9', 'Y10']
         keyratios = self.table('MSfinancials')
-        keyratios = self.add_yr_cols(keyratios)
+        for yr in yr_cols:
+            keyratios = (keyratios
+             .merge(self.timerefs, left_on=yr, right_on='id')
+             .drop(yr, axis=1).rename(columns={'dates':yr})
+            )
         keyratios.loc[:, 'Y0':'Y9'] = (
             keyratios.loc[:, 'Y0':'Y9'].astype('datetime64'))
 
@@ -116,6 +95,15 @@ class DataFrames():
 
     def cfhealth(self):
         cfhealth = self.table('MSratio_cashflow')
+        yr_cols = [col for col in cfhealth.columns
+                    if col.startswith('cf_Y')]
+
+        for col in yr_cols:
+            cfhealth = (cfhealth
+             .merge(self.timerefs, left_on=col, right_on='id')
+             .drop(col, axis=1).rename(columns={'dates':col})
+            )
+
         return cfhealth
 
 
