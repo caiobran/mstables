@@ -53,14 +53,19 @@ class DataFrames():
 
 
     def valuation(self):
+        # Create DataFrame
         val = self.table('MSvaluation')
 
+        # Rename column headers with actual year values
         yrs = val.iloc[0, 2:13].replace(self.timerefs['dates']).to_dict()
         cols = val.columns[:13].values.tolist() + list(map(
             lambda col: ''.join([col[:3], yrs[col[3:]]]), val.columns[13:]))
         val.columns = cols
 
-        return val.set_index(['exchange_id', 'ticker_id']).iloc[:, 11:]
+        # Resize and reorder columns
+        val = val.set_index(['exchange_id', 'ticker_id']).iloc[:, 11:]
+
+        return val
 
 
     def keyratios(self):

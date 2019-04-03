@@ -11,17 +11,50 @@ import requests, sqlite3, time, json, zlib, re, os, parse
 def create_tables(db_file):
 
     def mssitemap():
-        tree = ET.parse('input/ms_sal-quote-stock-sitemap.xml')
-        url_tag = '{http://www.sitemaps.org/schemas/sitemap/0.9}url'
-        loc_tag = '{http://www.sitemaps.org/schemas/sitemap/0.9}loc'
-        urls = tree.findall('{}/{}'.format(url_tag, loc_tag))
-        get_ticker = lambda st: re.findall('/stocks/(\S+)/',
-            st)[0].split('/')[1].upper()
-        return [(get_ticker(url.text),) for url in urls]
+        urls1 = []
+        xml_files = [
+            'sal-quote-stock-sitemap.xml', 'sal-quote-cefs-sitemap.xml',
+            'sal-quote-funds-sitemap.xml', 'sal-quote-etfs-sitemap.xml'
+            ]
+        url = 'https://www.morningstar.com/sitemaps/individual/{}'
 
+        for xml_file in xml_files:
+            type = re.findall('sal-quote-(.+?)-sitemap', xml_file)[0]
+
+            print('\nFetching list of {} from MorningStar.com'.format(type))
+            xml = requests.get(url.format(xml_file)).text
+
+            print('Parsing list of {}'.format(type))
+            tree = ET.fromstring(xml)
+            url_tag = '{http://www.sitemaps.org/schemas/sitemap/0.9}url'
+            loc_tag = '{http://www.sitemaps.org/schemas/sitemap/0.9}loc'
+            urls2 = tree.findall('{}/{}'.format(url_tag, loc_tag))
+
+            print('List of {} length = {}'.format(type, len(urls2)))
+
+            def get_ticker(u, typ):
+                while True:
+                    try:
+                        x = re.findall('/{}/(.+)/'.format(typ),
+                            u)[0].split('/')[1].upper()
+                        if x.find(' ') > 0:
+                            x = ''
+                        break
+                    except IndexError:
+                        typ = 'stocks'
+                    except:
+                        raise
+
+                return x
+
+            urls1 += [(get_ticker(url.text, type),) for url in urls2]
+            #urls1 += [(url.text,) for url in urls2]
+
+        print('\nFinal list length = {}'.format(len(urls1)))
+        return urls1
 
     # Create database connection
-    print_('\nPlease wait, database tables are being created ...')
+    print('\nPlease wait, database tables are being created ...')
     conn = sqlite3.connect(db_file)
     conn.execute('pragma auto_vacuum = 1')
     cur = conn.cursor()
@@ -31,6 +64,14 @@ def create_tables(db_file):
         columns = ' '.join(['{} {}'.format(k, v) for k, v in tbl_js[table].items()])
         sql = 'CREATE TABLE IF NOT EXISTS {} ({})'.format(table, columns)
         db_execute(cur, sql)
+
+    std_list = [
+        'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+        'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
+    ]
+    sql = 'INSERT OR IGNORE INTO tickers (ticker) VALUES (?)'
+    cur.executemany(sql, mssitemap() + std_list)
 
     # Insert list of tickers and exchanges previously retrieved into database
     file = 'ticker_exch.json'
@@ -49,14 +90,6 @@ def create_tables(db_file):
                 val = '(?, ?)'
             sql = 'INSERT OR IGNORE INTO {} {} VALUES {}'.format(tbl, col, val)
             cur.executemany(sql, tbls[tbl])
-    else:
-        std_list = [
-            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-            'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
-        ]
-        sql = 'INSERT OR IGNORE INTO tickers (ticker) VALUES (?)'
-        cur.executemany(sql, mssitemap() + std_list)
 
     # Insert list of countries into Countries table
     sql = '''INSERT OR IGNORE INTO Countries
@@ -252,6 +285,7 @@ def fetch(db_file):
             except:
                 raise
 
+        # Fetch data from API's without multiprocessing.Pool
         '''for item in url_info:
             results.append(fetch_api(item))'''
 
@@ -342,6 +376,7 @@ def fetch_api(url_info):
         except:
             raise
         x += 1
+        print('\n### Fetching data miss {}'.format(x))
 
     # Timer to attemp to slow down and 'align' Pool requests to every sec
     if False:
