@@ -69,52 +69,53 @@ class DataFrames():
 
 
     def keyratios(self):
+        keyr = self.table('MSfinancials')
         yr_cols = ['Y0', 'Y1', 'Y2', 'Y3', 'Y4', 'Y5', 'Y6',
-                    'Y7', 'Y8', 'Y9', 'Y10']
-        keyratios = self.table('MSfinancials')
-        for yr in yr_cols:
-            keyratios = (keyratios
-             .merge(self.timerefs, left_on=yr, right_on='id')
-             .drop(yr, axis=1).rename(columns={'dates':yr})
-            )
-        keyratios.loc[:, 'Y0':'Y9'] = (
-            keyratios.loc[:, 'Y0':'Y9'].astype('datetime64'))
+            'Y7', 'Y8', 'Y9', 'Y10']
+        keyr = self.get_yrcolumns(keyr, yr_cols)
+        keyr[yr_cols[:-1]] = keyr[yr_cols[:-1]].astype('datetime64')
 
-        return keyratios
+        return keyr
 
 
     def finhealth(self):
-        finanhealth = self.table('MSratio_financial')
-        return finanhealth
+        finan = self.table('MSratio_financial')
+        yr_cols = [col for col in finan.columns if col.startswith('fh_Y')]
+        finan = self.get_yrcolumns(finan, yr_cols)
+
+        return finan
 
 
     def profitability(self):
-        profitab = self.table('MSratio_profitability')
-        return profitab
+        profit= self.table('MSratio_profitability')
+        yr_cols = [col for col in profit.columns if col.startswith('pr_Y')]
+        profit = self.get_yrcolumns(profit, yr_cols)
+
+        return profit
 
 
     def growth(self):
         growth = self.table('MSratio_growth')
+        yr_cols = [col for col in growth.columns if col.startswith('gr_Y')]
+        growth = self.get_yrcolumns(growth, yr_cols)
+
         return growth
 
 
     def cfhealth(self):
         cfhealth = self.table('MSratio_cashflow')
-        yr_cols = [col for col in cfhealth.columns
-                    if col.startswith('cf_Y')]
-
-        for col in yr_cols:
-            cfhealth = (cfhealth
-             .merge(self.timerefs, left_on=col, right_on='id')
-             .drop(col, axis=1).rename(columns={'dates':col})
-            )
+        yr_cols = [col for col in cfhealth.columns if col.startswith('cf_Y')]
+        cfhealth = self.get_yrcolumns(cfhealth, yr_cols)
 
         return cfhealth
 
 
     def efficiency(self):
-        efficiency = self.table('MSratio_efficiency')
-        return efficiency
+        effic = self.table('MSratio_efficiency')
+        yr_cols = [col for col in effic.columns if col.startswith('ef_Y')]
+        effic = self.get_yrcolumns(effic, yr_cols)
+
+        return effic
 
     # Income Statement - Annual
     def annualIS(self):
@@ -202,6 +203,14 @@ class DataFrames():
     # 10yr Price History
     def priceHistory(self):
         return self.table('MSpricehistory')
+
+
+    def get_yrcolumns(self, df, cols):
+        for yr in cols:
+            df = (df.merge(self.timerefs, left_on=yr, right_on='id')
+                .drop(yr, axis=1).rename(columns={'dates':yr}))
+
+        return df
 
 
     def table(self, tbl, prnt = False):

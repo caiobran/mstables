@@ -208,8 +208,8 @@ def erase_tables(db_file):
 
 
 def fetch(db_file):
-    div = 100
-    pool_size = 10
+    div = 160
+    pool_size = 40
 
     # Get user input for stp (no. of tickers to update)
     while True:
@@ -376,7 +376,6 @@ def fetch_api(url_info):
         except:
             raise
         x += 1
-        print('\n### Fetching data miss {}'.format(x))
 
     # Timer to attemp to slow down and 'align' Pool requests to every sec
     if False:
