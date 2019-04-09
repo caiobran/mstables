@@ -120,88 +120,60 @@ class DataFrames():
     # Income Statement - Annual
     def annualIS(self):
         rep_is_yr = self.table('MSreport_is_yr')
-
-        '''# Replace date Columns
-        rep_is_yr.iloc[:,2:8] = (rep_is_yr.iloc[:,2:8]
-            .replace(self.timerefs['dates']))
-
-        # Format Date Columns
-        rep_is_yr.iloc[:,2:7] = (rep_is_yr.iloc[:,2:7].astype('datetime64'))
-
-        # Replace column header values in label columns
-        cols = [col for col in rep_is_yr.columns if 'label' in col]
-        rep_is_yr[cols] = (
-            rep_is_yr[cols].replace(self.colheaders['header']))'''
+        yr_cols = [col for col in rep_is_yr.columns
+                    if col.startswith('Year_Y')]
+        rep_is_yr = self.get_yrcolumns(rep_is_yr, yr_cols)
 
         return rep_is_yr
 
     # Income Statement - Quarterly
     def quarterlyIS(self):
         rep_is_qt = self.table('MSreport_is_qt')
-
-        '''rep_is_qt.iloc[:,2:8] = (rep_is_qt.iloc[:,2:8]
-            .replace(self.timerefs['dates']))
-        rep_is_qt.iloc[:,2:7] = (rep_is_qt.iloc[:,2:7].astype('datetime64'))
-        cols = [col for col in rep_is_qt.columns if 'label' in col]
-        rep_is_qt[cols] = (
-            rep_is_qt[cols].replace(self.colheaders['header']))'''
+        yr_cols = [col for col in rep_is_qt.columns
+                    if col.startswith('Year_Y')]
+        rep_is_qt = self.get_yrcolumns(rep_is_qt, yr_cols)
 
         return rep_is_qt
 
     # Balance Sheet - Annual
     def annualBS(self):
         rep_bs_yr = self.table('MSreport_bs_yr')
-
-        '''rep_bs_yr.iloc[:,2:7] = (rep_bs_yr.iloc[:,2:7]
-            .replace(self.timerefs['dates'])
-            .astype('datetime64'))
-        cols = [col for col in rep_bs_yr.columns if 'label' in col]
-        rep_bs_yr[cols] = (
-            rep_bs_yr[cols].replace(self.colheaders['header']))'''
+        yr_cols = [col for col in rep_bs_yr.columns
+                    if col.startswith('Year_Y')]
+        rep_bs_yr = self.get_yrcolumns(rep_bs_yr, yr_cols)
 
         return rep_bs_yr
 
     # Balance Sheet - Quarterly
     def quarterlyBS(self):
         rep_bs_qt = self.table('MSreport_bs_qt')
-
-        '''rep_bs_qt.iloc[:,2:7] = (rep_bs_qt.iloc[:,2:7]
-            .replace(self.timerefs['dates'])
-            .astype('datetime64'))
-        cols = [col for col in rep_bs_qt.columns if 'label' in col]
-        rep_bs_qt[cols] = (
-            rep_bs_qt[cols].replace(self.colheaders['header']))'''
+        yr_cols = [col for col in rep_bs_qt.columns
+                    if col.startswith('Year_Y')]
+        rep_bs_qt = self.get_yrcolumns(rep_bs_qt, yr_cols)
 
         return rep_bs_qt
 
     # Cashflow Statement - Annual
     def annualCF(self):
         rep_cf_yr = self.table('MSreport_cf_yr')
-
-        '''rep_cf_yr.iloc[:,2:8] = (rep_cf_yr.iloc[:,2:8]
-            .replace(self.timerefs['dates']))
-        rep_cf_yr.iloc[:,2:7] = (rep_cf_yr.iloc[:,2:7].astype('datetime64'))
-        cols = [col for col in rep_cf_yr.columns if 'label' in col]
-        rep_cf_yr[cols] = (
-            rep_cf_yr[cols].replace(self.colheaders['header']))'''
+        yr_cols = [col for col in rep_cf_yr.columns
+                    if col.startswith('Year_Y')]
+        rep_cf_yr = self.get_yrcolumns(rep_cf_yr, yr_cols)
 
         return rep_cf_yr
 
     # Cashflow Statement - Quarterly
     def quarterlyCF(self):
         rep_cf_qt = self.table('MSreport_cf_qt')
-
-        '''rep_cf_qt.iloc[:,2:8] = (rep_cf_qt.iloc[:,2:8]
-            .replace(self.timerefs['dates']))
-        rep_cf_qt.iloc[:,2:7] = (rep_cf_qt.iloc[:,2:7].astype('datetime64'))
-        cols = [col for col in rep_cf_qt.columns if 'label' in col]
-        rep_cf_qt[cols] = (
-            rep_cf_qt[cols].replace(self.colheaders['header']))'''
+        yr_cols = [col for col in rep_cf_qt.columns
+                    if col.startswith('Year_Y')]
+        rep_cf_qt = self.get_yrcolumns(rep_cf_qt, yr_cols)
 
         return rep_cf_qt
 
     # 10yr Price History
     def priceHistory(self):
+
         return self.table('MSpricehistory')
 
 
