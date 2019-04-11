@@ -252,6 +252,7 @@ def fetch(db_file):
             print(msg0.format(len(urls), stp * len(apis)))
             msg0 = '\t({} requests per API per run = {} requests per run)'
             msg += msg0.format(div, min(stp, div)*len(apis))
+
         print(msg.format(i+1, runs))
 
         j = i * div * len(apis)
