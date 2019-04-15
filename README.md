@@ -8,7 +8,7 @@ The scraper should work as long as the structure of the responses does not chang
 ## Motivation:
 As a fan of [Benjamin Graham](https://en.wikipedia.org/wiki/Benjamin_Graham)'s [value investing](https://en.wikipedia.org/wiki/Value_investing), I have always searched for sources of consolidated financial data that would allow me to identify 'undervalued' companies from a large pool of global public stocks. However, most *(if not all)* financial services that provide such data consolidation are not free and, as a small retail investor, I was not willing to pay for their fees. In fact, most of the data I needed was already available for free on various financial website, just not in a consolidated format. Therefore, I decided to create a web scraper for [MorningStar.com](https://www.morningstar.com), which is the website that I found to have the most available data in a more standardized and structured format. MS was also one of the only website services that published free financial performance data for the past 10 yrs, while most sites only provided free data for last 5 yrs.
 
-## Next steps:
+## Next steps
 - Incorporate new code into fetch.py, under the create_tables method, to download and use the xml files listed on [MorningStar's robot.txt](https://www.morningstar.com/robots.txt) as references for when creating new database tables (current version only uses the [ms_sal-quote-stock-sitemap.xml](input/ms_sal-quote-stock-sitemap.xml) file which was downloaded and stored locally for reference)
 - Finalize instructions for the scraper CLI
 - Finalize Jupyter [notebook][1] with examples of how to use the DataFrames class from [dataframes.py](dataframes.py)
@@ -17,7 +17,7 @@ As a fan of [Benjamin Graham](https://en.wikipedia.org/wiki/Benjamin_Graham)'s [
 Instructions
 ------------
 
-### Program Requirements:
+### Program Requirements
 The scraper should run on any Linux distribution that has Python3 and the following modules installed:
 
 - [Beautiful Soup](https://www.crummy.com/software/BeautifulSoup/)
@@ -32,7 +32,7 @@ To view the [notebook with data visualization examples][1] mentioned in the inst
 ### Installation
 Open a Linux terminal in the desired installation directory and execute `git clone https://github.com/caiobran/msTables.git` to download the project files.
 
-### Using the scraper Command Line Interface (CLI).
+### Using the scraper Command Line Interface (CLI)
 
 Execute `python main.py` from the project root directory to start the scraper CLI. If the program has started correctly, you should see the following interface:
 
@@ -46,7 +46,7 @@ Execute `python main.py` from the project root directory to start the scraper CL
 
 *(documentation in progress, to be updated with instructions on remaining actions)*
 
-### How to access the SQLite database tables using module _dataframes.py_:
+### How to access the SQLite database tables using module _dataframes.py_
 The scraper will automatically create a directory *db/* in the root folder to store the *.sqlite* database files generated. The current file name in use will be displayed on the scraper CLI under action `0` (see CLI figure above). Database files will contain a relational database with the following main tables:
 
 **Database Tables**
