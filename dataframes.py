@@ -43,7 +43,56 @@ class DataFrames():
         #self.fetchedurls = self.table('Fetched_urls', True)
 
         # Master table
-        self.master = self.table('Master', True)
+        self.master0 = self.table('Master', True)
+        
+        # Merge Tables
+        self.master = (self.master0
+        # Ticker Symbols
+         .merge(self.tickers, left_on='ticker_id', right_on='id')
+         .drop(['id'], axis=1)
+        # Company / Security Name
+         .merge(self.companies, left_on='company_id', right_on='id')
+         .drop(['id', 'company_id'], axis=1)
+        # Exchanges
+         .merge(self.exchanges, left_on='exchange_id', right_on='id')
+         .drop(['id'], axis=1)
+        # Industries
+         .merge(self.industries, left_on='industry_id', right_on='id')
+         .drop(['id', 'industry_id'], axis=1)
+        # Sectors
+         .merge(self.sectors, left_on='sector_id', right_on='id')
+         .drop(['id', 'sector_id'], axis=1)
+        # Countries
+         .merge(self.countries, left_on='country_id', right_on='id')
+         .drop(['id', 'country_id'], axis=1)
+        # Security Types
+         .merge(self.securitytypes, left_on='security_type_id', right_on='id')
+         .drop(['id', 'security_type_id'], axis=1)
+        # Stock Types
+         .merge(self.stocktypes, left_on='stock_type_id', right_on='id')
+         .drop(['id', 'stock_type_id'], axis=1)
+        # Stock Style Types
+         .merge(self.styles, left_on='style_id', right_on='id')
+         .drop(['id', 'style_id'], axis=1)
+        # Quote Header Info
+         .merge(self.quoteheader(), on=['ticker_id', 'exchange_id'])
+         .rename(columns={'fpe':'Forward_PE'})
+        # Currency
+         .merge(self.currencies, left_on='currency_id', right_on='id')
+         .drop(['id', 'currency_id'], axis=1)
+        # Fiscal Year End
+         .merge(self.timerefs, left_on='fyend_id', right_on='id')
+         .drop(['fyend_id'], axis=1)
+         .rename(columns={'dates':'fy_end'})
+        # Updated Date
+         .merge(self.timerefs, left_on='update_date_id', right_on='id')
+         .drop(['update_date_id'], axis=1)
+         .rename(columns={'dates':'updated_date'})
+        )
+        # Change date columns to TimeFrames
+        self.master['fy_end'] = pd.to_datetime(self.master['fy_end'])
+        self.master['updated_date'] = pd.to_datetime(
+            self.master['updated_date'])
 
         print('Initial DataFrames created.')
 
@@ -82,6 +131,7 @@ class DataFrames():
         finan = self.table('MSratio_financial')
         yr_cols = [col for col in finan.columns if col.startswith('fh_Y')]
         finan = self.get_yrcolumns(finan, yr_cols)
+        finan[yr_cols[:-1]] = finan[yr_cols[:-1]].astype('datetime64')
 
         return finan
 
@@ -90,6 +140,7 @@ class DataFrames():
         profit= self.table('MSratio_profitability')
         yr_cols = [col for col in profit.columns if col.startswith('pr_Y')]
         profit = self.get_yrcolumns(profit, yr_cols)
+        profit[yr_cols[:-1]] = profit[yr_cols[:-1]].astype('datetime64')
 
         return profit
 
@@ -98,6 +149,7 @@ class DataFrames():
         growth = self.table('MSratio_growth')
         yr_cols = [col for col in growth.columns if col.startswith('gr_Y')]
         growth = self.get_yrcolumns(growth, yr_cols)
+        growth[yr_cols[:-1]] = growth[yr_cols[:-1]].astype('datetime64')
 
         return growth
 
@@ -106,6 +158,7 @@ class DataFrames():
         cfhealth = self.table('MSratio_cashflow')
         yr_cols = [col for col in cfhealth.columns if col.startswith('cf_Y')]
         cfhealth = self.get_yrcolumns(cfhealth, yr_cols)
+        cfhealth[yr_cols[:-1]] = cfhealth[yr_cols[:-1]].astype('datetime64')
 
         return cfhealth
 
@@ -114,6 +167,7 @@ class DataFrames():
         effic = self.table('MSratio_efficiency')
         yr_cols = [col for col in effic.columns if col.startswith('ef_Y')]
         effic = self.get_yrcolumns(effic, yr_cols)
+        effic[yr_cols[:-1]] = effic[yr_cols[:-1]].astype('datetime64')
 
         return effic
 
@@ -123,6 +177,7 @@ class DataFrames():
         yr_cols = [col for col in rep_is_yr.columns
                     if col.startswith('Year_Y')]
         rep_is_yr = self.get_yrcolumns(rep_is_yr, yr_cols)
+        rep_is_yr[yr_cols[:-1]] = rep_is_yr[yr_cols[:-1]].astype('datetime64')
 
         return rep_is_yr
 
@@ -132,6 +187,7 @@ class DataFrames():
         yr_cols = [col for col in rep_is_qt.columns
                     if col.startswith('Year_Y')]
         rep_is_qt = self.get_yrcolumns(rep_is_qt, yr_cols)
+        rep_is_qt[yr_cols[:-1]] = rep_is_qt[yr_cols[:-1]].astype('datetime64')
 
         return rep_is_qt
 
@@ -141,6 +197,7 @@ class DataFrames():
         yr_cols = [col for col in rep_bs_yr.columns
                     if col.startswith('Year_Y')]
         rep_bs_yr = self.get_yrcolumns(rep_bs_yr, yr_cols)
+        rep_bs_yr[yr_cols[:-1]] = rep_bs_yr[yr_cols[:-1]].astype('datetime64')
 
         return rep_bs_yr
 
@@ -150,6 +207,7 @@ class DataFrames():
         yr_cols = [col for col in rep_bs_qt.columns
                     if col.startswith('Year_Y')]
         rep_bs_qt = self.get_yrcolumns(rep_bs_qt, yr_cols)
+        rep_bs_qt[yr_cols[:-1]] = rep_bs_qt[yr_cols[:-1]].astype('datetime64')
 
         return rep_bs_qt
 
@@ -159,6 +217,7 @@ class DataFrames():
         yr_cols = [col for col in rep_cf_yr.columns
                     if col.startswith('Year_Y')]
         rep_cf_yr = self.get_yrcolumns(rep_cf_yr, yr_cols)
+        rep_cf_yr[yr_cols[:-1]] = rep_cf_yr[yr_cols[:-1]].astype('datetime64')
 
         return rep_cf_yr
 
@@ -168,6 +227,7 @@ class DataFrames():
         yr_cols = [col for col in rep_cf_qt.columns
                     if col.startswith('Year_Y')]
         rep_cf_qt = self.get_yrcolumns(rep_cf_qt, yr_cols)
+        rep_cf_qt[yr_cols[:-1]] = rep_cf_qt[yr_cols[:-1]].astype('datetime64')
 
         return rep_cf_qt
 
