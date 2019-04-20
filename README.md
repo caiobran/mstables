@@ -96,18 +96,11 @@ See Jupyter notebook [data_overview.ipynb][1] for examples on how to create Data
     1. [Number of stocks by industry][1]
     1. [Mean price ratios (P/E, P/S, P/B, P/CF) of stocks by sectors][1]
 1. [Applying various criteria to filter common stocks][1] *(in progress)*
-    1. Rule 1: No earnings deficit (loss) for past 5 or 7 years
-    1. Rule 2: Uniterrupted and increasing Dividends for past 5 yrs
-    1. Rule 3: P/E Ratio of 25 or less for the past 7 yrs and less then 20 for TTM
-    1. Rule 4: P/B Ratio of 1.2 or less for TTM
-    1. Rule 5: Filter for "bargain issues"
-    1. Rule 6: Operating Cash Flow growth for the past 7 yr
-    1. Rule 7: Owner earnings growth rate > 6% over past 7 years
-    1. Rule 8: Long-term debt < 50% of total capital
-    1. Rule 9: NAV per share > Stock Price
-    1. Rule 10: Growth Stocks as described by Benjamin Graham in The Intelligent Investor
-    1. Rule 11: Positive ratio of earnings to fixed charge
-    1. Rule 12: CAN SLIM
+    1. Stocks with continuous revenue growth for the past 5 or 7 years
+    1. No earnings deficit (loss) for past 5 or 7 years
+    1. Uniterrupted and increasing Dividends for past 5 yrs
+    1. P/E Ratio of 25 or less for the past 7 yrs and less then 20 for TTM
+    1. Operating Cash Flow growth for the past 7 yr
 
 Below is a sample from [data_overview.ipynb][1] of a chart that can be produced with the data fetched for over ~70k stocks:
 
