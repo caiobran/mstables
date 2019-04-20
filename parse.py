@@ -326,6 +326,13 @@ def parse_3(cur, ticker_id, exch_id, data):
                         cur, 'Currencies', 'currency_code', text)
                     info['currency_id'] = val
 
+            elif attrs.get('vkey') == 'LastDate':
+                if text == '':
+                    info['lastdate'] = 'null'
+                else:
+                    info['lastdate'] = pd.to_datetime(
+                        text).strftime('%Y-%m-%d')
+
             elif attrs.get('vkey') == 'DayRange':
                 text = re.sub('^-0.00', '0.00', text)
                 vals = text.split('-')

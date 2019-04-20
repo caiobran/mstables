@@ -4418,6 +4418,7 @@
   "MSheader":{
     "ticker_id":"INTEGER,",
     "exchange_id":"INTEGER,",
+    "lastdate":"DATE,",
     "openprice":"REAL,",
     "lastprice":"REAL,",
     "day_hi":"REAL,",

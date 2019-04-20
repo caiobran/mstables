@@ -13,7 +13,8 @@ class DataFrames():
 
     def __init__(self, file = db_file):
 
-        print('Creating intial DataFrames from file {}...'.format(file))
+        msg = 'Creating initial DataFrames objects from file {}...\n'
+        print(msg.format(file))
 
         self.conn = sqlite3.connect(
             file, detect_types=sqlite3.PARSE_COLNAMES)
@@ -44,7 +45,7 @@ class DataFrames():
 
         # Master table
         self.master0 = self.table('Master', True)
-        
+
         # Merge Tables
         self.master = (self.master0
         # Ticker Symbols
@@ -76,7 +77,7 @@ class DataFrames():
          .drop(['id', 'style_id'], axis=1)
         # Quote Header Info
          .merge(self.quoteheader(), on=['ticker_id', 'exchange_id'])
-         .rename(columns={'fpe':'Forward_PE'})
+         .rename(columns={'fpe':'PE_Forward'})
         # Currency
          .merge(self.currencies, left_on='currency_id', right_on='id')
          .drop(['id', 'currency_id'], axis=1)
@@ -94,7 +95,7 @@ class DataFrames():
         self.master['updated_date'] = pd.to_datetime(
             self.master['updated_date'])
 
-        print('Initial DataFrames created.')
+        print('\nInitial DataFrames created successfully.')
 
 
     def quoteheader(self):
@@ -251,7 +252,7 @@ class DataFrames():
 
         try:
             if prnt == True:
-                msg = 'Creating DataFrame \'{}\' ...'
+                msg = '\t- DataFrame \'df.{}\' ...'
                 print(msg.format(tbl.lower()))
             return pd.DataFrame(self.cur.fetchall(), columns=cols)
         except:

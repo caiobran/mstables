@@ -111,7 +111,7 @@ See Jupyter notebook [data_overview.ipynb][1] for examples on how to create Data
 
 Below is a sample from [data_overview.ipynb][1] of a chart that can be produced with the data fetched for over ~70k stocks:
 
-![Imgur](https://i.imgur.com/gzO5H1T.png)
+![Imgur](https://i.imgur.com/1RrSuWx.png)
 
 
 MIT License
