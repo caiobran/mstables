@@ -45,7 +45,8 @@ class DataFrames():
 
         # Master table
         self.master0 = self.table('Master', True)
-
+        return
+        
         # Merge Tables
         self.master = (self.master0
         # Ticker Symbols

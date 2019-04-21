@@ -50,7 +50,7 @@ def create_tables(db_file):
             urls1 += [(get_ticker(url.text, type),) for url in urls2]
             #urls1 += [(url.text,) for url in urls2]
 
-        print('\nFinal list length = {}'.format(len(urls1)))
+        print('\nTotal length = {}'.format(len(urls1)))
         return urls1
 
     # Create database connection
