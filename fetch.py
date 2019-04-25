@@ -258,7 +258,7 @@ def fetch(db_file):
         j = i * div * len(apis)
         items = urls[j:j + div * len(apis)]
         sort0 = lambda x: (x[0], x[2], x[3])
-        items = sorted(items, key=sort0)
+        #items = sorted(items, key=sort0)
 
         # Execute sql clean.txt and exit loop if no records remain to update
         if len(items) == 0:
@@ -427,7 +427,11 @@ def geturllist(cur):
     print(df_tickct.rename(columns={0:'API', 1:'Pending'})
             .set_index('API'))
     df_tickct = None
-    return sorted(urls, key=lambda x: (x[2], x[3], x[0]))
+
+    #urls = sorted(urls, key=lambda x: (x[2], x[3], x[0]))
+    urls = sorted(urls, key=lambda x: (x[0], x[2], x[3]))
+
+    return urls
 
 
 def print_(msg):

@@ -45,8 +45,7 @@ class DataFrames():
 
         # Master table
         self.master0 = self.table('Master', True)
-        return
-        
+
         # Merge Tables
         self.master = (self.master0
         # Ticker Symbols
@@ -95,6 +94,7 @@ class DataFrames():
         self.master['fy_end'] = pd.to_datetime(self.master['fy_end'])
         self.master['updated_date'] = pd.to_datetime(
             self.master['updated_date'])
+        self.master['lastdate'] = pd.to_datetime(self.master['lastdate'])
 
         print('\nInitial DataFrames created successfully.')
 
