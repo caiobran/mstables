@@ -218,10 +218,6 @@ def parse_1(cur, ticker_id, exch_id, data, api):
         country_id = fetch.sql_insert_one_get_id(cur,
             'Countries', 'a3_un', country)
 
-        # Updated date
-        update = date.today().strftime('%Y-%m-%d')
-        date_id = fetch.sql_insert_one_get_id(cur, 'TimeRefs', 'dates', update)
-
         # Exchanges
         exch_id = fetch.sql_insert_one_get_id(cur,
             'Exchanges', 'exchange_sym', exch_sym)
@@ -240,7 +236,7 @@ def parse_1(cur, ticker_id, exch_id, data, api):
         dict1 = {
             'company_id':comp_id,
             'security_type_id':type_id,
-            'update_date_id':date_id
+            'update_date':date.today()
             }
         dict2 = {
             'ticker_id':ticker_id,

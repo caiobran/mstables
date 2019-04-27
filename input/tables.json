@@ -4444,7 +4444,7 @@
     "stock_type_id":"INTEGER,",
     "fyend_id":"INTEGER,",
     "style_id":"INTEGER,",
-    "update_date_id":"INTEGER,",
+    "update_date":"DATE,",
     "PRIMARY KEY":"(ticker_id, exchange_id)"
   },
   "Fetched_urls":{
