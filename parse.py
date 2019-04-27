@@ -236,7 +236,7 @@ def parse_1(cur, ticker_id, exch_id, data, api):
         dict1 = {
             'company_id':comp_id,
             'security_type_id':type_id,
-            'update_date':date.today()
+            'update_date':date.today().strftime('%Y-%m-%d')
             }
         dict2 = {
             'ticker_id':ticker_id,
