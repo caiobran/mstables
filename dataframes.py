@@ -85,11 +85,6 @@ class DataFrames():
          .merge(self.timerefs, left_on='fyend_id', right_on='id')
          .drop(['fyend_id'], axis=1)
          .rename(columns={'dates':'fy_end'})
-        # Updated Date
-         .merge(self.timerefs, left_on='update_date_id', right_on='id')
-         .drop(['update_date_id'], axis=1)
-         .rename(columns={'dates':'updated_date'})
-        )
         # Change date columns to TimeFrames
         self.master['fy_end'] = pd.to_datetime(self.master['fy_end'])
         self.master['updated_date'] = pd.to_datetime(
