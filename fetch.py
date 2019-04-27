@@ -249,19 +249,21 @@ def fetch(db_file):
                 raise
             msg0 = '\nTotal URL requests pending =\t{:9,.0f}\n'
             msg0 += 'Total URL requests planned =\t{:9,.0f}\n'
-            print(msg0.format(len(urls), stp * len(apis)))
+            print(msg0.format(len(urls),
+                min(len(urls), stp * len(apis))))
             msg0 = '\t({} requests per API per run = {} requests per run)'
-            msg += msg0.format(div, min(stp, div)*len(apis))
-
-        print(msg.format(i+1, runs))
+            msg += msg0.format(div, div*len(apis))
 
         j = i * div * len(apis)
         items = urls[j:j + div * len(apis)]
+        items_ct = len(items)
         sort0 = lambda x: (x[0], x[2], x[3])
         #items = sorted(items, key=sort0)
+        print(msg.format(i+1, '{:.0f}'
+            .format(min(len(urls), stp * len(apis))/(div*len(apis)))))
 
         # Execute sql clean.txt and exit loop if no records remain to update
-        if len(items) == 0:
+        if items_ct == 0:
             with open(sql_cmds.format('clean.txt')) as file:
                 cur.executescript(file.read().strip())
             break
