@@ -88,8 +88,6 @@ class DataFrames():
         )
         # Change date columns to TimeFrames
         self.master['fy_end'] = pd.to_datetime(self.master['fy_end'])
-        self.master['updated_date'] = pd.to_datetime(
-            self.master['updated_date'])
         self.master['lastdate'] = pd.to_datetime(self.master['lastdate'])
 
         print('\nInitial DataFrames created successfully.')
