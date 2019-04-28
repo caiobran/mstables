@@ -65,7 +65,7 @@ Module _dataframes_ contains a class that can be used to generate pandas DataFra
 
 See Jupyter notebook [data_overview.ipynb][1] for examples on how to create DataFrame objects to manipulate and visualize the data. Below is a list of all content found in the notebook:
 
-**Content**
+**Juypter Notebook Content**
 
 1. [Required modules and matplotlib backend][1]
 1. [Creating a master (bridge table) DataFrame instance using the DataFrames class][1]
@@ -94,14 +94,14 @@ See Jupyter notebook [data_overview.ipynb][1] for examples on how to create Data
     1. [Number of stocks by industry][1]
     1. [Mean price ratios (P/E, P/S, P/B, P/CF) of stocks by sectors][1]
 1. [Applying various criteria to filter common stocks][1]
-    1. CAGR > 7% for past 7 years
-    1. No earnings deficit (loss) for past 5 or 7 years
-    1. Uniterrupted and increasing Dividends for past 5 yrs
-    1. P/E Ratio of 25 or less for the past 7 yrs and less then 20 for TTM
-    1. Long-term debt < 50% of total capital
-    1. Current Ratio > 2
-    1. Growth for the past year
-    1. P/B Ratio of 1.2 or less for TTM
+    1. [CAGR > 7% for past 7 years][1]
+    1. [No earnings deficit (loss) for past 5 or 7 years][1]
+    1. [Uniterrupted and increasing Dividends for past 5 yrs][1]
+    1. [P/E Ratio of 25 or less for the past 7 yrs and less then 20 for TTM][1]
+    1. [Long-term debt < 50% of total capital][1]
+    1. [Current Ratio > 2][1]
+    1. [Growth for the past year][1]
+    1. [P/B Ratio of 1.2 or less for TTM][1]
 
 Below are sample snip-its of code from [data_overview.ipynb][1]:
 
