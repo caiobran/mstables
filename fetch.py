@@ -264,8 +264,8 @@ def fetch(db_file):
 
         # Execute sql clean.txt and exit loop if no records remain to update
         if items_ct == 0:
-            with open(sql_cmds.format('clean.txt')) as file:
-                cur.executescript(file.read().strip())
+            #with open(sql_cmds.format('clean.txt')) as file:
+            #    cur.executescript(file.read().strip())
             break
 
         # Fetch data from API's using multiprocessing.Pool
@@ -422,7 +422,7 @@ def geturllist(cur):
                 for c, ticker in enumerate(tickers)]
 
     # Print API list and no. of tickers to be updated for each
-    msg = '\nQty. of records pending update per API no.\n'
+    msg = '\nQty. of records pending update per API no.:\n\n'
     print_(msg)
     df_tickct = pd.DataFrame([(k, '{:8,.0f}'.format(v))
         for k, v in ticker_count.items()])
