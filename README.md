@@ -34,7 +34,7 @@ Open a Linux terminal in the desired installation directory and execute `git clo
 
 Execute `python main.py` from the project root directory to start the scraper CLI. If the program has started correctly, you should see the following interface:
 
-<img src="https://i.imgur.com/D1Y25LN.png" alt="Figure 1" height="350"/>
+<img src="https://i.imgur.com/D1Y25LN.png" alt="Figure 1" height="250"/>
 
 1. If you are running the scraper for the first time, enter option `1` to create the initial SQLite database tables.
 2. Once that action has been completed, and on subsequent runs, enter option `2` to download the latest data from the MorningStar [URL's](input/api.json).
@@ -93,23 +93,26 @@ See Jupyter notebook [data_overview.ipynb][1] for examples on how to create Data
     1. [Number of stocks by sector][1]
     1. [Number of stocks by industry][1]
     1. [Mean price ratios (P/E, P/S, P/B, P/CF) of stocks by sectors][1]
-1. [Applying various criteria to filter common stocks][1] *(in progress)*
-    1. Stocks with continuous revenue growth for the past 5 or 7 years
+1. [Applying various criteria to filter common stocks][1]
+    1. CAGR > 7% for past 7 years
     1. No earnings deficit (loss) for past 5 or 7 years
     1. Uniterrupted and increasing Dividends for past 5 yrs
     1. P/E Ratio of 25 or less for the past 7 yrs and less then 20 for TTM
-    1. Operating Cash Flow growth for the past 7 yr
+    1. Long-term debt < 50% of total capital
+    1. Current Ratio > 2
+    1. Growth for the past year
+    1. P/B Ratio of 1.2 or less for TTM
 
 Below are sample snip-its of code from [data_overview.ipynb][1]:
 
 - Count of records downloaded from Morningstar.com by security type:
-<img src="https://i.imgur.com/b4VKE2R.png" alt="Figure 2"/>
+<img src="https://i.imgur.com/b4VKE2R.png" alt="Figure 2" height="250"/>
 
 - Plot of average stock P/E by sector and region:
-<img src="https://i.imgur.com/1RrSuWx.png" alt="Figure 2"/>
+<img src="https://i.imgur.com/1RrSuWx.png" alt="Figure 3" height="250"/>
 
-- Applying fundamental rules to screen the list of stocks ([see sample output]):
-<img src="https://i.imgur.com/v7q76uM.png" alt="Figure 2"/>
+- Applying fundamental rules to screen the list of stocks ([see sample output](https://github.com/caiobran/mstables/blob/master/sample_rules_output.ods)):
+<img src="https://i.imgur.com/v7q76uM.png" alt="Figure 4" height="250"/>
 
 
 MIT License
