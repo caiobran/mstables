@@ -1,4 +1,4 @@
-msTables
+mstables
 ========
 
 msTables is a [MorningStar.com](https://www.morningstar.com) scraper written in python that fetches, parses and stores financial and market data for over 70k securities into a relational SQLite database. The scraper provides a Command Line Interface (CLI) that allows the user greater flexibility for creating and managing multiple *.sqlite* files. Once data has been downloaded into the database files, [dataframes.py](dataframes.py) module can be used to easily create DataFrame objects from the database tables for further analysis.

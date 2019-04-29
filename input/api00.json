@@ -1,3 +1,4 @@
 {
-  "5":"http://quotes.morningstar.com/stockq/c-header?t={}:{}"
+  "5":"http://quotes.morningstar.com/stockq/c-header?t={}:{}",
+  "99":"http://insiders.morningstar.com/insiders/trading/insider-activity-data2.action?&t=XNYS:MPW&region=usa&culture=en-US&cur=&yc=1&tc=&pageSize=100&_=1556547256995"
 }
