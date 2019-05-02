@@ -41,6 +41,9 @@ class DataFrames():
         self.companies = self.table('Companies', True)
         self.currencies = self.table('Currencies', True)
         self.stocktypes = self.table('StockTypes', True)
+        self.insiders = self.table('Insiders', True)
+        self.tradetype = self.table('TransactionType', True)
+        self.insidertrades = self.table('InsiderTransactions', True)
         #self.fetchedurls = self.table('Fetched_urls', True)
 
         # Master table

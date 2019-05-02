@@ -114,7 +114,7 @@ def main(file):
 
                 # Delete Fetched_urls table records
                 elif inp == 5:
-                    msg = fetch.delfetchhis(db_file['path'])
+                    msg = fetch.del_fetch_history(db_file['path'])
 
                 # Back-up database file
                 elif inp == int(list(ops.keys())[-1]):
@@ -139,7 +139,7 @@ def main(file):
                 raise e
 
             # Print output message
-            os.system('clear')
+            #os.system('clear')
             print(msg)
 
             # Calculate and print execution time

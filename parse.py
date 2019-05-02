@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup as bs
 from importlib import reload #Comment out once done using
-from datetime import date
+import datetime as DT
 from io import StringIO
 import pandas as pd
 import numpy as np
@@ -107,24 +107,27 @@ def parsing(conn, cur, items):
                     code = parse_6(cur, ticker_id, exch_id, source_text)
                 elif api == 9:
                     code = parse_7(cur, ticker_id, exch_id, source_text)
-                else:
+                elif api in [10, 11, 12, 13, 14, 15]:
                     code = parse_8(cur, api, ticker_id, exch_id, source_text)
+                elif api == 16:
+                    code = parse_9(cur, ticker_id, exch_id, source_text)
                 source_text = 'null'
 
             # Updated record in Fetched_urls with results from parsing
-            dict1 = {
-                'status_code':code,
-                'parsed':parsed,
-                'source_text':source_text
-            }
-            dict2 = {
-                'url_id':api,
-                'ticker_id':ticker_id,
-                'exch_id':exch_id,
-                'fetch_date':fetch_date
-            }
-            sql = update_record('Fetched_urls', dict1, dict2)
-            fetch.db_execute(cur, sql)
+            if False:
+                dict1 = {
+                    'status_code':code,
+                    'parsed':parsed,
+                    'source_text':source_text
+                }
+                dict2 = {
+                    'url_id':api,
+                    'ticker_id':ticker_id,
+                    'exch_id':exch_id,
+                    'fetch_date':fetch_date
+                }
+                sql = update_record('Fetched_urls', dict1, dict2)
+                fetch.db_execute(cur, sql)
 
             #print('\n{} SQL = {}\n\n'.format(api, sql))
 
@@ -149,7 +152,7 @@ def db_execute(cur, sql, tpl):
 
 
 # Fech table from source html code
-def gethtmltable(sp):
+def get_html_table(sp):
 
     tr_tags = sp.find_all('tr')
     table = []
@@ -236,7 +239,7 @@ def parse_1(cur, ticker_id, exch_id, data, api):
         dict1 = {
             'company_id':comp_id,
             'security_type_id':type_id,
-            'update_date':date.today().strftime('%Y-%m-%d')
+            'update_date':DT.date.today().strftime('%Y-%m-%d')
             }
         dict2 = {
             'ticker_id':ticker_id,
@@ -248,7 +251,7 @@ def parse_1(cur, ticker_id, exch_id, data, api):
     return 200
 
 
-# http://quotes.morningstar.com/stockq/c-company-profile?
+# http://quotes.morningstar.com/stockq/c-company-profile
 def parse_2(cur, ticker_id, exch_id, data):
 
     soup = bs(data, 'html.parser')
@@ -297,7 +300,7 @@ def parse_2(cur, ticker_id, exch_id, data):
     return 200
 
 
-# http://quotes.morningstar.com/stockq/c-header?
+# http://quotes.morningstar.com/stockq/c-header
 def parse_3(cur, ticker_id, exch_id, data):
 
     soup = bs(data, 'html.parser')
@@ -464,7 +467,7 @@ def parse_3(cur, ticker_id, exch_id, data):
     return 200
 
 
-# http://financials.morningstar.com/valuate/valuation-history.action?
+# http://financials.morningstar.com/valuate/valuation-history.action
 def parse_4(cur, ticker_id, exch_id, data):
 
     info = {}
@@ -473,7 +476,7 @@ def parse_4(cur, ticker_id, exch_id, data):
              info[h] = v
 
     soup = bs(data, 'html.parser')
-    table = gethtmltable(soup)
+    table = get_html_table(soup)
     script = soup.find('script').text
     script = re.sub('[ \n\t]|\\n|\\t', '', script)
     script = re.findall('\[\[.+?\]\]', script)[0]
@@ -536,7 +539,7 @@ def parse_4(cur, ticker_id, exch_id, data):
     return 200
 
 
-# http://financials.morningstar.com/finan/financials/getKeyStatPart.html?
+# http://financials.morningstar.com/finan/financials/getKeyStatPart.html
 def parse_5(cur, ticker_id, exch_id, data):
 
     # Check if source data has correct information
@@ -627,7 +630,7 @@ def parse_5(cur, ticker_id, exch_id, data):
     return 200
 
 
-# http://financials.morningstar.com/finan/financials/getFinancePart.html?
+# http://financials.morningstar.com/finan/financials/getFinancePart.html
 def parse_6(cur, ticker_id, exch_id, data):
 
     # Check if source data has correct information
@@ -710,7 +713,7 @@ def parse_6(cur, ticker_id, exch_id, data):
     return 200
 
 
-# http://performance.mor.../perform/Performance/stock/exportStockPrice.action?
+# http://performance.mor.../perform/Performance/stock/exportStockPrice.action
 def parse_7(cur, ticker_id, exch_id, data):
 
     # Calculate current moving averages
@@ -744,7 +747,7 @@ def parse_7(cur, ticker_id, exch_id, data):
     return 200
 
 
-# http://financials.morningstar.com/ajax/ReportProcess4HtmlAjax.html?
+# http://financials.morningstar.com/ajax/ReportProcess4HtmlAjax.html
 def parse_8(cur, api, ticker_id, exch_id, data):
 
     # Check if source data has correct information
@@ -840,6 +843,52 @@ def parse_8(cur, api, ticker_id, exch_id, data):
     fetch.db_execute(cur, sql)
 
     return 200
+
+
+def parse_9(cur, ticker_id, exch_id, data):
+
+    data = re.sub('([A-Z])', r' \1', data)
+    data = re.sub(' +', ' ', data)
+    data = re.sub('\\n|\\t', '', data)
+    soup = bs(data, 'html.parser')
+    table = get_html_table(soup)
+
+    if len(table) > 1:
+        for row in table:
+            date = ''
+            info = {}
+            if row[0] != '':
+                info['date'] = DT.datetime.strptime(
+                    row[0], '%m/%d/%Y').strftime('%Y-%m-%d')
+                try:
+                    info['quantity'] = float(re.sub(',', '', row[3]))
+                    info['value'] = float(re.sub(',', '', row[6]))
+                except ValueError:
+                    info['quantity'] = 0
+                    info['value'] = 0
+                except:
+                    raise
+
+                name = row[1].strip()
+                info['name_id'] = fetch.sql_insert_one_get_id(
+                    cur, 'Insiders', 'name', name)
+
+                type = row[5].strip()
+                if ' ' in type:
+                    type = type.split()[0]
+                info['transaction_id'] = fetch.sql_insert_one_get_id(
+                    cur, 'TransactionType', 'type', type)
+
+                # Insert data into tables
+                info['ticker_id'] = ticker_id
+                info['exchange_id'] = exch_id
+                sql = fetch.sql_insert('InsiderTransactions',
+                    tuple(info.keys()), tuple(info.values()))
+                fetch.db_execute(cur, sql)
+
+    return 200
+
+
 
 
 # Generate UPDATE SQL command

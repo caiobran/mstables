@@ -4524,5 +4524,23 @@
   "ColHeaders":{
     "id":"INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,",
     "header":"TEXT UNIQUE"
+  },
+  "Insiders":{
+    "id":"INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,",
+    "name":"TEXT UNIQUE"
+  },
+  "TransactionType":{
+    "id":"INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,",
+    "type":"TEXT UNIQUE"
+  },
+  "InsiderTransactions":{
+    "ticker_id":"INTEGER,",
+    "exchange_id":"INTEGER,",
+    "date":"DATE,",
+    "name_id":"INTEGER,",
+    "quantity":"REAL,",
+    "transaction_id":"INTEGER,",
+    "value":"REAL,",
+    "PRIMARY KEY":"(ticker_id, exchange_id, date, name_id, transaction_id)"
   }
 }

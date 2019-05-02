@@ -170,7 +170,7 @@ def delete_tables(db_file):
     return msg.format(len(tbl_names))
 
 
-def delfetchhis(db_file):
+def del_fetch_history(db_file):
     print_('\nPlease wait, download history is being erased ...')
 
     # Create database connection
@@ -241,7 +241,7 @@ def fetch(db_file):
         msg = '\nRun {} / {}'
         if i == 0:
             try:
-                urls = geturllist(cur)
+                urls = get_url_list(cur)
             except KeyboardInterrupt:
                 print('\nGoodbye!')
                 exit()
@@ -383,24 +383,24 @@ def fetch_api(url_info):
     # Timer to attemp to slow down and 'align' Pool requests to every sec
     if False:
         time.sleep((1 - (time.time() % 1)))
-    printprogress(url_id, num, ct)
+    print_progress(url_id, num, ct)
 
     return (url_id, ticker_id, exch_id, today, status_code, data)
 
 
-def geturllist(cur):
+def get_url_list(cur):
 
     urls = []
     api = [(int(k), v) for k, v in apis.items()]
+    with open(sql_cmds.format('select_notupdated1.txt')) as file:
+        sql_cmd1 = file.read().strip()
+    with open(sql_cmds.format('select_notupdated2.txt')) as file:
+        sql_cmd2 = file.read().strip()
 
     for url_id, url0 in api:
 
             # Select list of tickers not yet updated for current API
             print_('Creating URL list for API {} ...'.format(url_id))
-            with open(sql_cmds.format('select_notupdated1.txt')) as file:
-                sql_cmd1 = file.read().strip()
-            with open(sql_cmds.format('select_notupdated2.txt')) as file:
-                sql_cmd2 = file.read().strip()
             if url_id in [1, 2, 3]:
                 sql = sql_cmd1.format(url_id)
             else:
@@ -408,7 +408,6 @@ def geturllist(cur):
             tickers = db_execute(cur, sql).fetchall()
             ticker_count[url_id] = len(tickers)
             ticker_list[url_id] = {}
-            #print('\n\n*** SQL = {}\n'.format(sql))
 
             # Create list of URL's for each ticker
             def url_list(ct, tick):
@@ -441,7 +440,7 @@ def print_(msg):
     os.system(msg)
 
 
-def printprogress(api, num, ct):
+def print_progress(api, num, ct):
     msg = 'Fetching API {:.0f}... {:7,.0f} / {:7,.0f}  ({:.2%})'
     msg = msg.format(api, num+1, ct, (num+1)/ct)
     msg = 'echo -en "\\r\\e[K{}"'.format(msg)
