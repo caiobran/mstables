@@ -57,7 +57,8 @@ The scraper will automatically create a directory *db/* in the root folder to st
 - _**MSreport_is_yr**_, _**MSreport_is_qt**_: Income Statements for past 5 yrs and 5 qtrs, respectively
 - _**MSreport_bs_yr**_, _**MSreport_bs_qt**_: Balance Sheets for past 5 yrs and 5 qtrs, respectively
 - _**MSreport_cf_yr**_, _**MSreport_cf_qt**_: Cash Flow Statements for past 5 yrs and 5 qtrs, respectively
-- _**MSpricehistory**_: Table with current 50, 100 and 200 day price averages and 10 year price history (compressed)
+- _**MSpricehistory**_: Current 50, 100 and 200 day price averages and 10 year price history (price history is compressed)
+- _**InsiderTransactions**_: Insider transactions for the past year from [http://insiders.morningstar.com](http://insiders.morningstar.com) (+600k transactions)
 
 **How to slice and dice the data using dataframes.py**
 
