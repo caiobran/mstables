@@ -111,10 +111,13 @@ def parsing(conn, cur, items):
                     code = parse_8(cur, api, ticker_id, exch_id, source_text)
                 elif api == 16:
                     code = parse_9(cur, ticker_id, exch_id, source_text)
+                elif api == 0:
+                    pass
+                    # code = parse_10(cur, ticker_id, exch_id, source_text)
                 source_text = 'null'
 
             # Updated record in Fetched_urls with results from parsing
-            if False:
+            if True:
                 dict1 = {
                     'status_code':code,
                     'parsed':parsed,
@@ -135,11 +138,10 @@ def parsing(conn, cur, items):
                 fetch.save_db(conn)
 
 
-def db_execute(cur, sql, tpl):
+def db_execute_tpl(cur, sql, tpl):
     while True:
         try:
-            cur.execute(sql,tpl)
-            break
+            return cur.execute(sql,tpl)
         except sqlite3.OperationalError as S:
             fetch.print_('')
             print('\tError - sqlite3 error: {}'.format(S))
@@ -354,7 +356,7 @@ def parse_3(cur, ticker_id, exch_id, data):
 
             elif attrs.get('vkey') == 'Volume':
                 if text in noise:
-                    info['aprvol'] = 'null'
+                    info['lastvol'] = 'null'
                 else:
                     text = re.sub(',', '', text)
                     unit = 1
@@ -367,7 +369,7 @@ def parse_3(cur, ticker_id, exch_id, data):
                     elif ' tri' in text:
                         unit = 10E12
                         text = text.replace(' tri', '')
-                    info['aprvol'] = float(text) * unit
+                    info['lastvol'] = float(text) * unit
 
             elif attrs.get('vkey') == 'AverageVolume':
                 if text in noise:
@@ -448,21 +450,17 @@ def parse_3(cur, ticker_id, exch_id, data):
             info[k] = 'null'
 
     # Insert data into MSheader table
-    info['ticker_id'] = ticker_id
-    info['exchange_id'] = exch_id
-    sql = fetch.sql_insert(
-        'MSheader', tuple(info.keys()), tuple(info.values()))
-    #print('\n\nSQL = {}\n'.format(sql))
+    table = 'MSheader'
+    # Update
+    dict = {'ticker_id':ticker_id, 'exchange_id':exch_id}
+    sql = update_record(table, info, dict)
     fetch.db_execute(cur, sql)
-    del info['ticker_id']
-    del info['exchange_id']
-    dict2 = {'ticker_id':ticker_id, 'exchange_id':exch_id}
-    sql = update_record('MSheader', info, dict2)
-    #print('\nSQL = {}\n'.format(sql))
-    fetch.db_execute(cur, sql)
-
-    '''with open('test/api3.html', 'w') as file:
-        file.write(soup.prettify())'''
+    # Insert
+    if cur.rowcount == 0:
+        info['ticker_id'] = ticker_id
+        info['exchange_id'] = exch_id
+        sql = fetch.sql_insert(table, tuple(info.keys()), tuple(info.values()))
+        fetch.db_execute(cur, sql)
 
     return 200
 
@@ -515,18 +513,18 @@ def parse_4(cur, ticker_id, exch_id, data):
         return 0
 
     # Insert data into MSvaluation table
+    table = 'MSvaluation'
+    # Update
+    dict = {'ticker_id':ticker_id, 'exchange_id':exch_id}
+    sql1 = update_record(table, info, dict)
+    # Insert
     info['ticker_id'] = ticker_id
     info['exchange_id'] = exch_id
-    sql1 = fetch.sql_insert('MSvaluation',
-        tuple(info.keys()), tuple(info.values()))
-    del info['ticker_id']
-    del info['exchange_id']
-    dict2 = {'ticker_id':ticker_id, 'exchange_id':exch_id}
-    sql2 = update_record('MSvaluation', info, dict2)
-
+    sql2 = fetch.sql_insert(table, tuple(info.keys()), tuple(info.values()))
     try:
         fetch.db_execute(cur, sql1)
-        fetch.db_execute(cur, sql2)
+        if cur.rowcount == 0:
+            fetch.db_execute(cur, sql2)
     except sqlite3.OperationalError:
         pass
     except:
@@ -556,76 +554,59 @@ def parse_5(cur, ticker_id, exch_id, data):
         print('Data = {} {}\n'.format(data, len(data)))
         raise
 
-    # Parse data batabase tables (5 tables)
-    tabs = soup.find_all('div')
+    # Parse table
     tables = {}
+    trows = soup.find_all('tr')
+    tname = ''
+    for trow in trows:
+        div_id = trow.parent.parent.parent.attrs['id']
+        tname0 = re.sub('tab-', 'MSratio_', div_id)
+        if tname != tname0:
+            tname = tname0
+            tables[tname] = {}
 
-    for tab in tabs:
-        if 'id' in tab.attrs:
-            info = {}
-            #info0 = {}
-            table = re.sub('tab-', 'MSratio_', tab['id'])
-
-            '''# Parse data into info dictionary
-            with open('test/{}.json'.format(table)) as file:
-                info0 = json.load(file)'''
-
-            trs = tab.find_all('tr')
-            for tr in trs:
-                tags = tr.find_all(['th', 'td'])
-                for ct, tag in enumerate(tags):
-
-                    # Parse column and row headers
-                    if 'id' in tag.attrs:
-                        if ct == 0:
-                            text_id = text_id = fetch.sql_insert_one_get_id(
-                                cur, 'ColHeaders', 'header', tag.text)
-                        else:
-                            text_id = fetch.sql_insert_one_get_id(
-                                cur, 'TimeRefs', 'dates', tag.text)
-                        key = re.sub('-', '_', tag['id'])
-                        info[key] = int(text_id)
-                        #info0[tag['id']] = 'INTEGER,'
-
-                    # Parse values
-                    if 'headers' in tag.attrs:
-                        col = tag['headers']
-                        col = '{}_{}'.format(col[2], col[0])
-                        col = re.sub('-', '_', col)
-                        try:
-                            info[col] = float(tag.text)
-                        except:
-                            pass
-                        #info0[col] = 'REAL,'
-
-            if info != {}:
-                # Insert data into tables
-                info['ticker_id'] = ticker_id #'INTEGER,'
-                info['exchange_id'] = exch_id  #'INTEGER,'
-                tables[table] = info
-                sql = fetch.sql_insert(table, tuple(info.keys()),
-                    tuple(info.values()))
-                fetch.db_execute(cur, sql)
-                del info['ticker_id']
-                del info['exchange_id']
-                dict2 = {'ticker_id':ticker_id, 'exchange_id':exch_id}
-                sql = update_record(table, info, dict2)
-                fetch.db_execute(cur, sql)
-
-            '''with open('test/{}.json'.format(table), 'w') as file:
-                file.write(json.dumps(info0, indent=2))'''
+        row_tags = trow.find_all(['th', 'td'])
+        for i, row_tag in enumerate(row_tags):
+            if 'id' in row_tag.attrs:
+                text = row_tag.text
+                id = re.sub('-', '_', row_tag.attrs['id'])
+                if i != 0:
+                    text_id = fetch.sql_insert_one_get_id(
+                        cur, 'TimeRefs', 'dates', text)
+                else:
+                    text_id = fetch.sql_insert_one_get_id(
+                        cur, 'ColHeaders', 'header', text)
+                tables[tname][id] = text_id
+            elif 'headers' in row_tag.attrs:
+                headers = row_tag.attrs['headers']
+                header = '_'.join([headers[2], headers[0]])
+                header = re.sub('-', '_', header)
+                val = re.sub(',', '', row_tag.text)
+                if val == '—':
+                    val = None
+                else:
+                    val = float(val)
+                tables[tname][header] = val
 
     # Check if parsing was successful
     if tables == {}:
         return 0
 
-    '''with open('test/api11.html', 'w') as file:
-        file.write(soup.prettify())'''
-
-    '''for k0, v0 in tables.items():
-        print(k0)
-        for k1, v1 in v0.items():
-            print(k1, '\t', v1)'''
+    # Insert data into tables
+    for table in tables:
+        # Update
+        info = tables[table]
+        dict = {'ticker_id':ticker_id, 'exchange_id':exch_id}
+        sql = update_record(table, info, dict)
+        fetch.db_execute(cur, sql)
+        # Insert
+        if cur.rowcount == 0:
+            tables[table]['ticker_id'] = ticker_id
+            tables[table]['exchange_id'] = exch_id
+            info = tables[table]
+            sql = fetch.sql_insert(
+                table, tuple(info.keys()), tuple(info.values()))
+            fetch.db_execute(cur, sql)
 
     return 200
 
@@ -639,7 +620,6 @@ def parse_6(cur, ticker_id, exch_id, data):
         if js is None:
             return 0
         soup = bs(js, 'html.parser')
-        trs = soup.find_all('tr')
     except KeyboardInterrupt:
         print('\nGoodbye!')
         exit()
@@ -649,66 +629,46 @@ def parse_6(cur, ticker_id, exch_id, data):
         raise
 
     # Parse table
-    info = {}
-    #info0 = {}
-
-    '''with open('test/MSfinancials.json') as file:
-        info0 = json.load(file)'''
-
-    for tr in trs:
-        tags = tr.find_all(['th', 'td'])
-
-        for ct, tag in enumerate(tags):
-
-            # Parse column and row headers
-            if 'id' in tag.attrs:
-                if ct != 0:
+    table = {}
+    trows = soup.find_all('tr')
+    for trow in trows:
+        row_tags = trow.find_all(['th', 'td'])
+        for i, row_tag in enumerate(row_tags):
+            if 'id' in row_tag.attrs:
+                text = row_tag.text
+                if i != 0:
                     text_id = fetch.sql_insert_one_get_id(
-                        cur, 'TimeRefs', 'dates', tag.text)
+                        cur, 'TimeRefs', 'dates', text)
                 else:
-                    text = re.findall('\>(.+?)\<', str(tag))[0]
-                    text = re.sub('\%|\*', '', text).strip()
-                    text = re.sub('\s', '_', text)
                     text_id = fetch.sql_insert_one_get_id(
                         cur, 'ColHeaders', 'header', text)
-                key = re.sub('-', '_', tag['id'])
-                info[key] = int(text_id)
-                #info0[tag['id']] = 'INTEGER,'
+                table[row_tag.attrs['id']] = text_id
+            elif 'headers' in row_tag.attrs:
+                headers = row_tag.attrs['headers']
+                headers.reverse()
+                val = re.sub(',', '', row_tag.text)
+                if val == '—':
+                    val = None
+                else:
+                    val = float(val)
+                table['_'.join(headers)] = val
 
-            # Parse values
-            if 'headers' in tag.attrs:
-                headers = tag['headers']
-                text = '_'.join([headers[1], headers[0]])
-                text = re.sub('[-,]', '_', text)
-                try:
-                    info[text] = float(tag.text)
-                except:
-                    pass
-                #info0[text] = 'REAL,'
-
-    if info == {}:
+    if table == {}:
         return 0
 
     # Insert data into tables
-    table = 'MSfinancials'
-    info['ticker_id'] = ticker_id #'INTEGER,'
-    info['exchange_id'] = exch_id  #'INTEGER,'
-    sql = fetch.sql_insert(table, tuple(info.keys()), tuple(info.values()))
-    fetch.db_execute(cur, sql)
-    del info['ticker_id']
-    del info['exchange_id']
-    dict2 = {'ticker_id':ticker_id, 'exchange_id':exch_id}
-    sql = update_record(table, info, dict2)
-    fetch.db_execute(cur, sql)
-
-    '''for k, v in info.items():
-        print(k, v)'''
-
-    '''with open('test/MSfinancials.json', 'w') as file:
-        file.write(json.dumps(info0, indent=2))'''
-
-    '''with open('test/api12.html', 'w') as file:
-        file.write(soup.prettify())'''
+    tname = 'MSfinancials'
+    # Update
+    dict = {'ticker_id':ticker_id, 'exchange_id':exch_id}
+    sql = update_record(tname, table, dict)
+    ct = fetch.db_execute(cur, sql)
+    # Insert
+    if cur.rowcount == 0:
+        table['ticker_id'] = ticker_id
+        table['exchange_id'] = exch_id
+        sql = fetch.sql_insert(
+            tname, tuple(table.keys()), tuple(table.values()))
+        fetch.db_execute(cur, sql)
 
     return 200
 
@@ -728,21 +688,19 @@ def parse_7(cur, ticker_id, exch_id, data):
         ave_50d, ave_100d, ave_200d)'''
     prices = zlib.compress(data.encode())
 
-    # Insert record
-    sql = 'INSERT OR IGNORE INTO {} {} VALUES (?, ?, ?, ?, ?, ?)'
-    sql = sql.format(table, columns)
-    db_execute(cur, sql,
-        (ticker_id, exch_id, prices, ave_50d, ave_100d, ave_200d))
-
     # Update record
-    sql = '''UPDATE {} SET price_10yr = ?, ave_50d = ?, ave_100d = ?,
+    sql = '''UPDATE OR IGNORE {} SET price_10yr = ?, ave_50d = ?, ave_100d = ?,
         ave_200d = ? WHERE ticker_id = ? AND exchange_id = ?'''
     sql = sql.format(table)
-    db_execute(cur, sql,
+    db_execute_tpl(cur, sql,
         (prices, ave_50d, ave_100d, ave_200d, ticker_id, exch_id))
 
-    '''with open('test/api7.csv', 'w') as file:
-        file.write(data)'''
+    if cur.rowcount == 0:
+        # Insert record
+        sql = 'INSERT OR IGNORE INTO {} {} VALUES (?, ?, ?, ?, ?, ?)'
+        sql = sql.format(table, columns)
+        db_execute_tpl(cur, sql,
+            (ticker_id, exch_id, prices, ave_50d, ave_100d, ave_200d))
 
     return 200
 
@@ -832,19 +790,21 @@ def parse_8(cur, api, ticker_id, exch_id, data):
         return 0
 
     # Insert data into tables
-    info['ticker_id'] = ticker_id
-    info['exchange_id'] = exch_id
-    sql = fetch.sql_insert(type, tuple(info.keys()), tuple(info.values()))
+    # Update
+    dict = {'ticker_id':ticker_id, 'exchange_id':exch_id}
+    sql = update_record(type, info, dict)
     fetch.db_execute(cur, sql)
-    del info['ticker_id']
-    del info['exchange_id']
-    dict2 = {'ticker_id':ticker_id, 'exchange_id':exch_id}
-    sql = update_record(type, info, dict2)
-    fetch.db_execute(cur, sql)
+    # Insert
+    if cur.rowcount == 0:
+        info['ticker_id'] = ticker_id
+        info['exchange_id'] = exch_id
+        sql = fetch.sql_insert(type, tuple(info.keys()), tuple(info.values()))
+        fetch.db_execute(cur, sql)
 
     return 200
 
 
+# http://insiders.mor.../insiders/trading/insider-activity-data2.action
 def parse_9(cur, ticker_id, exch_id, data):
 
     data = re.sub('([A-Z])', r' \1', data)
@@ -889,6 +849,23 @@ def parse_9(cur, ticker_id, exch_id, data):
     return 200
 
 
+# https://finance.yahoo.com/quote/
+def parse_10(cur, ticker_id, exch_id, data):
+
+    sql = 'SELECT ticker FROM Tickers WHERE id = ?'
+    ticker  = db_execute_tpl(cur, sql, (ticker_id,)).fetchall()[0][0]
+
+    soup = bs(data, 'html.parser')
+
+    print()
+    print(ticker)
+    print(soup.prettify())
+    # for table in tables:
+    #     print()
+    #     print(table)
+    exit()
+    # <table class="W(100%)" data-reactid="35">
+    # <table class="W(100%) M(0) Bdcl(c)" data-reactid="76">
 
 
 # Generate UPDATE SQL command
@@ -898,6 +875,6 @@ def update_record(table, dict1, dict2):
     conds = str(dict2).replace('{\'', '(')
     conds = conds.replace('}', ')').replace('\':', ' =')
     conds = conds.replace(', \'', ' AND ')
-    sql = 'UPDATE ' + table + ' SET ' + updates + ' WHERE ' + conds
+    sql = 'UPDATE OR IGNORE ' + table + ' SET ' + updates + ' WHERE ' + conds
     sql = re.sub('\'null\'', 'null', sql)
     return sql

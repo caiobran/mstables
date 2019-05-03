@@ -134,7 +134,7 @@ def db_execute(cur, sql):
     x = 0
     while x < 100:
         try:
-            sql = re.sub('\'Null\'|\'null\'', 'null', sql)
+            sql = re.sub('\'Null\'|\'null\'|None', 'null', sql)
             return cur.execute(sql)
         except KeyboardInterrupt:
             print('\nGoodbye!')
@@ -401,7 +401,7 @@ def get_url_list(cur):
 
             # Select list of tickers not yet updated for current API
             print_('Creating URL list for API {} ...'.format(url_id))
-            if url_id in [1, 2, 3]:
+            if url_id < 4:
                 sql = sql_cmd1.format(url_id)
             else:
                 sql = sql_cmd2.format(url_id)

@@ -41,9 +41,7 @@ class DataFrames():
         self.companies = self.table('Companies', True)
         self.currencies = self.table('Currencies', True)
         self.stocktypes = self.table('StockTypes', True)
-        self.insiders = self.table('Insiders', True)
-        self.tradetype = self.table('TransactionType', True)
-        self.insidertrades = self.table('InsiderTransactions', True)
+
         #self.fetchedurls = self.table('Fetched_urls', True)
 
         # Master table
@@ -235,6 +233,19 @@ class DataFrames():
     def priceHistory(self):
 
         return self.table('MSpricehistory')
+
+    def insider_trades(self):
+        df_insiders = self.table('Insiders', False)
+        df_tradetypes = self.table('TransactionType', False)
+        df_trades = self.table('InsiderTransactions', False)
+        df_trades['date'] = pd.to_datetime(df_trades['date'])
+        df = (df_trades
+            .merge(df_insiders, left_on='name_id', right_on='id')
+            .drop(['id', 'name_id'], axis=1)
+            .merge(df_tradetypes, left_on='transaction_id', right_on='id')
+            .drop(['id', 'transaction_id'], axis=1)
+            )
+        return df
 
 
     def get_yrcolumns(self, df, cols):

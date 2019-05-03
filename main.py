@@ -102,7 +102,7 @@ def main(file):
                 # Download data from urls listed in api.json
                 elif inp == 2:
                     start = fetch.fetch(db_file['path'])
-                    msg = '\n~ Database updated successful.'
+                    msg = '\n~ Database updated successfully'
 
                 # Erase records from all tables
                 elif inp == 3:

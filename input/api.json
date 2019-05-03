@@ -6,5 +6,12 @@
   "5":"http://quotes.morningstar.com/stockq/c-header?t={}:{}",
   "6":"http://financials.morningstar.com/valuate/valuation-history.action?type=price-earnings&t={}:{}&culture=en-US&order=asc",
   "7":"http://financials.morningstar.com/finan/financials/getKeyStatPart.html?t={}:{}&culture=en-US&order=asc",
+  "8":"http://financials.morningstar.com/finan/financials/getFinancePart.html?t={}:{}&culture=en-US&order=asc",
+  "10":"http://financials.morningstar.com/ajax/ReportProcess4HtmlAjax.html?t={}:{}&region=usa&culture=en-US&reportType=is&period=12&dataType=A&order=asc&columnYear=5&curYearPart=1st5year&rounding=3&number=1",
+  "11":"http://financials.morningstar.com/ajax/ReportProcess4HtmlAjax.html?t={}:{}&region=usa&culture=en-US&reportType=is&period=3&dataType=A&order=asc&columnYear=5&curYearPart=1st5year&rounding=3&number=1",
+  "12":"http://financials.morningstar.com/ajax/ReportProcess4HtmlAjax.html?t={}:{}&region=usa&culture=en-US&reportType=cf&period=12&dataType=A&order=asc&columnYear=5&curYearPart=1st5year&rounding=3&number=1",
+  "13":"http://financials.morningstar.com/ajax/ReportProcess4HtmlAjax.html?t={}:{}&region=usa&culture=en-US&reportType=cf&period=3&dataType=A&order=asc&columnYear=5&curYearPart=1st5year&rounding=3&number=1",
+  "14":"http://financials.morningstar.com/ajax/ReportProcess4HtmlAjax.html?t={}:{}&region=usa&culture=en-US&reportType=bs&period=12&dataType=A&order=asc&columnYear=5&curYearPart=1st5year&rounding=3&number=1",
+  "15":"http://financials.morningstar.com/ajax/ReportProcess4HtmlAjax.html?t={}:{}&region=usa&culture=en-US&reportType=bs&period=3&dataType=A&order=asc&columnYear=5&curYearPart=1st5year&rounding=3&number=1",
   "16":"http://insiders.morningstar.com/insiders/trading/insider-activity-data2.action?&t={}:{}&region=usa&culture=en-US&cur=&yc=1&tc=&pageSize=100&_=1556547256995"
 }

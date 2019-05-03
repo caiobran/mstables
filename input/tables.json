@@ -4426,7 +4426,7 @@
     "_52wk_hi":"REAL,",
     "_52wk_lo":"REAL,",
     "yield":"REAL,",
-    "aprvol":"REAL,",
+    "lastvol":"REAL,",
     "avevol":"REAL,",
     "fpe":"REAL,",
     "pb":"REAL,",
