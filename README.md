@@ -34,7 +34,7 @@ Open a Linux terminal in the desired installation directory and execute `git clo
 
 Execute `python main.py` from the project root directory to start the scraper CLI. If the program has started correctly, you should see the following interface:
 
-<img src="https://i.imgur.com/D1Y25LN.png" alt="" height="200"/>
+<img src="https://i.imgur.com/D1Y25LN.png" alt="" height="600"/>
 
 1. If you are running the scraper for the first time, enter option `1` to create the initial SQLite database tables.
 2. Once that action has been completed, and on subsequent runs, enter option `2` to download the latest data from the MorningStar [URL's](input/api.json).
@@ -107,14 +107,14 @@ See Jupyter notebook [data_overview.ipynb][1] for examples on how to create Data
 Below are sample snip-its of code from [data_overview.ipynb][1]:
 
 - Count of records downloaded from Morningstar.com by security type:
-<img src="https://i.imgur.com/b4VKE2R.png" alt="" width="350"/>
+<img src="https://i.imgur.com/b4VKE2R.png" alt="" width="800"/>
 
 - Plot of average US stocks P/E by sector for the past 10 years:
-<img src="https://i.imgur.com/pyboUMr.png" alt="" width="400"/>
+<img src="https://i.imgur.com/pyboUMr.png" alt="" width="600"/>
 
 - Applying fundamental rules to screen the list of stocks ([see sample output](https://github.com/caiobran/mstables/blob/master/sample_rules_output.ods)):
-<img src="https://i.imgur.com/7S4aGZi.png" alt="" width="600"/>
-<img src="https://i.imgur.com/brg0cHr.png" alt="" width="600"/>
+<img src="https://i.imgur.com/7S4aGZi.png" alt="" width="800"/>
+<img src="https://i.imgur.com/brg0cHr.png" alt="" width="800"/>
 
 MIT License
 -----------
