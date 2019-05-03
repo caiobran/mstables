@@ -34,7 +34,7 @@ Open a Linux terminal in the desired installation directory and execute `git clo
 
 Execute `python main.py` from the project root directory to start the scraper CLI. If the program has started correctly, you should see the following interface:
 
-<img src="https://i.imgur.com/D1Y25LN.png" alt="" height="600"/>
+<img src="https://i.imgur.com/D1Y25LN.png" alt="" width="600"/>
 
 1. If you are running the scraper for the first time, enter option `1` to create the initial SQLite database tables.
 2. Once that action has been completed, and on subsequent runs, enter option `2` to download the latest data from the MorningStar [URL's](input/api.json).
@@ -103,7 +103,7 @@ See Jupyter notebook [data_overview.ipynb][1] for examples on how to create Data
     1. [Long-term debt < 50% of total capital][1] *(pending)*
     1. [Stocks with insider buys in the past 3 months][1]
 
-Below are sample snip-its of code from [data_overview.ipynb][1]:
+**Below are sample snip-its of code from [data_overview.ipynb][1]:**
 
 - Count of records downloaded from Morningstar.com by security type:
 <img src="https://i.imgur.com/b4VKE2R.png" alt="" width="800"/>
