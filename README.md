@@ -107,14 +107,14 @@ See Jupyter notebook [data_overview.ipynb][1] for examples on how to create Data
 Below are sample snip-its of code from [data_overview.ipynb][1]:
 
 - Count of records downloaded from Morningstar.com by security type:
-<img src="https://i.imgur.com/b4VKE2R.png" alt="" height="250"/>
+<img src="https://i.imgur.com/b4VKE2R.png" alt="" width="350"/>
 
 - Plot of average US stocks P/E by sector for the past 10 years:
-<img src="https://i.imgur.com/pyboUMr.png" alt="" height="250"/>
+<img src="https://i.imgur.com/pyboUMr.png" alt="" width="400"/>
 
 - Applying fundamental rules to screen the list of stocks ([see sample output](https://github.com/caiobran/mstables/blob/master/sample_rules_output.ods)):
-<img src="https://i.imgur.com/7S4aGZi.png" alt="" height="250"/>
-<img src="https://i.imgur.com/brg0cHr.png" alt="" height="250"/>
+<img src="https://i.imgur.com/7S4aGZi.png" alt="" width="600"/>
+<img src="https://i.imgur.com/brg0cHr.png" alt="" width="600"/>
 
 MIT License
 -----------
