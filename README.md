@@ -99,10 +99,9 @@ See Jupyter notebook [data_overview.ipynb][1] for examples on how to create Data
     1. [No earnings deficit (loss) for past 5 or 7 years][1]
     1. [Uniterrupted and increasing Dividends for past 5 yrs][1]
     1. [P/E Ratio of 25 or less for the past 7 yrs and less then 20 for TTM][1]
-    1. [Long-term debt < 50% of total capital][1]
-    1. [Current Ratio > 2][1]
     1. [Growth for the past year][1]
-    1. [P/B Ratio of 1.2 or less for TTM][1]
+    1. [Long-term debt < 50% of total capital][1] *(pending)*
+    1. [Stocks with insider buys in the past 3 months][1]
 
 Below are sample snip-its of code from [data_overview.ipynb][1]:
 
@@ -115,6 +114,8 @@ Below are sample snip-its of code from [data_overview.ipynb][1]:
 - Applying fundamental rules to screen the list of stocks ([see sample output](https://github.com/caiobran/mstables/blob/master/sample_rules_output.ods)):
 <img src="https://i.imgur.com/7S4aGZi.png" alt="" width="800"/>
 <img src="https://i.imgur.com/brg0cHr.png" alt="" width="800"/>
+
+<br>
 
 MIT License
 -----------
