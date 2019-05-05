@@ -93,6 +93,8 @@ class DataFrames():
         self.master['lastdate'] = pd.to_datetime(self.master['lastdate'])
         self.master['_52wk_hi'] = self.master['_52wk_hi'].astype('float')
         self.master['_52wk_lo'] = self.master['_52wk_lo'].astype('float')
+        self.master['lastprice'] = self.master['lastprice'].astype('float')
+        self.master['openprice'] = self.master['openprice'].astype('float')
 
         print('\nInitial DataFrames created successfully.')
 
