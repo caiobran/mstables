@@ -585,7 +585,10 @@ def parse_5(cur, ticker_id, exch_id, data):
                 if val == '—':
                     val = None
                 else:
-                    val = float(val)
+                    try:
+                        val = float(val)
+                    except:
+                        val = None
                 tables[tname][header] = val
 
     # Check if parsing was successful
