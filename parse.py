@@ -112,8 +112,8 @@ def parsing(conn, cur, items):
                 elif api == 16:
                     code = parse_9(cur, ticker_id, exch_id, source_text)
                 elif api == 0:
-                    pass
-                    # code = parse_10(cur, ticker_id, exch_id, source_text)
+                    #pass
+                    code = parse_10(cur, ticker_id, source_text)
                 source_text = 'null'
 
             # Updated record in Fetched_urls with results from parsing
@@ -452,8 +452,8 @@ def parse_3(cur, ticker_id, exch_id, data):
     # Insert data into MSheader table
     table = 'MSheader'
     # Update
-    dict = {'ticker_id':ticker_id, 'exchange_id':exch_id}
-    sql = update_record(table, info, dict)
+    dict0 = {'ticker_id':ticker_id, 'exchange_id':exch_id}
+    sql = update_record(table, info, dict0)
     fetch.db_execute(cur, sql)
     # Insert
     if cur.rowcount == 0:
@@ -515,8 +515,8 @@ def parse_4(cur, ticker_id, exch_id, data):
     # Insert data into MSvaluation table
     table = 'MSvaluation'
     # Update
-    dict = {'ticker_id':ticker_id, 'exchange_id':exch_id}
-    sql1 = update_record(table, info, dict)
+    dict0 = {'ticker_id':ticker_id, 'exchange_id':exch_id}
+    sql1 = update_record(table, info, dict0)
     # Insert
     info['ticker_id'] = ticker_id
     info['exchange_id'] = exch_id
@@ -599,8 +599,8 @@ def parse_5(cur, ticker_id, exch_id, data):
     for table in tables:
         # Update
         info = tables[table]
-        dict = {'ticker_id':ticker_id, 'exchange_id':exch_id}
-        sql = update_record(table, info, dict)
+        dict0 = {'ticker_id':ticker_id, 'exchange_id':exch_id}
+        sql = update_record(table, info, dict0)
         fetch.db_execute(cur, sql)
         # Insert
         if cur.rowcount == 0:
@@ -662,8 +662,8 @@ def parse_6(cur, ticker_id, exch_id, data):
     # Insert data into tables
     tname = 'MSfinancials'
     # Update
-    dict = {'ticker_id':ticker_id, 'exchange_id':exch_id}
-    sql = update_record(tname, table, dict)
+    dict0 = {'ticker_id':ticker_id, 'exchange_id':exch_id}
+    sql = update_record(tname, table, dict0)
     ct = fetch.db_execute(cur, sql)
     # Insert
     if cur.rowcount == 0:
@@ -682,28 +682,41 @@ def parse_7(cur, ticker_id, exch_id, data):
     # Calculate current moving averages
     tbl = pd.read_csv(StringIO(data), sep=',', header=1)
     tbl = tbl.where(tbl['Volume'] != '???')
+    tbl['diff'] = 100 * tbl['Close'].diff(-1) / tbl['Close'].shift(-1)
 
-    ave_50d = float(np.average(tbl.loc[:50, 'Close'].values))
-    ave_100d = float(np.average(tbl.loc[:100, 'Close'].values))
-    ave_200d = float(np.average(tbl.loc[:200, 'Close'].values))
+    info = dict()
+    last_open0 = tbl.loc[0]['Open']
+    last_open1 = tbl.loc[1]['Open']
+    info['last_open'] = last_open0
+    info['last_close'] = tbl.loc[0]['Close']
+    info['lastday_var'] = 100*(last_open0-last_open1)/last_open1
+    info['ave_10d'] = tbl.loc[:9, 'Close'].mean()
+    info['ave_50d'] = tbl.loc[:49, 'Close'].mean()
+    info['ave_100d'] = tbl.loc[:99, 'Close'].mean()
+    info['ave_200d'] = tbl.loc[:199, 'Close'].mean()
+    info['max_var5'] = tbl['diff'].loc[:4].abs().max()
+    info['max_var10'] = tbl['diff'].loc[:9].abs().max()
+    info['max_var30'] = tbl['diff'].loc[:29].abs().max()
+    info['max_var50'] = tbl['diff'].loc[:49].abs().max()
+    info['max_var100'] = tbl['diff'].loc[:99].abs().max()
+    info['max_var200'] = tbl['diff'].loc[:199].abs().max()
+
+    nonan = lambda x: (str(x[1]) != 'nan')
+    info = dict(filter(nonan, info.items()))
+
+    # Insert data into tables
+    # Update
     table = 'MSpricehistory'
-    columns = '''(ticker_id, exchange_id, price_10yr,
-        ave_50d, ave_100d, ave_200d)'''
-    prices = zlib.compress(data.encode())
-
-    # Update record
-    sql = '''UPDATE OR IGNORE {} SET price_10yr = ?, ave_50d = ?, ave_100d = ?,
-        ave_200d = ? WHERE ticker_id = ? AND exchange_id = ?'''
-    sql = sql.format(table)
-    db_execute_tpl(cur, sql,
-        (prices, ave_50d, ave_100d, ave_200d, ticker_id, exch_id))
-
+    dict0 = {'ticker_id':ticker_id, 'exchange_id':exch_id}
+    sql = update_record(table, info, dict0)
+    fetch.db_execute(cur, sql)
+    # Insert
     if cur.rowcount == 0:
-        # Insert record
-        sql = 'INSERT OR IGNORE INTO {} {} VALUES (?, ?, ?, ?, ?, ?)'
-        sql = sql.format(table, columns)
-        db_execute_tpl(cur, sql,
-            (ticker_id, exch_id, prices, ave_50d, ave_100d, ave_200d))
+        info['ticker_id'] = ticker_id
+        info['exchange_id'] = exch_id
+        sql = fetch.sql_insert(
+            table, tuple(info.keys()), tuple(info.values()))
+        fetch.db_execute(cur, sql)
 
     return 200
 
@@ -794,8 +807,8 @@ def parse_8(cur, api, ticker_id, exch_id, data):
 
     # Insert data into tables
     # Update
-    dict = {'ticker_id':ticker_id, 'exchange_id':exch_id}
-    sql = update_record(type, info, dict)
+    dict0 = {'ticker_id':ticker_id, 'exchange_id':exch_id}
+    sql = update_record(type, info, dict0)
     fetch.db_execute(cur, sql)
     # Insert
     if cur.rowcount == 0:
@@ -853,22 +866,71 @@ def parse_9(cur, ticker_id, exch_id, data):
 
 
 # https://finance.yahoo.com/quote/
-def parse_10(cur, ticker_id, exch_id, data):
+def parse_10(cur, ticker_id, data):
 
     sql = 'SELECT ticker FROM Tickers WHERE id = ?'
     ticker  = db_execute_tpl(cur, sql, (ticker_id,)).fetchall()[0][0]
 
-    soup = bs(data, 'html.parser')
+    #soup = bs(data, 'html.parser')
+    tables = []
+    try:
+        tables = pd.read_html(data)
+    except ValueError:
+        pass
+    except:
+        raise
 
-    print()
-    print(ticker)
-    print(soup.prettify())
-    # for table in tables:
-    #     print()
-    #     print(table)
-    exit()
-    # <table class="W(100%)" data-reactid="35">
-    # <table class="W(100%) M(0) Bdcl(c)" data-reactid="76">
+    if len(tables) == 2:
+        info = dict()
+        try:
+            info['prev_close'] = float(tables[0].loc[0, 1])
+            info['open'] = float(tables[0].loc[1, 1])
+            info['beta'] = float(tables[1].loc[1, 1])
+            info['eps_ttm'] = float(tables[1].loc[3, 1])
+            info['pe_ttm'] = float(tables[1].loc[2, 1])
+            info['yr_target'] = float(tables[1].loc[7, 1])
+        except:
+            pass
+
+        date0 = tables[1].loc[6, 1]
+        if isinstance(date0, float) == False:
+            exdiv_date = DT.datetime.strptime(date0, '%Y-%m-%d')
+            info['exdiv_date'] = exdiv_date.strftime('%Y-%m-%d')
+
+        date0 = tables[1].loc[4, 1]
+        if isinstance(date0, float) == False:
+            if '-' in date0:
+                date0 = date0.split('-')[0].strip()
+            earn_date = DT.datetime.strptime(date0, '%b %d, %Y')
+            info['earnings_date'] = earn_date.strftime('%Y-%m-%d')
+
+        div_yield = tables[1].loc[5, 1]
+        if '%' in div_yield:
+            div_yield = div_yield.split('(')[1].split('%')[0]
+            info['div_yield'] = float(div_yield)
+
+        nonan = lambda x: (str(x[1]) != 'nan')
+        info = dict(filter(nonan, info.items()))
+
+        # print('\n\nTicker: ' + ticker)
+        # print()
+        # for table in tables:
+        #     print(table)
+        # print(json.dumps(info, indent=2))
+
+        # Insert data into tables
+        if len(info) > 0:
+            # Update
+            table = 'YahooQuote'
+            dict0 = {'ticker_id':ticker_id}
+            sql = update_record(table, info, dict0)
+            fetch.db_execute(cur, sql)
+            # Insert
+            if cur.rowcount == 0:
+                info['ticker_id'] = ticker_id
+                sql = fetch.sql_insert(
+                    table, tuple(info.keys()), tuple(info.values()))
+                fetch.db_execute(cur, sql)
 
 
 # Generate UPDATE SQL command

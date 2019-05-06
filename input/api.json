@@ -1,5 +1,5 @@
 {
-  "6":"http://financials.morningstar.com/valuate/valuation-history.action?type=price-earnings&t={}:{}&culture=en-US&order=asc",
-  "7":"http://financials.morningstar.com/finan/financials/getKeyStatPart.html?t={}:{}&culture=en-US&order=asc",
-  "8":"http://financials.morningstar.com/finan/financials/getFinancePart.html?t={}:{}&culture=en-US&order=asc"
+  "0":"https://finance.yahoo.com/quote/{}{}",
+  "5":"http://quotes.morningstar.com/stockq/c-header?t={}:{}",
+  "9":"http://performance.morningstar.com/perform/Performance/stock/exportStockPrice.action?t={}:{}&pd=1yr&freq=d&pg=0&culture=en-US"
 }

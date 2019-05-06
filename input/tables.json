@@ -1,4 +1,16 @@
 {
+  "YahooQuote":{
+    "ticker_id": "INTEGER NOT NULL UNIQUE,",
+    "prev_close":"REAL,",
+    "open":"REAL,",
+    "beta":"REAL,",
+    "eps_ttm":"REAL,",
+    "pe_ttm":"REAL,",
+    "div_yield":"REAL,",
+    "yr_target":"REAL,",
+    "earnings_date":"DATE,",
+    "exdiv_date":"DATE"
+  },
   "MSreport_bs_qt":{
     "ticker_id": "INTEGER,",
     "exchange_id": "INTEGER,",
@@ -4460,10 +4472,19 @@
   "MSpricehistory":{
     "ticker_id": "INTEGER,",
     "exchange_id": "INTEGER,",
+    "last_open":"REAL,",
+    "last_close":"REAL,",
+    "lastday_var":"REAL,",
+    "ave_10d":"REAL,",
     "ave_50d":"REAL,",
     "ave_100d":"REAL,",
     "ave_200d":"REAL,",
-    "price_10yr": "BLOB,",
+    "max_var5":"REAL,",
+    "max_var10":"REAL,",
+    "max_var30":"REAL,",
+    "max_var50":"REAL,",
+    "max_var100":"REAL,",
+    "max_var200":"REAL,",
     "PRIMARY KEY":"(ticker_id, exchange_id)"
   },
   "Countries":{
