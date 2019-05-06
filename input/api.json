@@ -1,5 +1,3 @@
 {
-  "0":"https://finance.yahoo.com/quote/{}{}",
-  "5":"http://quotes.morningstar.com/stockq/c-header?t={}:{}",
   "9":"http://performance.morningstar.com/perform/Performance/stock/exportStockPrice.action?t={}:{}&pd=1yr&freq=d&pg=0&culture=en-US"
 }

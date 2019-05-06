@@ -4480,11 +4480,17 @@
     "ave_100d":"REAL,",
     "ave_200d":"REAL,",
     "max_var5":"REAL,",
+    "min_var5":"REAL,",
     "max_var10":"REAL,",
+    "min_var10":"REAL,",
     "max_var30":"REAL,",
+    "min_var30":"REAL,",
     "max_var50":"REAL,",
+    "min_var50":"REAL,",
     "max_var100":"REAL,",
+    "min_var100":"REAL,",
     "max_var200":"REAL,",
+    "min_var200":"REAL,",
     "PRIMARY KEY":"(ticker_id, exchange_id)"
   },
   "Countries":{

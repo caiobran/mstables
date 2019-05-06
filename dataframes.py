@@ -238,6 +238,7 @@ class DataFrames():
 
         return self.table('MSpricehistory')
 
+
     def insider_trades(self):
         df_insiders = self.table('Insiders', False)
         df_tradetypes = self.table('TransactionType', False)

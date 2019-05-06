@@ -114,7 +114,7 @@ def parsing(conn, cur, items):
                 elif api == 0:
                     #pass
                     code = parse_10(cur, ticker_id, source_text)
-                source_text = 'null'
+                source_text = None
 
             # Updated record in Fetched_urls with results from parsing
             if True:
@@ -679,44 +679,51 @@ def parse_6(cur, ticker_id, exch_id, data):
 # http://performance.mor.../perform/Performance/stock/exportStockPrice.action
 def parse_7(cur, ticker_id, exch_id, data):
 
-    # Calculate current moving averages
     tbl = pd.read_csv(StringIO(data), sep=',', header=1)
     tbl = tbl.where(tbl['Volume'] != '???')
     tbl['diff'] = 100 * tbl['Close'].diff(-1) / tbl['Close'].shift(-1)
 
     info = dict()
     last_open0 = tbl.loc[0]['Open']
-    last_open1 = tbl.loc[1]['Open']
-    info['last_open'] = last_open0
-    info['last_close'] = tbl.loc[0]['Close']
-    info['lastday_var'] = 100*(last_open0-last_open1)/last_open1
-    info['ave_10d'] = tbl.loc[:9, 'Close'].mean()
-    info['ave_50d'] = tbl.loc[:49, 'Close'].mean()
-    info['ave_100d'] = tbl.loc[:99, 'Close'].mean()
-    info['ave_200d'] = tbl.loc[:199, 'Close'].mean()
-    info['max_var5'] = tbl['diff'].loc[:4].abs().max()
-    info['max_var10'] = tbl['diff'].loc[:9].abs().max()
-    info['max_var30'] = tbl['diff'].loc[:29].abs().max()
-    info['max_var50'] = tbl['diff'].loc[:49].abs().max()
-    info['max_var100'] = tbl['diff'].loc[:99].abs().max()
-    info['max_var200'] = tbl['diff'].loc[:199].abs().max()
+    if last_open0 > 0.0:
+        last_open1 = tbl.loc[1]['Open']
+        info['last_open'] = last_open0
+        info['last_close'] = tbl.loc[0]['Close']
+        info['lastday_var'] = 100*(last_open0-last_open1)/last_open1
+        info['ave_10d'] = tbl.loc[:9, 'Close'].mean()
+        info['ave_50d'] = tbl.loc[:49, 'Close'].mean()
+        info['ave_100d'] = tbl.loc[:99, 'Close'].mean()
+        info['ave_200d'] = tbl.loc[:199, 'Close'].mean()
+        info['max_var5'] = tbl['diff'].loc[:4].max()
+        info['min_var5'] = tbl['diff'].loc[:4].min()
+        info['max_var10'] = tbl['diff'].loc[:9].max()
+        info['min_var10'] = tbl['diff'].loc[:9].min()
+        info['max_var30'] = tbl['diff'].loc[:29].max()
+        info['min_var30'] = tbl['diff'].loc[:29].min()
+        info['max_var50'] = tbl['diff'].loc[:49].max()
+        info['min_var50'] = tbl['diff'].loc[:49].min()
+        info['max_var100'] = tbl['diff'].loc[:99].max()
+        info['min_var100'] = tbl['diff'].loc[:99].min()
+        info['max_var200'] = tbl['diff'].loc[:199].max()
+        info['min_var200'] = tbl['diff'].loc[:199].min()
 
-    nonan = lambda x: (str(x[1]) != 'nan')
+    nonan = lambda x: (str(x[1]) != 'nan') and (str(x[1]) != 'inf')
     info = dict(filter(nonan, info.items()))
 
     # Insert data into tables
-    # Update
-    table = 'MSpricehistory'
-    dict0 = {'ticker_id':ticker_id, 'exchange_id':exch_id}
-    sql = update_record(table, info, dict0)
-    fetch.db_execute(cur, sql)
-    # Insert
-    if cur.rowcount == 0:
-        info['ticker_id'] = ticker_id
-        info['exchange_id'] = exch_id
-        sql = fetch.sql_insert(
-            table, tuple(info.keys()), tuple(info.values()))
+    if len(info) > 0:
+        # Update
+        table = 'MSpricehistory'
+        dict0 = {'ticker_id':ticker_id, 'exchange_id':exch_id}
+        sql = update_record(table, info, dict0)
         fetch.db_execute(cur, sql)
+        # Insert
+        if cur.rowcount == 0:
+            info['ticker_id'] = ticker_id
+            info['exchange_id'] = exch_id
+            sql = fetch.sql_insert(
+                table, tuple(info.keys()), tuple(info.values()))
+            fetch.db_execute(cur, sql)
 
     return 200
 
