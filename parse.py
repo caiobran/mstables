@@ -32,7 +32,7 @@ def parse(db_file):
     # Get list of fetched urls from Fetched_urls
     cols = 'url_id, ticker_id, exch_id, fetch_date, source_text'
     sql = '''SELECT {} FROM Fetched_urls
-        WHERE status_code = 200 AND parsed = 0
+        WHERE status_code = 200 AND source_text IS NOT NULL
         ORDER BY ticker_id asc, url_id desc'''
     sql = sql.format(cols)
     fetched = fetch.db_execute(cur, sql).fetchall()
@@ -60,8 +60,6 @@ def parsing(conn, cur, items):
             fetch_date = items[i][3]
             source_text = items[i][4]
             parse = True
-            parsed = 1
-            code = 200
 
             # Decompress and check data integrity before parsing
             try:
@@ -76,12 +74,11 @@ def parsing(conn, cur, items):
             except KeyboardInterrupt:
                 print('\nGoodbye!')
                 exit()
+
             if (source_text is None or len(source_text) == 0 or
                 'Morningstar.com Error Page' in source_text or
                 'This page is temporarily unavailable' in source_text):
                 parse = False
-                source_text = 'null'
-                parsed = 0
                 code = 0
 
             # Print progress message
@@ -120,7 +117,6 @@ def parsing(conn, cur, items):
             if True:
                 dict1 = {
                     'status_code':code,
-                    'parsed':parsed,
                     'source_text':source_text
                 }
                 dict2 = {
@@ -680,50 +676,55 @@ def parse_6(cur, ticker_id, exch_id, data):
 def parse_7(cur, ticker_id, exch_id, data):
 
     tbl = pd.read_csv(StringIO(data), sep=',', header=1)
-    tbl = tbl.where(tbl['Volume'] != '???')
+    if len(tbl) == 0:
+        return 99
+
+    tbl = tbl.where(tbl['Volume'] != '???').dropna(axis=0, how='all')
     tbl['diff'] = 100 * tbl['Close'].diff(-1) / tbl['Close'].shift(-1)
 
+    last_open0 = tbl.iloc[0, 4]
+    last_open1 = tbl.iloc[1, 4]
+
+    if last_open0 <= 0.0:
+        return 99
+
     info = dict()
-    last_open0 = tbl.loc[0]['Open']
-    if last_open0 > 0.0:
-        last_open1 = tbl.loc[1]['Open']
-        info['last_open'] = last_open0
-        info['last_close'] = tbl.loc[0]['Close']
-        info['lastday_var'] = 100*(last_open0-last_open1)/last_open1
-        info['ave_10d'] = tbl.loc[:9, 'Close'].mean()
-        info['ave_50d'] = tbl.loc[:49, 'Close'].mean()
-        info['ave_100d'] = tbl.loc[:99, 'Close'].mean()
-        info['ave_200d'] = tbl.loc[:199, 'Close'].mean()
-        info['max_var5'] = tbl['diff'].loc[:4].max()
-        info['min_var5'] = tbl['diff'].loc[:4].min()
-        info['max_var10'] = tbl['diff'].loc[:9].max()
-        info['min_var10'] = tbl['diff'].loc[:9].min()
-        info['max_var30'] = tbl['diff'].loc[:29].max()
-        info['min_var30'] = tbl['diff'].loc[:29].min()
-        info['max_var50'] = tbl['diff'].loc[:49].max()
-        info['min_var50'] = tbl['diff'].loc[:49].min()
-        info['max_var100'] = tbl['diff'].loc[:99].max()
-        info['min_var100'] = tbl['diff'].loc[:99].min()
-        info['max_var200'] = tbl['diff'].loc[:199].max()
-        info['min_var200'] = tbl['diff'].loc[:199].min()
+    info['last_open'] = last_open0
+    info['last_close'] = tbl.iloc[0, 4]
+    info['lastday_var'] = 100*(last_open0-last_open1)/last_open1
+    info['ave_10d'] = tbl.iloc[:9, 4].mean()
+    info['ave_50d'] = tbl.iloc[:49, 4].mean()
+    info['ave_100d'] = tbl.iloc[:99, 4].mean()
+    info['ave_200d'] = tbl.iloc[:199, 4].mean()
+    info['max_var5'] = tbl['diff'].iloc[:4].max()
+    info['min_var5'] = tbl['diff'].iloc[:4].min()
+    info['max_var10'] = tbl['diff'].iloc[:9].max()
+    info['min_var10'] = tbl['diff'].iloc[:9].min()
+    info['max_var30'] = tbl['diff'].iloc[:29].max()
+    info['min_var30'] = tbl['diff'].iloc[:29].min()
+    info['max_var50'] = tbl['diff'].iloc[:49].max()
+    info['min_var50'] = tbl['diff'].iloc[:49].min()
+    info['max_var100'] = tbl['diff'].iloc[:99].max()
+    info['min_var100'] = tbl['diff'].iloc[:99].min()
+    info['max_var200'] = tbl['diff'].iloc[:199].max()
+    info['min_var200'] = tbl['diff'].iloc[:199].min()
 
     nonan = lambda x: (str(x[1]) != 'nan') and (str(x[1]) != 'inf')
     info = dict(filter(nonan, info.items()))
 
     # Insert data into tables
-    if len(info) > 0:
-        # Update
-        table = 'MSpricehistory'
-        dict0 = {'ticker_id':ticker_id, 'exchange_id':exch_id}
-        sql = update_record(table, info, dict0)
+    # Update
+    table = 'MSpricehistory'
+    dict0 = {'ticker_id':ticker_id, 'exchange_id':exch_id}
+    sql = update_record(table, info, dict0)
+    fetch.db_execute(cur, sql)
+    # Insert
+    if cur.rowcount == 0:
+        info['ticker_id'] = ticker_id
+        info['exchange_id'] = exch_id
+        sql = fetch.sql_insert(
+            table, tuple(info.keys()), tuple(info.values()))
         fetch.db_execute(cur, sql)
-        # Insert
-        if cur.rowcount == 0:
-            info['ticker_id'] = ticker_id
-            info['exchange_id'] = exch_id
-            sql = fetch.sql_insert(
-                table, tuple(info.keys()), tuple(info.values()))
-            fetch.db_execute(cur, sql)
 
     return 200
 
@@ -939,6 +940,7 @@ def parse_10(cur, ticker_id, data):
                     table, tuple(info.keys()), tuple(info.values()))
                 fetch.db_execute(cur, sql)
 
+    return 200
 
 # Generate UPDATE SQL command
 def update_record(table, dict1, dict2):
