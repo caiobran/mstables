@@ -696,18 +696,15 @@ def parse_7(cur, ticker_id, exch_id, data):
     info['ave_50d'] = tbl.iloc[:49, 4].mean()
     info['ave_100d'] = tbl.iloc[:99, 4].mean()
     info['ave_200d'] = tbl.iloc[:199, 4].mean()
-    info['max_var5'] = tbl['diff'].iloc[:4].max()
-    info['min_var5'] = tbl['diff'].iloc[:4].min()
-    info['max_var10'] = tbl['diff'].iloc[:9].max()
-    info['min_var10'] = tbl['diff'].iloc[:9].min()
-    info['max_var30'] = tbl['diff'].iloc[:29].max()
-    info['min_var30'] = tbl['diff'].iloc[:29].min()
-    info['max_var50'] = tbl['diff'].iloc[:49].max()
-    info['min_var50'] = tbl['diff'].iloc[:49].min()
-    info['max_var100'] = tbl['diff'].iloc[:99].max()
-    info['min_var100'] = tbl['diff'].iloc[:99].min()
-    info['max_var200'] = tbl['diff'].iloc[:199].max()
-    info['min_var200'] = tbl['diff'].iloc[:199].min()
+    for i in [5, 10, 30, 50, 100, 200]:
+        info['max_var{}'.format(i)] = tbl['diff'].iloc[:i-1].max()
+        info['max_var{}_date'.format(i)] = (DT.
+            datetime.strptime(tbl[tbl['diff'] == info['max_var{}'.format(i)]]
+                              .iloc[0, 0],'%m/%d/%Y').strftime('%Y-%m-%d'))
+        info['min_var{}'.format(i)] = tbl['diff'].iloc[:i-1].min()
+        info['min_var{}_date'.format(i)] = (DT.
+            datetime.strptime(tbl[tbl['diff'] == info['min_var{}'.format(i)]]
+                              .iloc[0, 0],'%m/%d/%Y').strftime('%Y-%m-%d'))
 
     nonan = lambda x: (str(x[1]) != 'nan') and (str(x[1]) != 'inf')
     info = dict(filter(nonan, info.items()))

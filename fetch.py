@@ -208,7 +208,7 @@ def erase_tables(db_file):
 
 
 def fetch(db_file):
-    div = 300
+    div = 150
     pool_size = 50
 
     # Get user input for stp (no. of tickers to update)
@@ -396,6 +396,8 @@ def get_url_list(cur):
         sql_cmd1 = file.read().strip()
     with open(sql_cmds.format('select_notupdated2.txt')) as file:
         sql_cmd2 = file.read().strip()
+    with open(sql_cmds.format('select_notupdated3.txt')) as file:
+        sql_cmd3 = file.read().strip()
 
     for url_id, url0 in api:
 
@@ -403,6 +405,8 @@ def get_url_list(cur):
             print_('Creating URL list for API {} ...'.format(url_id))
             if url_id < 4:
                 sql = sql_cmd1.format(url_id)
+            elif url_id == 9:
+                sql = sql_cmd3.format(url_id)
             else:
                 sql = sql_cmd2.format(url_id)
             tickers = db_execute(cur, sql).fetchall()
