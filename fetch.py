@@ -208,7 +208,7 @@ def erase_tables(db_file):
 
 
 def fetch(db_file):
-    div = 200
+    div = 300
     pool_size = 50
 
     # Get user input for stp (no. of tickers to update)

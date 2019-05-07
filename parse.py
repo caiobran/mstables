@@ -679,7 +679,7 @@ def parse_7(cur, ticker_id, exch_id, data):
     tbl = tbl.where(tbl['Volume'] != '???').dropna(axis=0, how='all')
     tbl['diff'] = 100 * tbl['Close'].diff(-1) / tbl['Close'].shift(-1)
 
-    if len(tbl) == 0:
+    if len(tbl) <= 1:
         return 99
 
     last_open0 = tbl.iloc[0, 4]
