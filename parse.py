@@ -676,11 +676,11 @@ def parse_6(cur, ticker_id, exch_id, data):
 def parse_7(cur, ticker_id, exch_id, data):
 
     tbl = pd.read_csv(StringIO(data), sep=',', header=1)
-    if len(tbl) == 0:
-        return 99
-
     tbl = tbl.where(tbl['Volume'] != '???').dropna(axis=0, how='all')
     tbl['diff'] = 100 * tbl['Close'].diff(-1) / tbl['Close'].shift(-1)
+
+    if len(tbl) == 0:
+        return 99
 
     last_open0 = tbl.iloc[0, 4]
     last_open1 = tbl.iloc[1, 4]
