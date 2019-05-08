@@ -91,7 +91,7 @@ def parsing(conn, cur, items):
             # Invoke parsing function based on API number
             if parse == True:
                 if api in [1, 2, 3]:
-                    code = parse_1(cur, ticker_id, exch_id, source_text, api)
+                    code = parse_1(cur, source_text, api)
                 elif api == 4:
                     code = parse_2(cur, ticker_id, exch_id, source_text)
                 elif api == 5:
@@ -163,7 +163,7 @@ def get_html_table(sp):
 
 
 # https://www.morningstar.com/api/v2/search/securities/5/usquote-v2/
-def parse_1(cur, ticker_id, exch_id, data, api):
+def parse_1(cur, data, api):
 
     results = []
     try:
@@ -178,7 +178,6 @@ def parse_1(cur, ticker_id, exch_id, data, api):
         print('\nGoodbye!')
         exit()
     except:
-        print('\n\nTicker_id = {}, Exch_id = {}'.format(ticker_id, exch_id))
         print('Data = {} {}\n'.format(data, len(data)))
         raise
 
@@ -201,27 +200,28 @@ def parse_1(cur, ticker_id, exch_id, data, api):
         # Fetch id's for data from db and update tables
 
         # Tickers
-        ticker_id = fetch.sql_insert_one_get_id(
-            cur, 'Tickers', 'ticker', symbol)
+        ticker_id = int(fetch.sql_insert_one_get_id(
+            cur, 'Tickers', 'ticker', symbol))
 
         # Currencies
-        curr_id = fetch.sql_insert_one_get_id(
-            cur, 'Currencies', 'currency_code', curr)
+        curr_id = int(fetch.sql_insert_one_get_id(
+            cur, 'Currencies', 'currency_code', curr))
 
         # Companies
-        comp_id = fetch.sql_insert_one_get_id(
-            cur, 'Companies', 'company', comp)
+        comp_id = int(fetch.sql_insert_one_get_id(
+            cur, 'Companies', 'company', comp))
 
         # SecurityTypes
-        type_id = fetch.sql_insert_one_get_id(cur, 'SecurityTypes', 'security_type_code', type)
+        type_id = int(fetch.sql_insert_one_get_id(
+            cur, 'SecurityTypes', 'security_type_code', type))
 
         # Countries
-        country_id = fetch.sql_insert_one_get_id(cur,
-            'Countries', 'a3_un', country)
+        country_id = int(fetch.sql_insert_one_get_id(cur,
+            'Countries', 'a3_un', country))
 
         # Exchanges
-        exch_id = fetch.sql_insert_one_get_id(cur,
-            'Exchanges', 'exchange_sym', exch_sym)
+        exch_id = int(fetch.sql_insert_one_get_id(cur,
+            'Exchanges', 'exchange_sym', exch_sym))
         dict1 = {
             'exchange':exch,
             'exchange_sym':exch_sym,
