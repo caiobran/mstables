@@ -886,6 +886,7 @@ def parse_10(cur, ticker_id, data):
         raise
 
     if len(tables) == 2:
+
         info = dict()
         try:
             info['prev_close'] = float(tables[0].loc[0, 1])
@@ -897,34 +898,37 @@ def parse_10(cur, ticker_id, data):
         except:
             pass
 
-        date0 = tables[1].loc[6, 1]
-        if isinstance(date0, float) == False:
-            exdiv_date = DT.datetime.strptime(date0, '%Y-%m-%d')
-            info['exdiv_date'] = exdiv_date.strftime('%Y-%m-%d')
+        try:
+            date0 = tables[1].loc[6, 1]
+            if isinstance(date0, float) == False:
+                exdiv_date = DT.datetime.strptime(date0, '%Y-%m-%d')
+                info['exdiv_date'] = exdiv_date.strftime('%Y-%m-%d')
 
-        date0 = tables[1].loc[4, 1]
-        if isinstance(date0, float) == False:
-            if '-' in date0:
-                date0 = date0.split('-')[0].strip()
-            earn_date = DT.datetime.strptime(date0, '%b %d, %Y')
-            info['earnings_date'] = earn_date.strftime('%Y-%m-%d')
+            date0 = tables[1].loc[4, 1]
+            if isinstance(date0, float) == False:
+                if '-' in date0:
+                    date0 = date0.split('-')[0].strip()
+                earn_date = DT.datetime.strptime(date0, '%b %d, %Y')
+                info['earnings_date'] = earn_date.strftime('%Y-%m-%d')
 
-        div_yield = tables[1].loc[5, 1]
-        if '%' in div_yield:
-            div_yield = div_yield.split('(')[1].split('%')[0]
-            info['div_yield'] = float(div_yield)
+            div_yield = tables[1].loc[5, 1]
+            if '%' in div_yield:
+                div_yield = div_yield.split('(')[1].split('%')[0]
+                info['div_yield'] = float(div_yield)
+        except:
+            print('\n\nTicker: ' + ticker)
+            print()
+            for table in tables:
+                print(table)
+            raise
 
         nonan = lambda x: (str(x[1]) != 'nan')
         info = dict(filter(nonan, info.items()))
 
-        # print('\n\nTicker: ' + ticker)
-        # print()
-        # for table in tables:
-        #     print(table)
-        # print(json.dumps(info, indent=2))
-
         # Insert data into tables
         if len(info) > 0:
+            # print(json.dumps(info, indent=2))
+
             # Update
             table = 'YahooQuote'
             dict0 = {'ticker_id':ticker_id}
