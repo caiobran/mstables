@@ -134,7 +134,7 @@ def db_execute(cur, sql):
     x = 0
     while x < 100:
         try:
-            sql = re.sub('\'Null\'|\'null\'|None', 'null', sql)
+            sql = re.sub('\'Null\'|\'null\'|None', 'NULL', sql)
             return cur.execute(sql)
         except KeyboardInterrupt:
             print('\nGoodbye!')
@@ -147,6 +147,21 @@ def db_execute(cur, sql):
                 print('### Error type - {}'.format(type(e)))
                 raise
         x += 1
+
+
+def db_execute_tpl(cur, sql, tpl):
+    while True:
+        try:
+            return cur.execute(sql,tpl)
+        except sqlite3.OperationalError as S:
+            fetch.print_('')
+            print('\tError - sqlite3 error: {}'.format(S))
+        except KeyboardInterrupt:
+            print('\nGoodbye!')
+            exit()
+        except:
+            print('\n\nSQL cmd = \'{}\'\n{}\n'.format(sql, tpl))
+            raise
 
 
 def delete_tables(db_file):
@@ -294,7 +309,13 @@ def fetch(db_file):
 
         # Enter URL data into Fetched_urls
         if results != []:
-            results = list(filter(lambda x: x is not None, results))
+            try:
+                results = list(filter(lambda x: x is not None, results))
+            except:
+                # DELETE
+                print('\n\n\n{}\n\n'.format(results[:1]))
+                raise
+
             msg = ' - Success rate:\t{:,.0f} out of {:,.0f} ({:.1%})'
             totreq = min(stp, div)*len(apis)
             srate = len(results)/totreq
@@ -349,6 +370,7 @@ def fetch_api(url_info):
     url_id, url, ticker_id, exch_id = url_info
     num = ticker_list[url_id]['{}:{}'.format(exch_id, ticker_id)]
     ct = ticker_count[url_id]
+    print_progress(url_id, num, ct)
 
     # Fetch URL data
     x = 0
@@ -356,7 +378,11 @@ def fetch_api(url_info):
         try:
             page = requests.get(url)
             status_code = page.status_code
+            #if status_code != 200:
+            #    print(status_code, '-', url)
             data = re.sub('\'', '', page.text)
+            if data == '' or status_code != 200:
+                return
             data = zlib.compress(data.encode())
             break
         except requests.exceptions.ConnectionError:
@@ -383,7 +409,6 @@ def fetch_api(url_info):
     # Timer to attemp to slow down and 'align' Pool requests to every sec
     if False:
         time.sleep((1 - (time.time() % 1)))
-    print_progress(url_id, num, ct)
 
     return (url_id, ticker_id, exch_id, today, status_code, data)
 
@@ -476,14 +501,6 @@ def sql_insert(table, columns, values):
     return sql
 
 
-def sql_record_id(table, column, value):
-    if type(value) is str:
-        sql = 'SELECT id FROM {} WHERE {} =\'{}\''
-    else:
-        sql = 'SELECT id FROM {} WHERE {} ={}'
-    return sql.format(table, column, value)
-
-
 def sql_insert_one_get_id(cur, tbl, col, val):
 
     # Insert value into db table
@@ -500,6 +517,25 @@ def sql_insert_one_get_id(cur, tbl, col, val):
         raise
 
     return id
+
+
+def sql_record_id(table, column, value):
+    if type(value) is str:
+        sql = 'SELECT id FROM {} WHERE {} =\'{}\''
+    else:
+        sql = 'SELECT id FROM {} WHERE {} ={}'
+    return sql.format(table, column, value)
+
+
+def sql_update_record(table, dict1, dict2):
+    updates = str(dict1).replace('{\'', '').replace(', \'', ', ')
+    updates = updates.replace('}', '').replace('\':', ' =')
+    conds = str(dict2).replace('{\'', '(')
+    conds = conds.replace('}', ')').replace('\':', ' =')
+    conds = conds.replace(', \'', ' AND ')
+    sql = 'UPDATE OR IGNORE ' + table + ' SET ' + updates + ' WHERE ' + conds
+    sql = re.sub('\'null\'', 'null', sql)
+    return sql
 
 
 reload(parse) #Comment out after development

@@ -7,7 +7,7 @@ import numpy as np
 import fetch, sqlite3, time, json, zlib, csv, sys, re
 
 
-# Main function
+# Manage database connection and fetch data to be parsed
 def parse(db_file):
     start = time.time()
 
@@ -47,6 +47,7 @@ def parse(db_file):
     fetched = None
 
 
+# Parse data fetched from database table 'Fetched_urls'
 def parsing(conn, cur, items):
     stp = len(items)
     spds = []
@@ -109,7 +110,6 @@ def parsing(conn, cur, items):
                 elif api == 16:
                     code = parse_9(cur, ticker_id, exch_id, source_text)
                 elif api == 0:
-                    #pass
                     code = parse_10(cur, ticker_id, source_text)
                 source_text = None
 
@@ -125,7 +125,13 @@ def parsing(conn, cur, items):
                     'exch_id':exch_id,
                     'fetch_date':fetch_date
                 }
-                sql = update_record('Fetched_urls', dict1, dict2)
+                sql = fetch.sql_update_record('Fetched_urls', dict1, dict2)
+
+                # DELETE
+                if dict1['source_text'] == '':
+                    print('\n\n\n{}\n\n'.format(sql))
+                    raise
+
                 fetch.db_execute(cur, sql)
 
             #print('\n{} SQL = {}\n\n'.format(api, sql))
@@ -134,22 +140,7 @@ def parsing(conn, cur, items):
                 fetch.save_db(conn)
 
 
-def db_execute_tpl(cur, sql, tpl):
-    while True:
-        try:
-            return cur.execute(sql,tpl)
-        except sqlite3.OperationalError as S:
-            fetch.print_('')
-            print('\tError - sqlite3 error: {}'.format(S))
-        except KeyboardInterrupt:
-            print('\nGoodbye!')
-            exit()
-        except:
-            print('\n\nSQL cmd = \'{}\'\n{}\n'.format(sql, tpl))
-            raise
-
-
-# Fech table from source html code
+# Parse table(s) from source html code
 def get_html_table(sp):
 
     tr_tags = sp.find_all('tr')
@@ -173,7 +164,7 @@ def parse_1(cur, data, api):
     except KeyError:
         fetch.print_('')
         print('\tError: KeyError at Parse_1\n')
-        return 0
+        return 1
     except KeyboardInterrupt:
         print('\nGoodbye!')
         exit()
@@ -182,7 +173,7 @@ def parse_1(cur, data, api):
         raise
 
     if results == []:
-        return 0
+        return 1
 
     for result in results:
         # Read data from current result
@@ -202,23 +193,18 @@ def parse_1(cur, data, api):
         # Tickers
         ticker_id = int(fetch.sql_insert_one_get_id(
             cur, 'Tickers', 'ticker', symbol))
-
         # Currencies
         curr_id = int(fetch.sql_insert_one_get_id(
             cur, 'Currencies', 'currency_code', curr))
-
         # Companies
         comp_id = int(fetch.sql_insert_one_get_id(
             cur, 'Companies', 'company', comp))
-
         # SecurityTypes
         type_id = int(fetch.sql_insert_one_get_id(
             cur, 'SecurityTypes', 'security_type_code', type))
-
         # Countries
         country_id = int(fetch.sql_insert_one_get_id(cur,
             'Countries', 'a3_un', country))
-
         # Exchanges
         exch_id = int(fetch.sql_insert_one_get_id(cur,
             'Exchanges', 'exchange_sym', exch_sym))
@@ -227,9 +213,8 @@ def parse_1(cur, data, api):
             'exchange_sym':exch_sym,
             'country_id':country_id
         }
-        sql = update_record('Exchanges', dict1, {'id':exch_id})
+        sql = fetch.sql_update_record('Exchanges', dict1, {'id':exch_id})
         fetch.db_execute(cur, sql)
-
         # Master Table
         columns = '(ticker_id, exchange_id)'
         sql = fetch.sql_insert('Master', columns, (ticker_id, exch_id))
@@ -243,7 +228,7 @@ def parse_1(cur, data, api):
             'ticker_id':ticker_id,
             'exchange_id':exch_id
             }
-        sql = update_record('Master', dict1, dict2)
+        sql = fetch.sql_update_record('Master', dict1, dict2)
         fetch.db_execute(cur, sql)
 
     return 200
@@ -290,7 +275,7 @@ def parse_2(cur, ticker_id, exch_id, data):
     style_id = fetch.sql_insert_one_get_id(cur, 'StockStyles', 'style', style)
 
     # Update Tickers table with parsed data
-    sql = update_record('Master', {'industry_id':industry_id,
+    sql = fetch.sql_update_record('Master', {'industry_id':industry_id,
         'stock_type_id':stype_id, 'fyend_id':fyend_id, 'style_id':style_id},
         {'ticker_id':ticker_id, 'exchange_id':exch_id})
     fetch.db_execute(cur, sql)
@@ -299,15 +284,15 @@ def parse_2(cur, ticker_id, exch_id, data):
 
 
 # http://quotes.morningstar.com/stockq/c-header
+# API No. 5
 def parse_3(cur, ticker_id, exch_id, data):
 
     soup = bs(data, 'html.parser')
     tags = soup.find_all('span') + soup.find_all('div')
 
+    # Parse data into info dictionary
     info = {}
     noise = ['', '-', '—', '— mil', '— bil']
-
-    # Parse data into info dictionary
     for count, tag in enumerate(tags):
 
         attrs = tag.attrs
@@ -329,7 +314,6 @@ def parse_3(cur, ticker_id, exch_id, data):
                 else:
                     info['lastdate'] = pd.to_datetime(
                         text).strftime('%Y-%m-%d')
-
             elif attrs.get('vkey') == 'DayRange':
                 text = re.sub('^-0.00', '0.00', text)
                 vals = text.split('-')
@@ -339,7 +323,6 @@ def parse_3(cur, ticker_id, exch_id, data):
                 else:
                     info['day_lo'] = float(re.sub(',', '', vals[0]))
                     info['day_hi'] = float(re.sub(',', '', vals[1]))
-
             elif attrs.get('vkey') == '_52Week':
                 text = re.sub('^-0.00', '0.00', text)
                 vals = text.split('-')
@@ -349,7 +332,6 @@ def parse_3(cur, ticker_id, exch_id, data):
                 else:
                     info['_52wk_lo'] = float(re.sub(',', '', vals[0]))
                     info['_52wk_hi'] = float(re.sub(',', '', vals[1]))
-
             elif attrs.get('vkey') == 'Volume':
                 if text in noise:
                     info['lastvol'] = 'null'
@@ -366,7 +348,6 @@ def parse_3(cur, ticker_id, exch_id, data):
                         unit = 10E12
                         text = text.replace(' tri', '')
                     info['lastvol'] = float(text) * unit
-
             elif attrs.get('vkey') == 'AverageVolume':
                 if text in noise:
                     info['avevol'] = 'null'
@@ -383,59 +364,50 @@ def parse_3(cur, ticker_id, exch_id, data):
                         unit = 10E12
                         text = text.replace(' tri', '')
                     info['avevol'] = float(text) * unit
-
             elif attrs.get('gkey') == 'Forward':
                 fpe = text
-
             elif attrs.get('vkey') == 'OpenPrice':
                 if text in noise:
                     info['openprice'] = 'null'
                 else:
                     info['openprice'] = float(re.sub(',', '', text))
-
             elif attrs.get('vkey') == 'LastPrice':
                 if text in noise:
                     info['lastprice'] = 'null'
                 else:
                     info['lastprice'] = float(re.sub(',', '', text))
-
             elif attrs.get('vkey') == 'ProjectedYield':
                 if text in noise:
                     info['yield'] = 'null'
                 else:
                     info['yield'] = float(re.sub('[%,]', '', text))
-
             elif attrs.get('vkey') == 'PE':
                 if text in noise:
                     info['fpe'] = 'null'
                 else:
                     info['fpe'] = float(re.sub(',', '', text))
-
             elif attrs.get('vkey') == 'PB':
                 if text in noise:
                     info['pb'] = 'null'
                 else:
                     info['pb'] = float(re.sub(',', '', text))
-
             elif attrs.get('vkey') == 'PS':
                 if text in noise:
                     info['ps'] = 'null'
                 else:
                     info['ps'] = float(re.sub(',', '', text))
-
             elif attrs.get('vkey') == 'PC':
                 if text in noise:
                     info['pc'] = 'null'
                 else:
                     info['pc'] = float(re.sub(',', '', text))
-
         except:
             print('\n\n{' + text + '}\n')
             raise
 
     # Check if parsing was successful
     if info == {}:
-        return 0
+        return 3
 
     if 'fpe' in locals() and fpe != 'Forward' and 'fpe' in info:
         del info['fpe']
@@ -449,7 +421,7 @@ def parse_3(cur, ticker_id, exch_id, data):
     table = 'MSheader'
     # Update
     dict0 = {'ticker_id':ticker_id, 'exchange_id':exch_id}
-    sql = update_record(table, info, dict0)
+    sql = fetch.sql_update_record(table, info, dict0)
     fetch.db_execute(cur, sql)
     # Insert
     if cur.rowcount == 0:
@@ -506,41 +478,33 @@ def parse_4(cur, ticker_id, exch_id, data):
 
     # Check if parsing was successful
     if info == {}:
-        return 0
+        return 4
 
     # Insert data into MSvaluation table
     table = 'MSvaluation'
     # Update
     dict0 = {'ticker_id':ticker_id, 'exchange_id':exch_id}
-    sql1 = update_record(table, info, dict0)
+    sql1 = fetch.sql_update_record(table, info, dict0)
     # Insert
     info['ticker_id'] = ticker_id
     info['exchange_id'] = exch_id
     sql2 = fetch.sql_insert(table, tuple(info.keys()), tuple(info.values()))
-    try:
-        fetch.db_execute(cur, sql1)
-        if cur.rowcount == 0:
-            fetch.db_execute(cur, sql2)
-    except sqlite3.OperationalError:
-        pass
-    except:
-        raise
-
-    # Check if parsing was successful
-    if info == {}:
-        return 0
+    fetch.db_execute(cur, sql1)
+    if cur.rowcount == 0:
+        fetch.db_execute(cur, sql2)
 
     return 200
 
 
 # http://financials.morningstar.com/finan/financials/getKeyStatPart.html
+# API No. 7
 def parse_5(cur, ticker_id, exch_id, data):
 
     # Check if source data has correct information
     try:
         js = json.loads(data)['componentData']
         if js is None:
-            return 0
+            return 5
         soup = bs(js, 'html.parser')
     except KeyboardInterrupt:
         print('\nGoodbye!')
@@ -589,14 +553,14 @@ def parse_5(cur, ticker_id, exch_id, data):
 
     # Check if parsing was successful
     if tables == {}:
-        return 0
+        return 5
 
     # Insert data into tables
     for table in tables:
         # Update
         info = tables[table]
         dict0 = {'ticker_id':ticker_id, 'exchange_id':exch_id}
-        sql = update_record(table, info, dict0)
+        sql = fetch.sql_update_record(table, info, dict0)
         fetch.db_execute(cur, sql)
         # Insert
         if cur.rowcount == 0:
@@ -611,13 +575,14 @@ def parse_5(cur, ticker_id, exch_id, data):
 
 
 # http://financials.morningstar.com/finan/financials/getFinancePart.html
+# API No. 8
 def parse_6(cur, ticker_id, exch_id, data):
 
     # Check if source data has correct information
     try:
         js = json.loads(data)['componentData']
         if js is None:
-            return 0
+            return 6
         soup = bs(js, 'html.parser')
     except KeyboardInterrupt:
         print('\nGoodbye!')
@@ -653,13 +618,13 @@ def parse_6(cur, ticker_id, exch_id, data):
                 table['_'.join(headers)] = val
 
     if table == {}:
-        return 0
+        return 6
 
     # Insert data into tables
     tname = 'MSfinancials'
     # Update
     dict0 = {'ticker_id':ticker_id, 'exchange_id':exch_id}
-    sql = update_record(tname, table, dict0)
+    sql = fetch.sql_update_record(tname, table, dict0)
     ct = fetch.db_execute(cur, sql)
     # Insert
     if cur.rowcount == 0:
@@ -673,6 +638,7 @@ def parse_6(cur, ticker_id, exch_id, data):
 
 
 # http://performance.mor.../perform/Performance/stock/exportStockPrice.action
+# API No. 9
 def parse_7(cur, ticker_id, exch_id, data):
 
     tbl = pd.read_csv(StringIO(data), sep=',', header=1)
@@ -713,7 +679,7 @@ def parse_7(cur, ticker_id, exch_id, data):
     # Update
     table = 'MSpricehistory'
     dict0 = {'ticker_id':ticker_id, 'exchange_id':exch_id}
-    sql = update_record(table, info, dict0)
+    sql = fetch.sql_update_record(table, info, dict0)
     fetch.db_execute(cur, sql)
     # Insert
     if cur.rowcount == 0:
@@ -732,7 +698,7 @@ def parse_8(cur, api, ticker_id, exch_id, data):
     # Check if source data has correct information
     msg = 'There is no available information in our database to display.'
     if msg in data:
-        return 0
+        return 8
 
     # Parse source data with JSON and BeautifulSoup
     try:
@@ -808,12 +774,12 @@ def parse_8(cur, api, ticker_id, exch_id, data):
 
     # Check if parsing was successful
     if info == {} and info0 == {}:
-        return 0
+        return 8
 
     # Insert data into tables
     # Update
     dict0 = {'ticker_id':ticker_id, 'exchange_id':exch_id}
-    sql = update_record(type, info, dict0)
+    sql = fetch.sql_update_record(type, info, dict0)
     fetch.db_execute(cur, sql)
     # Insert
     if cur.rowcount == 0:
@@ -826,6 +792,7 @@ def parse_8(cur, api, ticker_id, exch_id, data):
 
 
 # http://insiders.mor.../insiders/trading/insider-activity-data2.action
+# API No. 16
 def parse_9(cur, ticker_id, exch_id, data):
 
     data = re.sub('([A-Z])', r' \1', data)
@@ -871,19 +838,18 @@ def parse_9(cur, ticker_id, exch_id, data):
 
 
 # https://finance.yahoo.com/quote/
+# API No. 0
 def parse_10(cur, ticker_id, data):
 
     sql = 'SELECT ticker FROM Tickers WHERE id = ?'
-    ticker  = db_execute_tpl(cur, sql, (ticker_id,)).fetchall()[0][0]
+    ticker  = fetch.db_execute_tpl(cur, sql, (ticker_id,)).fetchall()[0][0]
 
     #soup = bs(data, 'html.parser')
     tables = []
     try:
         tables = pd.read_html(data)
-    except ValueError:
-        pass
     except:
-        raise
+        return 10
 
     if len(tables) == 2:
 
@@ -927,12 +893,11 @@ def parse_10(cur, ticker_id, data):
 
         # Insert data into tables
         if len(info) > 0:
-            # print(json.dumps(info, indent=2))
-
+            #print(json.dumps(info, indent=2))
             # Update
             table = 'YahooQuote'
             dict0 = {'ticker_id':ticker_id}
-            sql = update_record(table, info, dict0)
+            sql = fetch.sql_update_record(table, info, dict0)
             fetch.db_execute(cur, sql)
             # Insert
             if cur.rowcount == 0:
@@ -941,15 +906,5 @@ def parse_10(cur, ticker_id, data):
                     table, tuple(info.keys()), tuple(info.values()))
                 fetch.db_execute(cur, sql)
 
-    return 200
-
-# Generate UPDATE SQL command
-def update_record(table, dict1, dict2):
-    updates = str(dict1).replace('{\'', '').replace(', \'', ', ')
-    updates = updates.replace('}', '').replace('\':', ' =')
-    conds = str(dict2).replace('{\'', '(')
-    conds = conds.replace('}', ')').replace('\':', ' =')
-    conds = conds.replace(', \'', ' AND ')
-    sql = 'UPDATE OR IGNORE ' + table + ' SET ' + updates + ' WHERE ' + conds
-    sql = re.sub('\'null\'', 'null', sql)
-    return sql
+        return 200
+    return 10

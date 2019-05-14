@@ -1,4 +1,5 @@
 {
+  "0":"https://finance.yahoo.com/quote/{}{}",
   "1":"https://www.morningstar.com/api/v2/search/Securities/500/usquote-us/?q={}{}",
   "2":"https://www.morningstar.com/api/v2/search/Securities/500/usquote-noneus/?q={}{}",
   "3":"https://www.morningstar.com/api/v2/search/securities/500/usquote-v2/?q={}{}",

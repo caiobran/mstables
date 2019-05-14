@@ -86,46 +86,44 @@ def main(file):
         # Call function according to user input
         if ans == 'y':
             print()
-            # try:
+            try:
+                # Change db file name
+                if inp == 0:
+                    db_file['name'] = change_name(db_file['name'])
+                    start = time.time()
+                    db_file['path'] = db_file['npath'].format(db_file['name'])
+                    msg = ('~ Database file \'{}\' selected'
+                        .format(db_file['name']))
 
-            # Change db file name
-            if inp == 0:
-                db_file['name'] = change_name(db_file['name'])
-                start = time.time()
-                db_file['path'] = db_file['npath'].format(db_file['name'])
-                msg = ('~ Database file \'{}\' selected'
-                    .format(db_file['name']))
+                # Create database tables
+                elif inp == 1:
+                    msg = fetch.create_tables(db_file['path'])
 
-            # Create database tables
-            elif inp == 1:
-                msg = fetch.create_tables(db_file['path'])
+                # Download data from urls listed in api.json
+                elif inp == 2:
+                    start = fetch.fetch(db_file['path'])
+                    msg = '\n~ Database updated successfully'
 
-            # Download data from urls listed in api.json
-            elif inp == 2:
-                start = fetch.fetch(db_file['path'])
-                msg = '\n~ Database updated successfully'
+                # Erase records from all tables
+                elif inp == 3:
+                    msg = fetch.erase_tables(db_file['path'])
 
-            # Erase records from all tables
-            elif inp == 3:
-                msg = fetch.erase_tables(db_file['path'])
+                # Delete all tables
+                elif inp == 4:
+                    msg = fetch.delete_tables(db_file['path'])
 
-            # Delete all tables
-            elif inp == 4:
-                msg = fetch.delete_tables(db_file['path'])
+                # Delete Fetched_urls table records
+                elif inp == 5:
+                    msg = fetch.del_fetch_history(db_file['path'])
 
-            # Delete Fetched_urls table records
-            elif inp == 5:
-                msg = fetch.del_fetch_history(db_file['path'])
+                # Back-up database file
+                elif inp == int(list(ops.keys())[-1]):
+                    msg = backup_db(db_file)
 
-            # Back-up database file
-            elif inp == int(list(ops.keys())[-1]):
-                msg = backup_db(db_file)
-
-            # TESTING
-            elif inp == 99:
-                fetch.parse.parse(db_file['path'])
-                msg = 'FINISHED'
-
+                # TESTING
+                elif inp == 99:
+                    fetch.parse.parse(db_file['path'])
+                    msg = 'FINISHED'
             # except sqlite3.OperationalError as S:
             #     msg = '### Error message - {}'.format(S) + \
             #         '\n### Scroll up for more details. If table does not ' + \
@@ -135,9 +133,10 @@ def main(file):
             # except KeyboardInterrupt:
             #     print('\nGoodbye!')
             #     exit()
-            # except Exception as e:
-            #     print('\n\n### Error @ main.py:\n {}\n'.format(e))
-            #     raise e
+            except Exception as e:
+                print('\a')
+                #print('\n\n### Error @ main.py:\n {}\n'.format(e))
+                raise
 
             # Print output message
             #os.system('clear')
