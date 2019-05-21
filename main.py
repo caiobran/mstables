@@ -40,7 +40,7 @@ def print_menu(names):
     file = '\'{}.sqlite\''.format(db_file['name'])
     menu = {
         '0' : 'Change database file name (current name = {})'.format(file),
-        '1' : 'Create database tables and import list of symbols',
+        '1' : 'Create database tables and import latest symbols',
         '2' : 'Download Morningstar data into database',
         '3' : 'Erase all records from database tables',
         '4' : 'Delete all database tables',

@@ -378,9 +378,9 @@ def fetch_api(url_info):
         try:
             page = requests.get(url)
             status_code = page.status_code
-            #if status_code != 200:
-            #    print(status_code, '-', url)
             data = re.sub('\'', '', page.text)
+            #msg = '\n\nurl = {}\ntext = {}\n'
+            #print(msg.format(url, page.text))
             if data == '' or status_code != 200:
                 return
             data = zlib.compress(data.encode())
