@@ -5,6 +5,10 @@ msTables is a [MorningStar.com](https://www.morningstar.com) scraper written in 
 
 The scraper should work as long as the structure of the responses does not change for the URL's used. See [input/api.json](input/api.json) for the complete list of URL's.
 
+IMPORTANT: The Morningstar.com data is protected under "Copyright (c) 2018 Morningstar. All rights reserved." This tool should be for personal purposes only. See the following links for more information regarding Morningstar.com terms & conditions:
+- [Copyright][2]
+- [User Agreement][3]
+
 ## Motivation
 As a fan of [Benjamin Graham](https://en.wikipedia.org/wiki/Benjamin_Graham)'s [value investing](https://en.wikipedia.org/wiki/Value_investing), I have always searched for sources of consolidated financial data that would allow me to identify 'undervalued' companies from a large pool of global public stocks. However, most *(if not all)* financial services that provide such data consolidation are not free and, as a small retail investor, I was not willing to pay for their fees. In fact, most of the data I needed was already available for free on various financial website, just not in a consolidated format. Therefore, I decided to create a web scraper for [MorningStar.com](https://www.morningstar.com), which is the website that I found to have the most available data in a more standardized and structured format. MS was also one of the only website services that published free financial performance data for the past 10 yrs, while most sites only provided free data for last 5 yrs.
 
@@ -142,3 +146,5 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 [1]:https://github.com/caiobran/msTables/blob/master/data_overview.ipynb
+[2]:https://www.morningstar.com/about/copyright.html
+[3]:https://www.morningstar.com/about/user-agreement.html
