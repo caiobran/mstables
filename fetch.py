@@ -6,6 +6,7 @@ from csv import reader
 import numpy as np
 import pandas as pd
 import requests, sqlite3, time, json, zlib, re, os, parse
+import os
 
 
 def create_tables(db_file):
@@ -55,6 +56,11 @@ def create_tables(db_file):
 
     # Create database connection
     print('\nPlease wait, database tables are being created ...')
+    
+    dbpath = os.path.join(os.getcwd(), 'db')
+    if not os.path.exists(dbpath):
+        os.mkdir(dbpath)
+
     conn = sqlite3.connect(db_file)
     conn.execute('pragma auto_vacuum = 1')
     cur = conn.cursor()
