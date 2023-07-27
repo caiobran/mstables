@@ -1,9 +1,9 @@
 mstables
 ========
 
-msTables is a [MorningStar.com](https://www.morningstar.com) scraper written in python that fetches, parses and stores financial and market data for over 70k securities into a relational SQLite database. The scraper provides a Command Line Interface (CLI) that allows the user greater flexibility for creating and managing multiple *.sqlite* files. Once data has been downloaded into the database files, [dataframes.py](dataframes.py) module can be used to easily create DataFrame objects from the database tables for further analysis.
+msTables was a [MorningStar.com](https://www.morningstar.com) scraper written in python that fetches, parses and stores financial and market data for over 70k securities into a relational SQLite database. The scraper provided a Command Line Interface (CLI) that allows the user greater flexibility for creating and managing multiple *.sqlite* files. Once data has been downloaded into the database files, [dataframes.py](dataframes.py) module can be used to easily create DataFrame objects from the database tables for further analysis.
 
-The scraper should work as long as the structure of the responses does not change for the URL's used. See [input/api.json](input/api.json) for the complete list of URL's.
+The scraper had to change starting in 2016 and finally in 2017 Morningstar paywalled access to MsRatio data see[Morningstar API](https://www.morningstar.com/content/dam/marketing/shared/Company/Products/Direct_Cloud/Morningstar-Cloud-Technical-FAQ.pdf). We are expanding upon the work that caiobran did for us to include multiple API's, pandas datareader, and local financial analysis for multiple functions. See [input/api.json](input/api.json) for the complete list of URL's.
 
 IMPORTANT: The Morningstar.com data is protected under "Copyright (c) 2018 Morningstar. All rights reserved." This tool should be for personal purposes only. See the following links for more information regarding Morningstar.com terms & conditions:
 - [Copyright][2]
@@ -14,7 +14,6 @@ As a fan of [Benjamin Graham](https://en.wikipedia.org/wiki/Benjamin_Graham)'s [
 
 ## Next steps
 - Finalize instructions for the scraper CLI
-
 
 Instructions
 ------------
@@ -52,7 +51,7 @@ Execute `python main.py` from the project root directory to start the scraper CL
 The scraper will automatically create a directory *db/* in the root folder to store the *.sqlite* database files generated. The current file name in use will be displayed on the scraper CLI under action `0` (see CLI figure above). Database files will contain a relational database with the following main tables:
 
 **Database Tables**
-
+- all _**MS*** tables and ratio data has been paywalled so we are side stepping those. The below financial info needs to be adjusted to allow for analysis from other data sources. See pandas dataframe for full list.
 - _**Master**_: Main bridge table with complete list of security and exchange symbol pairs, security name, sector, industry, security type, and FY end dates
 - _**MSheader**_: Quote Summary data with day hi, day lo, 52wk hi, 52wk lo, forward P/E, div. yield, volumes, and current P/B, P/S, and P/CF ratios
 - _**MSvaluation**_: 10yr stock valuation indicators (P/E, P/S, P/B, P/C)
