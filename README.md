@@ -3,7 +3,7 @@ mstables
 
 msTables was a [MorningStar.com](https://www.morningstar.com) scraper written in python that fetches, parses and stores financial and market data for over 70k securities into a relational SQLite database. The scraper provided a Command Line Interface (CLI) that allows the user greater flexibility for creating and managing multiple *.sqlite* files. Once data has been downloaded into the database files, [dataframes.py](dataframes.py) module can be used to easily create DataFrame objects from the database tables for further analysis.
 
-The scraper had to change starting in 2016 and finally in 2017 Morningstar paywalled access to MsRatio data see[Morningstar API](https://www.morningstar.com/content/dam/marketing/shared/Company/Products/Direct_Cloud/Morningstar-Cloud-Technical-FAQ.pdf). We are expanding upon the work that caiobran did for us to include multiple API's, pandas datareader, and local financial analysis for multiple functions. See [input/api.json](input/api.json) for the complete list of URL's.
+The scraper had to change starting in 2016 and finally in 2017 Morningstar paywalled access to MsRatio data see [Morningstar API](https://www.morningstar.com/content/dam/marketing/shared/Company/Products/Direct_Cloud/Morningstar-Cloud-Technical-FAQ.pdf). We are expanding upon the work that caiobran did for us to include multiple API's, pandas datareader, and local financial analysis for multiple functions. See [input/api.json](input/api.json) for the complete list of URL's.
 
 IMPORTANT: The Morningstar.com data is protected under "Copyright (c) 2018 Morningstar. All rights reserved." This tool should be for personal purposes only. See the following links for more information regarding Morningstar.com terms & conditions:
 - [Copyright][2]
